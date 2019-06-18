@@ -1,10 +1,10 @@
 
 #rstan_options(auto_write = TRUE)
 
-STANFILE_PATH <- '../stan/'
+PATH <- 'stan/'
 stanmodels <- list(
-  gaussian = stan_model(paste0(STANFILE_PATH, 'gp_full_gaussian.stan')),
-  binomial_logit = stan_model(paste0(STANFILE_PATH, 'gp_full_binomial_logit.stan')),
-  binomial_probit = stan_model(paste0(STANFILE_PATH, 'gp_full_binomial_probit.stan'))
+  gaussian = rstan::stan_model(paste0(PATH, 'gp_full_gaussian.stan')),
+  binomial_logit = rstan::stan_model(paste0(PATH, 'gp_full_binomial_logit.stan')),
+  binomial_probit = rstan::stan_model(paste0(PATH, 'gp_full_binomial_probit.stan'))
 )
-rm(STANFILE_PATH)
+rm(PATH)
