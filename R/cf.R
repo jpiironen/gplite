@@ -1,0 +1,94 @@
+
+# implementations for the covariance functions
+
+# TODO: add matern kernel
+
+
+# constructors
+
+gpcf_const <- function(magn=1.0) {
+  cf <- list()
+  cf$magn <- magn
+  class(cf) <- 'cf_const'
+  cf
+}
+
+gpcf_sexp <- function(ind=NULL, lscale=0.5, magn=1.0) {
+  cf <- list()
+  cf$ind <- ind
+  cf$lscale <- lscale
+  cf$magn <- magn
+  class(cf) <- 'cf_sexp'
+  cf
+}
+
+
+
+
+# get_param functions
+
+get_param.cf_const <- function(object, ...) {
+  log(object$magn)
+}
+
+get_param.cf_sexp <- function(object, ...) {
+  log(c(object$lscale, object$magn))
+}
+
+
+
+
+# set_param functions
+
+set_param.cf_const <- function(object, param, ...) {
+  object$magn <- exp(param[1])
+  object
+}
+
+set_param.cf_sexp <- function(object, param, ...) {
+  object$lscale <- exp(param[1])
+  object$magn <- exp(param[2])
+  object
+}
+
+
+
+
+# eval_cf functions
+
+eval_cf.list <- function(object, x1, x2, ...) {
+  K <- 0
+  for (k in seq_along(object)) {
+    K <- K + eval_cf(object[[k]], x1, x2, ...)
+  }
+  K
+}
+
+eval_cf.cf_sexp <- function(object, x1, x2, ...) {
+  x1 <- as.matrix(x1)
+  x2 <- as.matrix(x2)
+  n1 <- NROW(x1)
+  n2 <- NROW(x2)
+  K <- matrix(nrow=n1,ncol=n2)
+  lscale <- object$lscale
+  magn <- object$magn
+  ind <- object$ind
+  if (is.null(ind))
+    ind <- c(1:NCOL(x1))
+  
+  for (i in 1:n1) {
+    for (j in 1:n2) {
+      K[i,j] <- magn^2*exp(-sum((x1[i,]-x2[j,])^2/lscale^2))
+    }
+  }
+  return(K)
+}
+
+eval_cf.cf_const <- function(object, x1, x2, ...) {
+  x1 <- as.matrix(x1)
+  x2 <- as.matrix(x2)
+  n1 <- NROW(x1)
+  n2 <- NROW(x2)
+  K <- matrix(object$magn^2, nrow=n1,ncol=n2)
+  return(K)
+}
