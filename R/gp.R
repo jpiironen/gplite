@@ -3,17 +3,12 @@
 
 
 # TODO: 
-# - export main functions
+# - make gp_pred to throw error if the model is not fitted yet.
 # - add documentation
+# - gp could have two fields: fit_a and fit_s indicating both analytical and sampling based fit
+#    * need to give gp_pred some indication of which approach we want to use when making predictions?
 # - add function like gp_evidence(gp, param=NULL) which evaluates the log marginal likelihood
 # at the given hyperparameter values, or at the current values if no new values are given
-
-
-
-
-
-
-
 
 
 
@@ -33,7 +28,7 @@
 #'
 #' @examples
 #' \donttest{
-#' ### Basic usage (single covariance function)
+#' # Basic usage (single covariance function)
 #' cf <- gpcf_sexp()
 #' lik <- lik_binomial()
 #' gp <- gp_init(cf, lik)
@@ -77,36 +72,56 @@ set_param.gp <- function(object, param, ...) {
   object
 }
 
-
+is_fitted.gp <- function(object, type, ...) {
+  if (type=='analytic')
+    ifelse(is.null(object$fmean), F, T)
+  else if (type=='sampling')
+    ifelse(is.null(object$fsample), F, T)
+}
 
 
 
 #' Fit a GP model
 #'
-#' Fits a GP model with the current hyperparameters. Notice that this function does not optimize the hyperparameters in any way, but only finds the Laplace approximation (or the analytical true posterior in the case of Gaussian likelihood) to the latent values.
+#' Function \code{gp_fit} fits a GP model with the current hyperparameters. Notice that this function 
+#' does not optimize the hyperparameters in any way, but only finds the Laplace approximation (or the analytical 
+#' true posterior in the case of Gaussian likelihood) to the latent values. Function \code{gp_sample} 
+#' draws from the posterior of the latent values given the current hyperparameter estimates.
+#' 
+#' @name gp_fit
 #' 
 #' @param gp The gp model object to be fitted.
-#' @param x n-by-d matrix of input values (n is the number of observations and d the input dimension). Can also be a vector of length n if the model has only a single input.
-#' @param y vector of n output (target) values.
+#' @param x n-by-d matrix of input values (n is the number of observations and d the input dimension). 
+#' Can also be a vector of length n if the model has only a single input.
+#' @param y Vector of n output (target) values.
+#' @param trials Vecton of length n giving the number of trials for each observation in binomial 
+#' (and beta binomial) model.
+#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
+#' @param ... Further arguments to be passed to \link{rstan}'s function \link{optimizing} (if \code{gp_fit} or
+#' \code{gp_optim} was called) or \link{sampling} (when \code{gp_sample} was called).
 #'
 #'
-#' @return An updated GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
-#' 
+#' @return An updated GP model object.
+#'  
 #' @section References:
 #' 
 #' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
 #'
 #' @examples
 #' \donttest{
-#' ### Basic usage (single covariance function)
+#' # Analytic approximation
 #' cf <- gpcf_sexp()
 #' lik <- lik_binomial()
 #' gp <- gp_init(cf, lik)
-#' gp <- gp_optim(gp, x ,y, trials)
+#' gp <- gp_fit(gp, x, y)
 #' 
+#' # MCMC solution
+#' gp <- gp_sample(gp, x, y, trials=trials, chains=2, iter=1000)
 #' }
 #'
+NULL
 
+#' @rdname gp_fit
 #' @export
 gp_fit <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
   x <- as.matrix(x)
@@ -124,6 +139,7 @@ gp_fit <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
 }
 
 
+#' @rdname gp_fit
 #' @export
 gp_sample <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
   x <- as.matrix(x)
@@ -138,7 +154,40 @@ gp_sample <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
   gp
 }
 
-
+#' Optimize hyperparameters of a GP model
+#' 
+#' This function can be used to optimize the hyperparameters of the model to the maximum marginal
+#' likelihood solution (type-II maximum likelihood) based on the Laplace approximation.
+#' 
+#' @param gp The gp model object to be fitted.
+#' @param x n-by-d matrix of input values (n is the number of observations and d the input dimension). 
+#' Can also be a vector of length n if the model has only a single input.
+#' @param y Vector of n output (target) values.
+#' @param method Optimization method that will be passed to \link{optim} function.
+#' @param tol Relative change in the objective function value below the optimization is terminated. 
+#' @param verbose If TRUE, then some information about the progress of the optimization is printed to the console.
+#' @param ... Further arguments to be passed to \link{gp_fit} that are needed in the fitting process, for
+#' example \code{trials} in the case of binomial likelihood.
+#'
+#'
+#' @return An updated GP model object.
+#'  
+#' @section References:
+#' 
+#' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
+#'
+#' @examples
+#' \donttest{
+#' # Basic usage (single covariance function)
+#' cf <- gpcf_sexp()
+#' lik <- lik_binomial()
+#' gp <- gp_init(cf, lik)
+#' gp <- gp_optim(gp, x, y, trials=trials)
+#' 
+#' }
+#'
+#'
+#' 
 #' @export
 gp_optim <- function(gp, x,y, method='Nelder-Mead', tol=1e-3, verbose=T, ...) {
   energy <- function(param) {
@@ -157,11 +206,66 @@ gp_optim <- function(gp, x,y, method='Nelder-Mead', tol=1e-3, verbose=T, ...) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+#' Make predictions with a GP model
+#' 
+#' This function can be used to make predictions with a fitted model.
+#' 
+#' @param gp A fitted GP model object.
+#' @param xt N-by-d matrix of input values (N is the number of test points and d the input dimension). 
+#' Can also be a vector of length N if the model has only a single input.
+#' @param var Whether to compute the predictive variances along with predictive mean
+#' @param draws Number of draws to generate from the predictive distribution for the latent values. 
+#' @param transform Whether to transform the draws of latent values to the same scale as the target y.
+#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
+#'
+#'
+#' @return If draws is given (sampling from the predictive distribution), then returns an N-by-draws
+#' matrix of random draws from the predictive distribution. If draws is not set, then returns either only
+#' the predictive means (if \code{var=F}) or a list with both the predictive means and variances (if \code{var=T}).
+#'  
+#' @section References:
+#' 
+#' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
+#'
+#' @examples
+#' \donttest{
+#' # fit GP
+#' gp <- gp_init()
+#' gp <- gp_optim(gp, x, y, trials=trials)
+#' 
+#' # analytic prediction
+#' pred <- gp_pred(gp, xt, var=T)
+#' pred$mean 
+#' pred$var 
+#' 
+#' # draws based on the analytic posterior approximation
+#' draws <- gp_pred(gp, xt, draws=1000) 
+#' 
+#' # fit using mcmc and predict then
+#' gp <- gp_sample(gp, x, y, trials=trials, iter=1000, chains=2)
+#' draws <- gp_pred(gp, xt, draws=1000)
+#' }
+#'
+#'
 #' @export
 gp_pred <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=1e-3) {
   
-  if (is.null(gp$fsample)) {
+  if (!is_fitted(gp, 'sampling')) {
     # predictions based on analytical approximation
+    if (!is_fitted(gp, 'analytic')) 
+      stop('The given model appears not to be fitted yet.')
     pred <- gp_pred_analytic(gp, xt, var=var, draws=draws, transform=transform, jitter=jitter)
   } else {
     # prediction based on (markov chain) monte carlo draws from the posterior
@@ -215,6 +319,9 @@ gp_pred_sampling <- function(gp, xt, draws=NULL, transform=T, jitter=1e-3) {
     sample <- get_response(gp$lik, sample)
   return(sample)
 }
+
+
+
 
 
 

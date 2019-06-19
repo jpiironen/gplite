@@ -19,3 +19,7 @@ get_response <- function(object, ...) {
 eval_cf <- function (object, ...) {
   UseMethod("eval_cf", object)
 }
+
+is_fitted <- function(object, type, ...) {
+  UseMethod("is_fitted", object)
+}
