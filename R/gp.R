@@ -130,7 +130,6 @@ gp_optim <- function(gp, x,y, method='Nelder-Mead', tol=1e-3, verbose=T, ...) {
 
 
 gp_pred <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=1e-3) {
-  # TODO: implement predictions for the sampling gp
   
   if (is.null(gp$fsample)) {
     # predictions based on analytical approximation
