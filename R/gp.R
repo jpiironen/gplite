@@ -81,6 +81,33 @@ set_param.gp <- function(object, param, ...) {
 
 
 
+#' Fit a GP model
+#'
+#' Fits a GP model with the current hyperparameters. Notice that this function does not optimize the hyperparameters in any way, but only finds the Laplace approximation (or the analytical true posterior in the case of Gaussian likelihood) to the latent values.
+#' 
+#' @param gp The gp model object to be fitted.
+#' @param x n-by-d matrix of input values (n is the number of observations and d the input dimension). Can also be a vector of length n if the model has only a single input.
+#' @param y vector of n output (target) values.
+#'
+#'
+#' @return An updated GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
+#' 
+#' @section References:
+#' 
+#' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
+#'
+#' @examples
+#' \donttest{
+#' ### Basic usage (single covariance function)
+#' cf <- gpcf_sexp()
+#' lik <- lik_binomial()
+#' gp <- gp_init(cf, lik)
+#' gp <- gp_optim(gp, x ,y, trials)
+#' 
+#' }
+#'
+
+#' @export
 gp_fit <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
   x <- as.matrix(x)
   n <- length(y)
@@ -97,6 +124,7 @@ gp_fit <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
 }
 
 
+#' @export
 gp_sample <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
   x <- as.matrix(x)
   n <- length(y)
@@ -111,6 +139,7 @@ gp_sample <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
 }
 
 
+#' @export
 gp_optim <- function(gp, x,y, method='Nelder-Mead', tol=1e-3, verbose=T, ...) {
   energy <- function(param) {
     gp <- set_param(gp, param)
@@ -128,7 +157,7 @@ gp_optim <- function(gp, x,y, method='Nelder-Mead', tol=1e-3, verbose=T, ...) {
 }
 
 
-
+#' @export
 gp_pred <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=1e-3) {
   
   if (is.null(gp$fsample)) {
