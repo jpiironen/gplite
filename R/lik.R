@@ -1,7 +1,7 @@
 
 # implementations for the observation models (likelihoods)
 
-
+# TODO: add beta binomial likelihood
 
 # constructors
 

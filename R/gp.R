@@ -1,7 +1,48 @@
 
+# main gp functions
+
+
+# TODO: 
+# - export main functions
+# - add documentation
+# - add function like gp_evidence(gp, param=NULL) which evaluates the log marginal likelihood
+# at the given hyperparameter values, or at the current values if no new values are given
 
 
 
+
+
+
+
+
+
+
+#' Initialize a GP model
+#'
+#' Initializes a GP model with given covariance function(s) and likelihood. The model can then be fitted using \code{\link{gp_fit}} or \code{\link{gp_sample}}. For hyperparameter optimization, see \code{\link{gp_optim}}
+#' 
+#' @param cf The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.
+#' @param lik Likelihood (observation model). See \code{\link{lik}}.
+#'
+#'
+#' @return A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
+#' 
+#' @section References:
+#' 
+#' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
+#'
+#' @examples
+#' \donttest{
+#' ### Basic usage (single covariance function)
+#' cf <- gpcf_sexp()
+#' lik <- lik_binomial()
+#' gp <- gp_init(cf, lik)
+#' gp <- gp_optim(gp, x ,y, trials)
+#' 
+#' }
+#'
+
+#' @export
 gp_init <- function(cfs=gpcf_sexp(), lik=lik_gaussian()) {
   gp <- list()
   if (class(cfs) != 'list')
@@ -35,6 +76,8 @@ set_param.gp <- function(object, param, ...) {
   object$lik <- set_param(object$lik, param[j:length(param)])
   object
 }
+
+
 
 
 
