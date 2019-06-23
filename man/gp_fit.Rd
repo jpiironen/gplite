@@ -2,13 +2,23 @@
 % Please edit documentation in R/gp.R
 \name{gp_fit}
 \alias{gp_fit}
+<<<<<<< HEAD
 \title{Fit a GP model}
 \usage{
 gp_fit(gp, x, y, trials = NULL, jitter = 0.001, ...)
+=======
+\alias{gp_sample}
+\title{Fit a GP model}
+\usage{
+gp_fit(gp, x, y, trials = NULL, jitter = 0.001, ...)
+
+gp_sample(gp, x, y, trials = NULL, jitter = 0.001, ...)
+>>>>>>> 0a441a87a1c6868880d5ce9249b3e7ee42ac0a5b
 }
 \arguments{
 \item{gp}{The gp model object to be fitted.}
 
+<<<<<<< HEAD
 \item{x}{n-by-d matrix of input values (n is the number of observations and d the input dimension). Can also be a vector of length n if the model has only a single input.}
 
 \item{y}{vector of n output (target) values.}
@@ -18,6 +28,29 @@ An updated GP model object that can be passed to other functions, for example wh
 }
 \description{
 Fits a GP model with the current hyperparameters. Notice that this function does not optimize the hyperparameters in any way, but only finds the Laplace approximation (or the analytical true posterior in the case of Gaussian likelihood) to the latent values.
+=======
+\item{x}{n-by-d matrix of input values (n is the number of observations and d the input dimension). 
+Can also be a vector of length n if the model has only a single input.}
+
+\item{y}{Vector of n output (target) values.}
+
+\item{trials}{Vecton of length n giving the number of trials for each observation in binomial 
+(and beta binomial) model.}
+
+\item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability.}
+
+\item{...}{Further arguments to be passed to \link{rstan}'s function \link{optimizing} (if \code{gp_fit} or
+\code{gp_optim} was called) or \link{sampling} (when \code{gp_sample} was called).}
+}
+\value{
+An updated GP model object.
+}
+\description{
+Function \code{gp_fit} fits a GP model with the current hyperparameters. Notice that this function 
+does not optimize the hyperparameters in any way, but only finds the Laplace approximation (or the analytical 
+true posterior in the case of Gaussian likelihood) to the latent values. Function \code{gp_sample} 
+draws from the posterior of the latent values given the current hyperparameter estimates.
+>>>>>>> 0a441a87a1c6868880d5ce9249b3e7ee42ac0a5b
 }
 \section{References}{
 
@@ -27,12 +60,23 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 
 \examples{
 \donttest{
+<<<<<<< HEAD
 ### Basic usage (single covariance function)
 cf <- gpcf_sexp()
 lik <- lik_binomial()
 gp <- gp_init(cf, lik)
 gp <- gp_optim(gp, x ,y, trials)
 
+=======
+# Analytic approximation
+cf <- gpcf_sexp()
+lik <- lik_binomial()
+gp <- gp_init(cf, lik)
+gp <- gp_fit(gp, x, y)
+
+# MCMC solution
+gp <- gp_sample(gp, x, y, trials=trials, chains=2, iter=1000)
+>>>>>>> 0a441a87a1c6868880d5ce9249b3e7ee42ac0a5b
 }
 
 }
