@@ -1,10 +1,42 @@
 
 # implementations for the observation models (likelihoods)
 
+# TODO: ADD DOCUMENTATION
 # TODO: add beta binomial likelihood
+
+#' Initialize likelihood
+#'
+#' Functions for initializing the likelihood (observations model) which can then be passed to \code{\link{gp_init}}.
+#'
+#' @name lik
+#'
+#' @param link Link function if the likelihood supports non-identity links.
+#' @param sigma Initial value for the noise standard deviation.
+#' 
+#' @details Different likelihoods have the following possible link functions:
+#' \describe{
+#'  \item{\code{lik_gaussian}}{No links (uses identity link).}
+#'  \item{\code{lik_binomial}}{'logit' or 'probit'}
+#' }
+#'
+#' @return The likelihood object.
+#' 
+#' @examples
+#' \donttest{
+#' # Basic usage (single covariance function)
+#' cf <- gpcf_sexp()
+#' lik <- lik_binomial()
+#' gp <- gp_init(cf, lik)
+#' gp <- gp_optim(gp, x ,y, trials)
+#' 
+#' }
+#'
+NULL
 
 # constructors
 
+#' @rdname lik
+#' @export
 lik_gaussian <- function(sigma=1.0) {
   lik <- list()
   lik$sigma <- sigma
@@ -13,6 +45,8 @@ lik_gaussian <- function(sigma=1.0) {
   lik
 }
 
+#' @rdname lik
+#' @export
 lik_binomial <- function(link='logit') {
   lik <- list()
   lik$link <- link
@@ -82,6 +116,8 @@ get_response.lik_gaussian <- function(object, f, ...) {
 get_response.lik_binomial <- function(object, f, ...) {
   if (object$link == 'probit')
     return(pnorm(f))
-  else
+  else if (object$link == 'logit')
     return(1/(1+exp(-f)))
+  else
+    stop('Unknown link: ', object$links)
 }

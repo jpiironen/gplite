@@ -23,8 +23,7 @@
 #' 
 #' @param cf The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.
 #' @param lik Likelihood (observation model). See \code{\link{lik}}.
-#'
-#'
+#' 
 #' @return A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
 #' 
 #' @section References:
@@ -116,7 +115,7 @@ gp_fit <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
   gp$K <- K
   gp$K_chol <- t(chol(K)) # lower triangular
   data <- c(list(n=n,K=K,y=y), get_standata(gp$lik, trials=trials))
-  gp$fit <- optimizing(gp$lik$stanmodel, data=data, hessian=T, as_vector=F, ...)
+  gp$fit <- rstan::optimizing(gp$lik$stanmodel, data=data, hessian=T, as_vector=F, ...)
   gp$fmean <- gp$fit$par$f
   gp$fprec_chol <- t(chol(-as.matrix(gp$fit$hessian))) # cholesky of precision
   gp$log_evidence <- gp$fit$value + 0.5*n*log(2*pi) - sum(log(diag(gp$fprec_chol)))
@@ -133,7 +132,7 @@ gp_sample <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
   gp$K <- K
   gp$K_chol <- t(chol(K)) # lower triangular
   data <- c(list(n=n,K=K,y=y), get_standata(gp$lik, trials=trials))
-  gp$fit <- sampling(gp$lik$stanmodel, data=data, ...)
+  gp$fit <- rstan::sampling(gp$lik$stanmodel, data=data, ...)
   gp$fsample <- t(extract(gp$fit)$f)
   gp
 }

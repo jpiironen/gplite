@@ -25,15 +25,14 @@ Functions for initializing the covariance functions which can then be passed to 
 }
 \examples{
 \donttest{
-
-### Basic usage (single covariance function)
+# Basic usage (single covariance function)
 cf <- gpcf_sexp()
 lik <- lik_binomial()
 gp <- gp_init(cf, lik)
 gp <- gp_optim(gp, x ,y, trials)
 
 
-### More than one covariance function, and the function is additive 
+# More than one covariance function, and the function is additive 
 # in the first input, but has an interaction between inputs 2 and 3
 # (the functional form is f(x) = f(x_1) + f(x_2,x_3))
 cfs <- list(gpcf_const(), gpcf_sexp(1), gpcf_sexp(c(2,3)))
