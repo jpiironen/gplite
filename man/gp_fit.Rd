@@ -5,9 +5,9 @@
 \alias{gp_sample}
 \title{Fit a GP model}
 \usage{
-gp_fit(gp, x, y, trials = NULL, jitter = 0.001, ...)
+gp_fit(gp, x, y, trials = NULL, jitter = NULL, ...)
 
-gp_sample(gp, x, y, trials = NULL, jitter = 0.001, ...)
+gp_sample(gp, x, y, trials = NULL, jitter = NULL, ...)
 }
 \arguments{
 \item{gp}{The gp model object to be fitted.}
@@ -20,7 +20,7 @@ Can also be a vector of length n if the model has only a single input.}
 \item{trials}{Vecton of length n giving the number of trials for each observation in binomial 
 (and beta binomial) model.}
 
-\item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability.}
+\item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4 for Gaussian and 1e-2 for other likelihoods.}
 
 \item{...}{Further arguments to be passed to \link{rstan}'s function \link{optimizing} (if \code{gp_fit} or
 \code{gp_optim} was called) or \link{sampling} (when \code{gp_sample} was called).}

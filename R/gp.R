@@ -128,7 +128,7 @@ is_fitted.gp <- function(object, type, ...) {
 #' @param y Vector of n output (target) values.
 #' @param trials Vecton of length n giving the number of trials for each observation in binomial 
 #' (and beta binomial) model.
-#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
+#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4 for Gaussian and 1e-2 for other likelihoods.
 #' @param ... Further arguments to be passed to \link{rstan}'s function \link{optimizing} (if \code{gp_fit} or
 #' \code{gp_optim} was called) or \link{sampling} (when \code{gp_sample} was called).
 #'
@@ -155,15 +155,16 @@ NULL
 
 #' @rdname gp_fit
 #' @export
-gp_fit <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
+gp_fit <- function(gp, x,y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
+  jitter <- get_jitter(gp,jitter)
   K <- eval_cf(gp$cf, x, x) + jitter*diag(n)
   gp$x <- x
   gp$K <- K
   gp$K_chol <- t(chol(K)) # lower triangular
   data <- c(list(n=n,K=K,y=y), get_standata(gp$lik, trials=trials))
-  gp$fit <- rstan::optimizing(gp$lik$stanmodel, data=data, hessian=T, as_vector=F, ...)
+  gp$fit <- rstan::optimizing(gp$lik$stanmodel, data=data, hessian=T, as_vector=F, init=0, ...)
   gp$fmean <- gp$fit$par$f
   gp$fprec_chol <- t(chol(-as.matrix(gp$fit$hessian))) # cholesky of precision
   gp$log_evidence <- gp$fit$value + 0.5*n*log(2*pi) - sum(log(diag(gp$fprec_chol)))
@@ -173,16 +174,17 @@ gp_fit <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
 
 #' @rdname gp_fit
 #' @export
-gp_sample <- function(gp, x,y, trials=NULL, jitter=1e-3, ...) {
+gp_sample <- function(gp, x,y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
+  jitter <- get_jitter(gp,jitter)
   K <- eval_cf(gp$cf, x, x) + jitter*diag(n)
   gp$x <- x
   gp$K <- K
   gp$K_chol <- t(chol(K)) # lower triangular
   data <- c(list(n=n,K=K,y=y), get_standata(gp$lik, trials=trials))
   gp$fit <- rstan::sampling(gp$lik$stanmodel, data=data, ...)
-  gp$fsample <- t(extract(gp$fit)$f)
+  gp$fsample <- t(rstan::extract(gp$fit)$f)
   gp
 }
 
@@ -260,7 +262,7 @@ gp_optim <- function(gp, x,y, method='Nelder-Mead', tol=1e-3, verbose=T, ...) {
 #' @param var Whether to compute the predictive variances along with predictive mean
 #' @param draws Number of draws to generate from the predictive distribution for the latent values. 
 #' @param transform Whether to transform the draws of latent values to the same scale as the target y.
-#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
+#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4 for Gaussian and 1e-2 for other likelihoods.
 #'
 #'
 #' @return If draws is given (sampling from the predictive distribution), then returns an N-by-draws
@@ -292,7 +294,7 @@ gp_optim <- function(gp, x,y, method='Nelder-Mead', tol=1e-3, verbose=T, ...) {
 #'
 #'
 #' @export
-gp_pred <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=1e-3) {
+gp_pred <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
   
   if (!is_fitted(gp, 'sampling')) {
     # predictions based on analytical approximation
@@ -307,7 +309,7 @@ gp_pred <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=1e-3) {
 }
 
 
-gp_pred_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=1e-3) {
+gp_pred_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
   
   # compute the latent mean first
   K_chol <- gp$K_chol
@@ -316,6 +318,7 @@ gp_pred_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=1e-3
   pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, gp$fmean))
   pred_mean <- as.vector(pred_mean)
   nt <- length(pred_mean)
+  jitter <- get_jitter(gp,jitter)
   
   if (var == T || !is.null(draws)) {
     # covariance of the latent function
@@ -336,10 +339,11 @@ gp_pred_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=1e-3
   return(pred_mean)
 }
 
-gp_pred_sampling <- function(gp, xt, draws=NULL, transform=T, jitter=1e-3) {
+gp_pred_sampling <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
   
   draws <- NCOL(gp$fsample)
   nt <- NROW(xt)
+  jitter <- get_jitter(gp,jitter)
   Kt <- eval_cf(gp$cf, xt, gp$x)
   Ktt <- eval_cf(gp$cf, xt, xt)
   K_chol <- gp$K_chol

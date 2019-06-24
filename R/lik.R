@@ -123,3 +123,14 @@ get_response.lik_binomial <- function(object, f, ...) {
   else
     stop('Unknown link: ', object$links)
 }
+
+
+
+# function for determining the default amount of jitter on the covarince diagonal
+get_jitter <- function(gp, jitter) {
+  if (!is.null(jitter))
+    return(jitter)
+  if (class(gp$lik) == 'lik_gaussian')
+    return(1e-4)
+  return(1e-2)
+}

@@ -6,7 +6,7 @@
 \alias{lik_binomial}
 \title{Initialize likelihood}
 \usage{
-lik_gaussian(sigma = 1)
+lik_gaussian(sigma = 0.5)
 
 lik_binomial(link = "logit")
 }
