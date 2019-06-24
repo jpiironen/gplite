@@ -37,10 +37,10 @@ NULL
 
 #' @rdname lik
 #' @export
-lik_gaussian <- function(sigma=1.0) {
+lik_gaussian <- function(sigma=0.5) {
   lik <- list()
   lik$sigma <- sigma
-  lik$stanmodel <- stanmodels$gaussian
+  lik$stanmodel <- stanmodels$gp_gaussian
   class(lik) <- 'lik_gaussian'
   lik
 }
@@ -51,9 +51,9 @@ lik_binomial <- function(link='logit') {
   lik <- list()
   lik$link <- link
   if (link == 'probit')
-    lik$stanmodel <- stanmodels$binomial_probit
+    lik$stanmodel <- stanmodels$gp_binomial_probit
   else
-    lik$stanmodel <- stanmodels$binomial_logit
+    lik$stanmodel <- stanmodels$gp_binomial_logit
   class(lik) <- 'lik_binomial'
   lik
 }
@@ -63,7 +63,9 @@ lik_binomial <- function(link='logit') {
 # get_param functions
 
 get_param.lik_gaussian <- function(object, ...) {
-  log(object$sigma)
+  param <- log(object$sigma)
+  names(param) <- c('lik_gaussian.sigma')
+  param
 }
 
 get_param.lik_binomial <- function(object, ...) {

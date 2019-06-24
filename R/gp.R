@@ -48,6 +48,37 @@ gp_init <- function(cfs=gpcf_sexp(), lik=lik_gaussian()) {
 }
 
 
+#' Energy of a GP model
+#'
+#' Returns the energy (negative log marginal likelihood) of a fitted GP model with the current hyperparameters. The result is exact for the Gaussian likelihood and based on Laplace approximation for other cases.
+#' 
+#' @param gp The fitted GP model.
+#' 
+#' @return The energy value (negative log marginal likelihood).
+#' 
+#' @section References:
+#' 
+#' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
+#'
+#' @examples
+#' \donttest{
+#' # Basic usage (single covariance function)
+#' cf <- gpcf_sexp()
+#' lik <- lik_binomial()
+#' gp <- gp_init(cf, lik)
+#' e <- gp_energy(gp)
+#' 
+#' }
+#'
+
+#' @export
+gp_energy <- function(gp) {
+  if (!is_fitted(gp, type='analytic'))
+    stop('The GP must be fitted. Call gp_fit first.')
+  -gp$log_evidence
+}
+
+#' @export
 get_param.gp <- function(object, ...) {
   param <- c()
   # covariance parameters
@@ -58,6 +89,7 @@ get_param.gp <- function(object, ...) {
   param
 }
 
+#' @export
 set_param.gp <- function(object, param, ...) {
   # covariance parameters
   j <- 1
@@ -77,6 +109,7 @@ is_fitted.gp <- function(object, type, ...) {
   else if (type=='sampling')
     ifelse(is.null(object$fsample), F, T)
 }
+
 
 
 

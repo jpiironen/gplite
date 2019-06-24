@@ -67,11 +67,15 @@ gpcf_sexp <- function(ind=NULL, lscale=0.5, magn=1.0) {
 # get_param functions
 
 get_param.cf_const <- function(object, ...) {
-  log(object$magn)
+  param <- log(object$magn)
+  names(param) <- 'cf_const.magn'
+  param
 }
 
 get_param.cf_sexp <- function(object, ...) {
-  log(c(object$lscale, object$magn))
+  param <- log(c(object$lscale, object$magn))
+  names(param) <- c('cf_sexp.lscale','cf_sexp.magn')
+  param
 }
 
 

@@ -1,10 +1,12 @@
 
 
+#' @export
 get_param <- function (object, ...) {
   UseMethod("get_param", object)
 }
 
-set_param <- function (object, ...) {
+#' @export
+set_param <- function (object, param, ...) {
   UseMethod("set_param", object)
 }
 
