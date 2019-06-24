@@ -7,9 +7,9 @@
 gp_init(cfs = gpcf_sexp(), lik = lik_gaussian())
 }
 \arguments{
-\item{lik}{Likelihood (observation model). See \code{\link{lik}}.}
+\item{cfs}{The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.}
 
-\item{cf}{The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.}
+\item{lik}{Likelihood (observation model). See \code{\link{lik}}.}
 }
 \value{
 A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.

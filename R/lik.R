@@ -117,7 +117,7 @@ get_response.lik_gaussian <- function(object, f, ...) {
 
 get_response.lik_binomial <- function(object, f, ...) {
   if (object$link == 'probit')
-    return(pnorm(f))
+    return(stats::pnorm(f))
   else if (object$link == 'logit')
     return(1/(1+exp(-f)))
   else

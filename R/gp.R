@@ -16,7 +16,7 @@
 #'
 #' Initializes a GP model with given covariance function(s) and likelihood. The model can then be fitted using \code{\link{gp_fit}} or \code{\link{gp_sample}}. For hyperparameter optimization, see \code{\link{gp_optim}}
 #' 
-#' @param cf The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.
+#' @param cfs The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.
 #' @param lik Likelihood (observation model). See \code{\link{lik}}.
 #' 
 #' @return A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
@@ -232,7 +232,7 @@ gp_optim <- function(gp, x,y, method='Nelder-Mead', tol=1e-3, verbose=T, ...) {
     -gp$log_evidence
   }
   param0 <- get_param(gp)
-  res <- optim(param0, energy, method=method, control = list(reltol=tol))
+  res <- stats::optim(param0, energy, method=method, control = list(reltol=tol))
   param <- res$par
   gp <- set_param(gp, param)
   gp <- gp_fit(gp,x,y, ...)
@@ -330,7 +330,7 @@ gp_pred_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL
       return(list(mean=pred_mean, var=diag(pred_cov)))
     else {
       # sample from the predictive distribution
-      sample <- t(chol(pred_cov)) %*% matrix(rnorm(nt*draws), nrow=nt) + pred_mean
+      sample <- t(chol(pred_cov)) %*% matrix(stats::rnorm(nt*draws), nrow=nt) + pred_mean
       if (transform)
         sample <- get_response(gp$lik, sample)
       return(sample)
@@ -350,7 +350,7 @@ gp_pred_sampling <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
   aux <- solve(K_chol, t(Kt))
   pred_cov <- Ktt - t(aux) %*% aux + jitter*diag(nt)
   pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, gp$fsample))
-  sample <- t(chol(pred_cov)) %*% matrix(rnorm(nt*draws), nrow=nt) + pred_mean
+  sample <- t(chol(pred_cov)) %*% matrix(stats::rnorm(nt*draws), nrow=nt) + pred_mean
   if (transform)
     sample <- get_response(gp$lik, sample)
   return(sample)
