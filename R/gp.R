@@ -2,13 +2,6 @@
 # main gp functions
 
 
-# TODO: 
-# - make gp_pred to throw error if the model is not fitted yet.
-# - add documentation
-# - gp could have two fields: fit_a and fit_s indicating both analytical and sampling based fit
-#    * need to give gp_pred some indication of which approach we want to use when making predictions?
-# - add function like gp_evidence(gp, param=NULL) which evaluates the log marginal likelihood
-# at the given hyperparameter values, or at the current values if no new values are given
 
 
 

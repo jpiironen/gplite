@@ -23,11 +23,13 @@
 #'
 NULL
 
+#' @rdname param
 #' @export
 get_param <- function (object, ...) {
   UseMethod("get_param", object)
 }
 
+#' @rdname param
 #' @export
 set_param <- function (object, param, ...) {
   UseMethod("set_param", object)

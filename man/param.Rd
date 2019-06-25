@@ -2,11 +2,18 @@
 % Please edit documentation in R/dispatchers.R
 \name{param}
 \alias{param}
+\alias{get_param}
+\alias{set_param}
 \title{Get or set GP model parameters}
-\arguments{
-\item{gp}{The GP model.}
+\usage{
+get_param(object, ...)
 
+set_param(object, param, ...)
+}
+\arguments{
 \item{param}{The parameters to be set. Call first \code{get_param} to see the order in which the parameters should be given for a particular model. Notice that all positive parameters should be given in a log-scale.}
+
+\item{gp}{The GP model.}
 }
 \value{
 \code{get_param} returns the current hyperparameters and \code{set_param} the GP model structure with the new parameter values.

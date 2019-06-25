@@ -1,8 +1,7 @@
 
 # implementations for the observation models (likelihoods)
 
-# TODO: ADD DOCUMENTATION
-# TODO: add beta binomial likelihood
+
 
 #' Initialize likelihood
 #'

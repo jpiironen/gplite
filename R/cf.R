@@ -1,7 +1,6 @@
 
 # implementations for the covariance functions
 
-# TODO: add matern kernel
 
 
 
