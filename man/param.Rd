@@ -11,9 +11,11 @@ get_param(object, ...)
 set_param(object, param, ...)
 }
 \arguments{
-\item{param}{The parameters to be set. Call first \code{get_param} to see the order in which the parameters should be given for a particular model. Notice that all positive parameters should be given in a log-scale.}
+\item{object}{The model object.}
 
-\item{gp}{The GP model.}
+\item{...}{Ignored currently.}
+
+\item{param}{The parameters to be set. Call first \code{get_param} to see the order in which the parameters should be given for a particular model. Notice that all positive parameters should be given in a log-scale.}
 }
 \value{
 \code{get_param} returns the current hyperparameters and \code{set_param} the GP model structure with the new parameter values.
@@ -24,7 +26,7 @@ set_param(object, param, ...)
 \examples{
 \donttest{
 # Basic usage 
-gp <- gp_init()
+gp <- gp_init(cf=gpcf_sexp(), lik=lik_gaussian())
 print(get_param(gp)) # print out to see the parameter ordering
 gp <- set_param(gp, log(c(0.1,0.8,0.3))) # set some new values
 print(get_param(gp)) # check the result
