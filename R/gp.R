@@ -216,7 +216,7 @@ gp_sample <- function(gp, x,y, trials=NULL, jitter=NULL, ...) {
 #'
 #' 
 #' @export
-gp_optim <- function(gp, x,y, method='Nelder-Mead', tol=1e-3, verbose=T, ...) {
+gp_optim <- function(gp, x,y, method='Nelder-Mead', tol=1e-4, verbose=T, ...) {
   energy <- function(param) {
     gp <- set_param(gp, param)
     gp <- gp_fit(gp,x,y, ...)

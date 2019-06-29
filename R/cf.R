@@ -106,31 +106,23 @@ eval_cf.list <- function(object, x1, x2, ...) {
   K
 }
 
-eval_cf.cf_sexp <- function(object, x1, x2, ...) {
-  x1 <- as.matrix(x1)
-  x2 <- as.matrix(x2)
-  n1 <- NROW(x1)
-  n2 <- NROW(x2)
-  K <- matrix(nrow=n1,ncol=n2)
-  lscale <- object$lscale
-  magn <- object$magn
-  ind <- object$ind
-  if (is.null(ind))
-    ind <- c(1:NCOL(x1))
-  
-  for (i in 1:n1) {
-    for (j in 1:n2) {
-      K[i,j] <- magn^2*exp(-sum((x1[i,]-x2[j,])^2/lscale^2))
-    }
-  }
-  return(K)
-}
-
 eval_cf.cf_const <- function(object, x1, x2, ...) {
   x1 <- as.matrix(x1)
   x2 <- as.matrix(x2)
   n1 <- NROW(x1)
   n2 <- NROW(x2)
   K <- matrix(object$magn^2, nrow=n1,ncol=n2)
+  return(K)
+}
+
+eval_cf.cf_sexp <- function(object, x1, x2, ...) {
+  x1 <- as.matrix(x1)
+  x2 <- as.matrix(x2)
+  
+  # TODO: take into account the indices
+  #if (is.null(ind))
+  #  ind <- c(1:NCOL(x1))
+  
+  K <- cf_sexp_c(x1, x2, object$lscale^2, object$magn^2)
   return(K)
 }

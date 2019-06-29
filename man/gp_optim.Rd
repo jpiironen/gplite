@@ -4,7 +4,7 @@
 \alias{gp_optim}
 \title{Optimize hyperparameters of a GP model}
 \usage{
-gp_optim(gp, x, y, method = "Nelder-Mead", tol = 0.001, verbose = T,
+gp_optim(gp, x, y, method = "Nelder-Mead", tol = 1e-04, verbose = T,
   ...)
 }
 \arguments{
