@@ -51,6 +51,16 @@ gpcf_const <- function(magn=1.0) {
 
 #' @rdname cf
 #' @export
+gpcf_lin <- function(ind=NULL, magn=1.0) {
+  cf <- list()
+  cf$ind <- ind
+  cf$magn <- magn
+  class(cf) <- 'cf_lin'
+  cf
+}
+
+#' @rdname cf
+#' @export
 gpcf_sexp <- function(ind=NULL, lscale=0.5, magn=1.0) {
   cf <- list()
   cf$ind <- ind
@@ -60,6 +70,27 @@ gpcf_sexp <- function(ind=NULL, lscale=0.5, magn=1.0) {
   cf
 }
 
+#' @rdname cf
+#' @export
+gpcf_matern32 <- function(ind=NULL, lscale=0.5, magn=1.0) {
+  cf <- list()
+  cf$ind <- ind
+  cf$lscale <- lscale
+  cf$magn <- magn
+  class(cf) <- 'cf_matern32'
+  cf
+}
+
+#' @rdname cf
+#' @export
+gpcf_matern52 <- function(ind=NULL, lscale=0.5, magn=1.0) {
+  cf <- list()
+  cf$ind <- ind
+  cf$lscale <- lscale
+  cf$magn <- magn
+  class(cf) <- 'cf_matern52'
+  cf
+}
 
 
 
@@ -71,9 +102,27 @@ get_param.cf_const <- function(object, ...) {
   param
 }
 
+get_param.cf_lin <- function(object, ...) {
+  param <- log(object$magn)
+  names(param) <- 'cf_lin.magn'
+  param
+}
+
 get_param.cf_sexp <- function(object, ...) {
   param <- log(c(object$lscale, object$magn))
   names(param) <- c('cf_sexp.lscale','cf_sexp.magn')
+  param
+}
+
+get_param.cf_matern32 <- function(object, ...) {
+  param <- log(c(object$lscale, object$magn))
+  names(param) <- c('cf_matern32.lscale','cf_matern32.magn')
+  param
+}
+
+get_param.cf_matern52 <- function(object, ...) {
+  param <- log(c(object$lscale, object$magn))
+  names(param) <- c('cf_matern52.lscale','cf_matern52.magn')
   param
 }
 
@@ -87,7 +136,24 @@ set_param.cf_const <- function(object, param, ...) {
   object
 }
 
+set_param.cf_lin <- function(object, param, ...) {
+  object$magn <- exp(param[1])
+  object
+}
+
 set_param.cf_sexp <- function(object, param, ...) {
+  object$lscale <- exp(param[1])
+  object$magn <- exp(param[2])
+  object
+}
+
+set_param.cf_matern32 <- function(object, param, ...) {
+  object$lscale <- exp(param[1])
+  object$magn <- exp(param[2])
+  object
+}
+
+set_param.cf_matern52 <- function(object, param, ...) {
   object$lscale <- exp(param[1])
   object$magn <- exp(param[2])
   object
@@ -107,22 +173,48 @@ eval_cf.list <- function(object, x1, x2, ...) {
 }
 
 eval_cf.cf_const <- function(object, x1, x2, ...) {
-  x1 <- as.matrix(x1)
-  x2 <- as.matrix(x2)
+  x1 <- prepare_inputmat(x1)
+  x2 <- prepare_inputmat(x2)
   n1 <- NROW(x1)
   n2 <- NROW(x2)
   K <- matrix(object$magn^2, nrow=n1,ncol=n2)
   return(K)
 }
 
-eval_cf.cf_sexp <- function(object, x1, x2, ...) {
-  x1 <- as.matrix(x1)
-  x2 <- as.matrix(x2)
-  
-  # TODO: take into account the indices
-  #if (is.null(ind))
-  #  ind <- c(1:NCOL(x1))
-  
-  K <- cf_sexp_c(x1, x2, object$lscale^2, object$magn^2)
+eval_cf.cf_lin <- function(object, x1, x2, ...) {
+  x1 <- prepare_inputmat(x1, object$ind)
+  x2 <- prepare_inputmat(x2, object$ind)
+  K <- object$magn^2* x1 %*% t(x2)
   return(K)
 }
+
+eval_cf.cf_sexp <- function(object, x1, x2, ...) {
+  x1 <- prepare_inputmat(x1, object$ind)
+  x2 <- prepare_inputmat(x2, object$ind)
+  K <- cf_sexp_c(x1, x2, object$lscale, object$magn)
+  return(K)
+}
+
+eval_cf.cf_matern32 <- function(object, x1, x2, ...) {
+  x1 <- prepare_inputmat(x1, object$ind)
+  x2 <- prepare_inputmat(x2, object$ind)
+  K <- cf_matern32_c(x1, x2, object$lscale, object$magn)
+  return(K)
+}
+
+eval_cf.cf_matern52 <- function(object, x1, x2, ...) {
+  x1 <- prepare_inputmat(x1, object$ind)
+  x2 <- prepare_inputmat(x2, object$ind)
+  K <- cf_matern52_c(x1, x2, object$lscale, object$magn)
+  return(K)
+}
+
+
+prepare_inputmat <- function(x, ind=NULL) {
+  if (is.null(ind))
+    return(as.matrix(x))
+  else
+    return(as.matrix(x)[,ind,drop=F])
+}
+
+
