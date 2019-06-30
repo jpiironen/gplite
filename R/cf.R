@@ -61,7 +61,7 @@ gpcf_lin <- function(ind=NULL, magn=1.0) {
 
 #' @rdname cf
 #' @export
-gpcf_sexp <- function(ind=NULL, lscale=0.5, magn=1.0) {
+gpcf_sexp <- function(ind=NULL, lscale=0.1, magn=1.0) {
   cf <- list()
   cf$ind <- ind
   cf$lscale <- lscale
@@ -72,7 +72,7 @@ gpcf_sexp <- function(ind=NULL, lscale=0.5, magn=1.0) {
 
 #' @rdname cf
 #' @export
-gpcf_matern32 <- function(ind=NULL, lscale=0.5, magn=1.0) {
+gpcf_matern32 <- function(ind=NULL, lscale=0.1, magn=1.0) {
   cf <- list()
   cf$ind <- ind
   cf$lscale <- lscale
@@ -83,7 +83,7 @@ gpcf_matern32 <- function(ind=NULL, lscale=0.5, magn=1.0) {
 
 #' @rdname cf
 #' @export
-gpcf_matern52 <- function(ind=NULL, lscale=0.5, magn=1.0) {
+gpcf_matern52 <- function(ind=NULL, lscale=0.1, magn=1.0) {
   cf <- list()
   cf$ind <- ind
   cf$lscale <- lscale
@@ -216,5 +216,67 @@ prepare_inputmat <- function(x, ind=NULL) {
   else
     return(as.matrix(x)[,ind,drop=F])
 }
+
+
+
+# rff_cf functions
+
+rff_featmap.list <- function(object, ...) {
+  fmaps <- list()
+  for (k in seq_along(object))
+    fmaps[[k]] <- rff_featmap(object[[k]], ...)
+  
+  featuremap <- function(x) {
+    z <- c()
+    for (k in seq_along(fmaps))
+      z <- cbind(z,fmaps[[k]](x))
+    return(z)
+  }
+  return(featuremap)
+}
+
+rff_featmap.cf_const <- function(object, ...) {
+  featuremap <- function(x) {
+    n <- NROW(x)
+    object$magn*rep(1,n)
+  }
+  return(featuremap)
+}
+
+rff_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+  # set random seed but ensure the old RNG state is restored on exit
+  rng_state_old <- .Random.seed
+  on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  set.seed(seed)
+  
+  if (is.null(object$ind))
+    object$ind <- c(1:num_inputs)
+  else
+    # override the number of inputs, because using only a subset of inputs
+    num_inputs <- length(object$ind)
+  if (num_feat %% 2 == 1)
+    stop('number of features must be an even number.')
+  
+  m <- num_feat/2
+  scale <- 1/(2*pi*object$lscale) # scale of the spectral density
+  w <- matrix(rnorm(m*num_inputs), nrow=num_inputs, ncol=m)*scale # frequences
+  
+  featuremap <- function(x) {
+    x <- as.matrix(x)
+    h <- x[,object$ind,drop=F] %*% w
+    object$magn/sqrt(m)*cbind(cos(h),sin(h))
+  }
+  return(featuremap)
+}
+
+# TODO: implement other stationary covariance functions
+
+
+
+
+
+
+
+
 
 

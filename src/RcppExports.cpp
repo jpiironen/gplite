@@ -2,6 +2,7 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include <RcppArmadillo.h>
+#include <RcppEigen.h>
 #include <Rcpp.h>
 
 using namespace Rcpp;
@@ -52,6 +53,9 @@ END_RCPP
 RcppExport SEXP _rcpp_module_boot_stan_fit4gp_binomial_logit_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4gp_binomial_probit_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4gp_gaussian_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4gpa_binomial_logit_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4gpa_binomial_probit_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4gpa_gaussian_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_gplite_cf_sexp_c", (DL_FUNC) &_gplite_cf_sexp_c, 4},
@@ -60,6 +64,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4gp_binomial_logit_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gp_binomial_logit_mod, 0},
     {"_rcpp_module_boot_stan_fit4gp_binomial_probit_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gp_binomial_probit_mod, 0},
     {"_rcpp_module_boot_stan_fit4gp_gaussian_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gp_gaussian_mod, 0},
+    {"_rcpp_module_boot_stan_fit4gpa_binomial_logit_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gpa_binomial_logit_mod, 0},
+    {"_rcpp_module_boot_stan_fit4gpa_binomial_probit_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gpa_binomial_probit_mod, 0},
+    {"_rcpp_module_boot_stan_fit4gpa_gaussian_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gpa_gaussian_mod, 0},
     {NULL, NULL, 0}
 };
 

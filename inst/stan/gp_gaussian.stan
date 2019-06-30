@@ -4,7 +4,7 @@ data {
   int<lower=0> n;
   matrix[n,n] K; 
   vector[n] y;
-  real<lower=0> sigma; // noise std
+  real<lower=0> sigma;
 }
 
 transformed data {

@@ -39,7 +39,7 @@ NULL
 lik_gaussian <- function(sigma=0.5) {
   lik <- list()
   lik$sigma <- sigma
-  lik$stanmodel <- stanmodels$gp_gaussian
+  #lik$stanmodel <- stanmodels$gp_gaussian
   class(lik) <- 'lik_gaussian'
   lik
 }
@@ -49,10 +49,10 @@ lik_gaussian <- function(sigma=0.5) {
 lik_binomial <- function(link='logit') {
   lik <- list()
   lik$link <- link
-  if (link == 'probit')
-    lik$stanmodel <- stanmodels$gp_binomial_probit
-  else
-    lik$stanmodel <- stanmodels$gp_binomial_logit
+  #if (link == 'probit')
+  #  lik$stanmodel <- stanmodels$gp_binomial_probit
+  #else
+  #  lik$stanmodel <- stanmodels$gp_binomial_logit
   class(lik) <- 'lik_binomial'
   lik
 }
@@ -85,6 +85,32 @@ set_param.lik_binomial <- function(object, param, ...) {
 }
 
 
+
+# get_stanmodel functions
+
+get_stanmodel.lik_gaussian <- function(object, method, ...) {
+  if (method == 'full') 
+    return(stanmodels$gp_gaussian)
+  else if (method == 'rff') 
+    return(stanmodels$gpa_gaussian)
+  else
+    stop('Got an unknown method: ', method)
+}
+
+get_stanmodel.lik_binomial <- function(object, method, ...) {
+  if (method == 'full') {
+    if (object$link == 'logit')
+      return(stanmodels$gp_binomial_logit)
+    else if (object$link == 'probit')
+      return(stanmodels$gp_binomial_probit)
+  } else if (method == 'rff') {
+    if (object$link == 'logit')
+      return(stanmodels$gpa_binomial_logit)
+    else if (object$link == 'probit')
+      return(stanmodels$gpa_binomial_probit)
+  } else
+    stop('Got an unknown method: ', method)
+}
 
 
 # get_standata functions

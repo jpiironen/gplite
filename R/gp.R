@@ -30,12 +30,16 @@
 #'
 
 #' @export
-gp_init <- function(cfs=gpcf_sexp(), lik=lik_gaussian()) {
+gp_init <- function(cfs=gpcf_sexp(), lik=lik_gaussian(), method='full', num_basis=100,
+                    rff_seed=12345) {
   gp <- list()
   if (class(cfs) != 'list')
     cfs <- list(cfs)
   gp$cfs <- cfs
   gp$lik <- lik
+  gp$method <- method
+  gp$num_basis <- num_basis
+  gp$rff_seed <- rff_seed
   class(gp) <- 'gp'
   gp
 }
@@ -98,9 +102,9 @@ set_param.gp <- function(object, param, ...) {
 
 is_fitted.gp <- function(object, type, ...) {
   if (type=='analytic')
-    ifelse(is.null(object$fmean), F, T)
+    ifelse(is.null(object$fmean) && is.null(object$wmean), F, T)
   else if (type=='sampling')
-    ifelse(is.null(object$fsample), F, T)
+    ifelse(is.null(object$fsample) && is.null(object$wsample), F, T)
 }
 
 
@@ -149,36 +153,59 @@ NULL
 #' @rdname gp_fit
 #' @export
 gp_fit <- function(gp, x,y, trials=NULL, jitter=NULL, ...) {
-  x <- as.matrix(x)
-  n <- length(y)
-  jitter <- get_jitter(gp,jitter)
-  K <- eval_cf(gp$cf, x, x) + jitter*diag(n)
-  gp$x <- x
-  gp$K <- K
-  gp$K_chol <- t(chol(K)) # lower triangular
-  data <- c(list(n=n,K=K,y=y), get_standata(gp$lik, trials=trials))
-  gp$fit <- rstan::optimizing(gp$lik$stanmodel, data=data, hessian=T, as_vector=F, init=0, ...)
-  gp$fmean <- gp$fit$par$f
-  gp$fprec_chol <- t(chol(-as.matrix(gp$fit$hessian))) # cholesky of precision
-  gp$log_evidence <- gp$fit$value + 0.5*n*log(2*pi) - sum(log(diag(gp$fprec_chol)))
-  return(gp)
+  if (gp$method == 'full') {
+    x <- as.matrix(x)
+    n <- length(y)
+    jitter <- get_jitter(gp,jitter)
+    K <- eval_cf(gp$cf, x, x) + jitter*diag(n)
+    gp$x <- x
+    gp$K <- K
+    gp$K_chol <- t(chol(K)) # lower triangular
+    data <- c(list(n=n,K=K,y=y), get_standata(gp$lik, trials=trials))
+    model <- get_stanmodel(gp$lik, gp$method)
+    gp$fit <- rstan::optimizing(model, data=data, hessian=T, as_vector=F, init=0, ...)
+    gp$fmean <- gp$fit$par$f
+    gp$fprec_chol <- t(chol(-as.matrix(gp$fit$hessian))) # cholesky of precision
+    gp$log_evidence <- gp$fit$value + 0.5*n*log(2*pi) - sum(log(diag(gp$fprec_chol)))
+    return(gp)
+  } else if (gp$method == 'rff') {
+    num_inputs <- NCOL(x)
+    gp$featuremap <- rff_featmap(gp$cfs, num_inputs, gp$num_basis, seed=gp$rff_seed)
+    z <- gp$featuremap(x)
+    n <- length(y)
+    data <- c(list(n=n,m=ncol(z),Z=z,y=y), get_standata(gp$lik, trials=trials))
+    model <- get_stanmodel(gp$lik, gp$method)
+    gp$fit <- rstan::optimizing(model, data=data, hessian=T, as_vector=F, init=0, ...)
+    gp$wmean <- gp$fit$par$w
+    gp$wprec_chol <- t(chol(-as.matrix(gp$fit$hessian))) # cholesky of precision
+    gp$log_evidence <- gp$fit$value + 0.5*n*log(2*pi) - sum(log(diag(gp$wprec_chol)))
+    return(gp)
+  } else
+    stop('Unknown method: ', gp$method)
 }
 
 
 #' @rdname gp_fit
 #' @export
 gp_sample <- function(gp, x,y, trials=NULL, jitter=NULL, ...) {
-  x <- as.matrix(x)
-  n <- length(y)
-  jitter <- get_jitter(gp,jitter)
-  K <- eval_cf(gp$cf, x, x) + jitter*diag(n)
-  gp$x <- x
-  gp$K <- K
-  gp$K_chol <- t(chol(K)) # lower triangular
-  data <- c(list(n=n,K=K,y=y), get_standata(gp$lik, trials=trials))
-  gp$fit <- rstan::sampling(gp$lik$stanmodel, data=data, ...)
-  gp$fsample <- t(rstan::extract(gp$fit)$f)
-  gp
+  if (gp$method == 'full') {
+    x <- as.matrix(x)
+    n <- length(y)
+    jitter <- get_jitter(gp,jitter)
+    K <- eval_cf(gp$cf, x, x) + jitter*diag(n)
+    gp$x <- x
+    gp$K <- K
+    gp$K_chol <- t(chol(K)) # lower triangular
+    data <- c(list(n=n,K=K,y=y), get_standata(gp$lik, trials=trials))
+    gp$fit <- rstan::sampling(gp$lik$stanmodel, data=data, ...)
+    gp$fsample <- t(rstan::extract(gp$fit)$f)
+    return(gp)
+  } else if (gp$method == 'rff') {
+    stop('not implemented yet.')
+  } else {
+    stop('Unknown method: ', gp$method)
+  }
+  
 }
 
 #' Optimize hyperparameters of a GP model
@@ -222,7 +249,7 @@ gp_optim <- function(gp, x,y, method='Nelder-Mead', tol=1e-4, verbose=T, ...) {
     gp <- gp_fit(gp,x,y, ...)
     if (verbose)
       print(paste0('Energy: ', -gp$log_evidence))
-    -gp$log_evidence
+    gp_energy(gp)
   }
   param0 <- get_param(gp)
   res <- stats::optim(param0, energy, method=method, control = list(reltol=tol))
@@ -293,16 +320,28 @@ gp_pred <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
     # predictions based on analytical approximation
     if (!is_fitted(gp, 'analytic')) 
       stop('The given model appears not to be fitted yet.')
-    pred <- gp_pred_analytic(gp, xt, var=var, draws=draws, transform=transform, jitter=jitter)
+    if (gp$method == 'full')
+      pred <- gp_pred_full_analytic(gp, xt, var=var, draws=draws, 
+                                    transform=transform, jitter=jitter)
+    else if (gp$method == 'rff')
+      pred <- gp_pred_linearized_analytic(gp, xt, var=var, draws=draws,
+                                          transform=transform, jitter=jitter)
+    else
+      stop('Unknown method: ', gp$method)
   } else {
     # prediction based on (markov chain) monte carlo draws from the posterior
-    pred <- gp_pred_sampling(gp, xt, draws=draws, transform=transform, jitter=jitter)
+    if (gp$method == 'full')
+      pred <- gp_pred_full_sampling(gp, xt, draws=draws, transform=transform, jitter=jitter)
+    else if (gp$method == 'rff')
+      pred <- gp_pred_linearized_sampling(gp, xt, draws=draws, transform=transform, jitter=jitter)
+    else
+      stop('Unknown method: ', gp$method)
   }
   return(pred)
 }
 
 
-gp_pred_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
+gp_pred_full_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
   
   # compute the latent mean first
   K_chol <- gp$K_chol
@@ -310,11 +349,11 @@ gp_pred_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL
   Ktt <- eval_cf(gp$cf, xt, xt)
   pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, gp$fmean))
   pred_mean <- as.vector(pred_mean)
-  nt <- length(pred_mean)
-  jitter <- get_jitter(gp,jitter)
   
   if (var == T || !is.null(draws)) {
     # covariance of the latent function
+    nt <- length(pred_mean)
+    jitter <- get_jitter(gp,jitter)
     aux1 <- solve(K_chol, t(Kt))
     aux2 <- solve(gp$fprec_chol, solve(t(K_chol), solve(K_chol, t(Kt))))
     pred_cov <- Ktt - t(aux1) %*% aux1 + t(aux2) %*% aux2 + jitter*diag(nt)
@@ -332,7 +371,7 @@ gp_pred_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL
   return(pred_mean)
 }
 
-gp_pred_sampling <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
+gp_pred_full_sampling <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
   
   draws <- NCOL(gp$fsample)
   nt <- NROW(xt)
@@ -349,7 +388,33 @@ gp_pred_sampling <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
   return(sample)
 }
 
+gp_pred_linearized_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
+  
+  zt <- gp$featuremap(xt)
+  pred_mean <- as.vector(zt %*% gp$wmean)
+  
+  if (var == T || !is.null(draws)) {
+    nt <- length(pred_mean)
+    jitter <- get_jitter(gp,jitter) 
+    aux <- solve(gp$wprec_chol, t(zt))
+    pred_cov <- t(aux) %*% aux + jitter*diag(nt)
+    
+    if (is.null(draws))
+      return(list(mean=pred_mean, var=diag(pred_cov)))
+    else {
+      # sample from the predictive distribution
+      sample <- t(chol(pred_cov)) %*% matrix(stats::rnorm(nt*draws), nrow=nt) + pred_mean
+      if (transform)
+        sample <- get_response(gp$lik, sample)
+      return(sample)
+    }
+  }
+  return(pred_mean)
+}
 
+gp_pred_linearized_sampling <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
+  stop('Not implemented yet.')
+}
 
 
 

@@ -17,6 +17,7 @@ LinkingTo:
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
     RcppArmadillo,
+    RcppEigen,
     rstan (>= 2.18.1),
     StanHeaders (>= 2.18.0)
 License: GPL-3

@@ -36,6 +36,10 @@ set_param <- function (object, param, ...) {
   UseMethod("set_param", object)
 }
 
+get_stanmodel <- function(object, ...) {
+  UseMethod("get_stanmodel", object)
+}
+
 get_standata <- function(object, ...) {
   UseMethod("get_standata", object)
 }
@@ -48,6 +52,13 @@ eval_cf <- function (object, ...) {
   UseMethod("eval_cf", object)
 }
 
+rff_featmap <- function (object, ...) {
+  UseMethod("rff_featmap", object)
+}
+
 is_fitted <- function(object, type, ...) {
   UseMethod("is_fitted", object)
 }
+
+
+
