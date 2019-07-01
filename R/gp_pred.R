@@ -8,7 +8,7 @@
 #' @param var Whether to compute the predictive variances along with predictive mean
 #' @param draws Number of draws to generate from the predictive distribution for the latent values. 
 #' @param transform Whether to transform the draws of latent values to the same scale as the target y.
-#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4 for Gaussian and 1e-2 for other likelihoods.
+#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4.
 #'
 #'
 #' @return If draws is given (sampling from the predictive distribution), then returns an N-by-draws
