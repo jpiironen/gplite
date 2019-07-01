@@ -2,3 +2,7 @@
 .Rproj.user
 *.Rproj
 .Rhistory
+
+src/*.o
+src/*.so
+src/stanExports*
