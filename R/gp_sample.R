@@ -24,7 +24,7 @@ gp_mcmc_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   gp$x <- x
   gp$K <- K
   gp$K_chol <- t(chol(K)) # lower triangular
-  data <- c(list(n=n,K=K,y=y), get_standata(gp$lik, trials=trials))
+  data <- c(list(n=n,L=gp$K_chol,y=y), get_standata(gp$lik, trials=trials))
   model <- get_stanmodel(gp$lik, gp$method)
   gp$fit <- rstan::sampling(model, data=data, ...)
   gp$fsample <- t(rstan::extract(gp$fit)$f)

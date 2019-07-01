@@ -20,7 +20,7 @@ Can also be a vector of length n if the model has only a single input.}
 \item{trials}{Vecton of length n giving the number of trials for each observation in binomial 
 (and beta binomial) model.}
 
-\item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4 for Gaussian and 1e-2 for other likelihoods.}
+\item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4.}
 
 \item{...}{Further arguments to be passed to \link{rstan}'s function 
 \code{\link[rstan]{optimizing}} (if \code{gp_fit} was called) or 

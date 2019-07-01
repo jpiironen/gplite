@@ -19,7 +19,7 @@ Can also be a vector of length N if the model has only a single input.}
 
 \item{transform}{Whether to transform the draws of latent values to the same scale as the target y.}
 
-\item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4 for Gaussian and 1e-2 for other likelihoods.}
+\item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4.}
 }
 \value{
 If draws is given (sampling from the predictive distribution), then returns an N-by-draws

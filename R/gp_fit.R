@@ -16,7 +16,7 @@
 #' @param y Vector of n output (target) values.
 #' @param trials Vecton of length n giving the number of trials for each observation in binomial 
 #' (and beta binomial) model.
-#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4 for Gaussian and 1e-2 for other likelihoods.
+#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4.
 #' @param ... Further arguments to be passed to \link{rstan}'s function 
 #' \code{\link[rstan]{optimizing}} (if \code{gp_fit} was called) or 
 #' \code{\link[rstan]{sampling}} (if \code{gp_sample} was called).
@@ -65,12 +65,14 @@ gp_laplace_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   gp$x <- x
   gp$K <- K
   gp$K_chol <- t(chol(K)) # lower triangular
-  data <- c(list(n=n,K=K,y=y), get_standata(gp$lik, trials=trials))
+  data <- c(list(n=n,L=gp$K_chol,y=y), get_standata(gp$lik, trials=trials))
   model <- get_stanmodel(gp$lik, gp$method)
   gp$fit <- rstan::optimizing(model, data=data, hessian=T, as_vector=F, init=0, ...)
-  gp$fmean <- gp$fit$par$f
-  gp$fprec_chol <- t(chol(-as.matrix(gp$fit$hessian))) # cholesky of precision
-  gp$log_evidence <- gp$fit$value + 0.5*n*log(2*pi) - sum(log(diag(gp$fprec_chol)))
+  gp$fmean <- gp$fit$par$f # posterior mean for f
+  fw_prec_chol <- t(chol(-as.matrix(gp$fit$hessian))) # cholesky of precision for the whitened f
+  aux <- solve(t(gp$K_chol),fw_prec_chol)
+  gp$fprec_chol <- t(chol(aux %*% t(aux))) # cholesky of precision for f
+  gp$log_evidence <- gp$fit$value + 0.5*n*log(2*pi) - sum(log(diag(fw_prec_chol)))
   return(gp)
 }
 
