@@ -30,7 +30,7 @@ Different likelihoods have the following possible link functions:
 }
 \examples{
 \donttest{
-# Basic usage (single covariance function)
+# Basic usage 
 cf <- gpcf_sexp()
 lik <- lik_binomial()
 gp <- gp_init(cf, lik)

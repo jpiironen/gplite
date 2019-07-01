@@ -5,7 +5,7 @@
 \title{Initialize a GP model}
 \usage{
 gp_init(cfs = gpcf_sexp(), lik = lik_gaussian(), method = "full",
-  num_basis = 100)
+  num_basis = 100, rff_seed = 12345)
 }
 \arguments{
 \item{cfs}{The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.}

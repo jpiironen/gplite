@@ -13,11 +13,11 @@ gpcf_const(magn = 1)
 
 gpcf_lin(ind = NULL, magn = 1)
 
-gpcf_sexp(ind = NULL, lscale = 0.5, magn = 1)
+gpcf_sexp(ind = NULL, lscale = 0.1, magn = 1)
 
-gpcf_matern32(ind = NULL, lscale = 0.5, magn = 1)
+gpcf_matern32(ind = NULL, lscale = 0.1, magn = 1)
 
-gpcf_matern52(ind = NULL, lscale = 0.5, magn = 1)
+gpcf_matern52(ind = NULL, lscale = 0.1, magn = 1)
 }
 \arguments{
 \item{magn}{Initial value for the magnitude hyperparameter (depicts the magnitude of the variation captured by the given covariance function).}
