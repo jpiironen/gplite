@@ -3,21 +3,21 @@
 data {
   int<lower=0> n;
   int<lower=0> trials[n];
-  matrix[n,n] K; 
+  matrix[n,n] L; // cholesky of the covariance matrix (lower triangular) 
   int<lower=0> y[n];
 }
 
-transformed data {
-  vector[n] zeros;
-  zeros = rep_vector(0, n);
+parameters {
+  vector[n] f_white;
 }
 
-parameters {
+transformed parameters {
   vector[n] f;
+  f = L*f_white;
 }
 
 model {
-  target += multi_normal_lpdf(f | zeros, K);
+  target += normal_lpdf(f_white | 0, 1);
   target += binomial_lpmf(y | trials, Phi_approx(f));
 }
   

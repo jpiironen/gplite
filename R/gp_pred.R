@@ -85,10 +85,6 @@ gp_pred_full_mcmc <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
 
 gp_pred_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
   
-  #if (is.null(draws))
-    #draws <- NCOL(gp$wsample)
-  #if (draws > NCOL(gp$wsample))
-    #stop('The fitted model has only ', NCOL(gp$draws), ' draws, so can''t draw more than this.')
   zt <- gp$featuremap(xt)
   sample <- zt %*% gp$wsample
   if (transform)
