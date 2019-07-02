@@ -39,7 +39,6 @@ NULL
 lik_gaussian <- function(sigma=0.5) {
   lik <- list()
   lik$sigma <- sigma
-  #lik$stanmodel <- stanmodels$gp_gaussian
   class(lik) <- 'lik_gaussian'
   lik
 }
@@ -49,10 +48,6 @@ lik_gaussian <- function(sigma=0.5) {
 lik_binomial <- function(link='logit') {
   lik <- list()
   lik$link <- link
-  #if (link == 'probit')
-  #  lik$stanmodel <- stanmodels$gp_binomial_probit
-  #else
-  #  lik$stanmodel <- stanmodels$gp_binomial_logit
   class(lik) <- 'lik_binomial'
   lik
 }
