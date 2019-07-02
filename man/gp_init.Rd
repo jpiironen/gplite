@@ -11,6 +11,17 @@ gp_init(cfs = gpcf_sexp(), lik = lik_gaussian(), method = "full",
 \item{cfs}{The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.}
 
 \item{lik}{Likelihood (observation model). See \code{\link{lik}}.}
+
+\item{method}{Method for approximating the covariance function, can be one of 'full' or 'rff'.
+'full' means that exact covariance function is used, and the inference will be on the n latent
+function values (inference time scales cubicly in n). 'rff' uses random Fourier features for 
+approximating the covariance function, which means the inference scales cubicly in the number of
+approximating basis functions \code{num_basis}.}
+
+\item{num_basis}{Number of basis functions in the covariance approximation for 'rff' and other
+basis function methods.}
+
+\item{rff_seed}{Seed for random Fourier features for reproducible results.}
 }
 \value{
 A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.

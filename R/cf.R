@@ -243,6 +243,10 @@ rff_featmap.cf_const <- function(object, ...) {
   return(featuremap)
 }
 
+rff_featmap.cf_lin <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+  stop('Not implemented yet.')
+}
+
 rff_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   # set random seed but ensure the old RNG state is restored on exit
   rng_state_old <- .Random.seed
@@ -259,7 +263,7 @@ rff_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   
   m <- num_feat/2
   scale <- 1/(2*pi*object$lscale) # scale of the spectral density
-  w <- matrix(rnorm(m*num_inputs), nrow=num_inputs, ncol=m)*scale # frequences
+  w <- matrix(stats::rnorm(m*num_inputs), nrow=num_inputs, ncol=m)*scale # frequences
   
   featuremap <- function(x) {
     x <- as.matrix(x)
@@ -267,6 +271,14 @@ rff_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
     object$magn/sqrt(m)*cbind(cos(h),sin(h))
   }
   return(featuremap)
+}
+
+rff_featmap.cf_matern32 <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+  stop('Not implemented yet.')
+}
+
+rff_featmap.cf_matern52 <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+  stop('Not implemented yet.')
 }
 
 # TODO: implement other stationary covariance functions
