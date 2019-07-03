@@ -7,6 +7,7 @@
 \alias{gpcf_sexp}
 \alias{gpcf_matern32}
 \alias{gpcf_matern52}
+\alias{gpcf_nn}
 \title{Initialize covariance function}
 \usage{
 gpcf_const(magn = 1)
@@ -18,6 +19,8 @@ gpcf_sexp(ind = NULL, lscale = 0.1, magn = 1)
 gpcf_matern32(ind = NULL, lscale = 0.1, magn = 1)
 
 gpcf_matern52(ind = NULL, lscale = 0.1, magn = 1)
+
+gpcf_nn(ind = NULL, sigma0 = 10, sigma = 0.1, magn = 1)
 }
 \arguments{
 \item{magn}{Initial value for the magnitude hyperparameter (depicts the magnitude of the variation captured by the given covariance function).}

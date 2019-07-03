@@ -49,6 +49,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cf_nn_c
+arma::mat cf_nn_c(arma::mat x1, arma::mat x2, double sigma0, double sigma, double magn);
+RcppExport SEXP _gplite_cf_nn_c(SEXP x1SEXP, SEXP x2SEXP, SEXP sigma0SEXP, SEXP sigmaSEXP, SEXP magnSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type x1(x1SEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type x2(x2SEXP);
+    Rcpp::traits::input_parameter< double >::type sigma0(sigma0SEXP);
+    Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< double >::type magn(magnSEXP);
+    rcpp_result_gen = Rcpp::wrap(cf_nn_c(x1, x2, sigma0, sigma, magn));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 RcppExport SEXP _rcpp_module_boot_stan_fit4gp_binomial_logit_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4gp_binomial_probit_mod();
@@ -61,6 +76,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gplite_cf_sexp_c", (DL_FUNC) &_gplite_cf_sexp_c, 4},
     {"_gplite_cf_matern32_c", (DL_FUNC) &_gplite_cf_matern32_c, 4},
     {"_gplite_cf_matern52_c", (DL_FUNC) &_gplite_cf_matern52_c, 4},
+    {"_gplite_cf_nn_c", (DL_FUNC) &_gplite_cf_nn_c, 5},
     {"_rcpp_module_boot_stan_fit4gp_binomial_logit_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gp_binomial_logit_mod, 0},
     {"_rcpp_module_boot_stan_fit4gp_binomial_probit_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gp_binomial_probit_mod, 0},
     {"_rcpp_module_boot_stan_fit4gp_gaussian_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gp_gaussian_mod, 0},

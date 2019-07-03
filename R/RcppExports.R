@@ -13,3 +13,7 @@ cf_matern52_c <- function(x1, x2, lscale, magn) {
     .Call(`_gplite_cf_matern52_c`, x1, x2, lscale, magn)
 }
 
+cf_nn_c <- function(x1, x2, sigma0, sigma, magn) {
+    .Call(`_gplite_cf_nn_c`, x1, x2, sigma0, sigma, magn)
+}
+
