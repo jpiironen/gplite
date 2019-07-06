@@ -131,10 +131,11 @@ gp_optim <- function(gp, x, y, method='Nelder-Mead', tol=1e-4, verbose=T, ...) {
   energy <- function(param) {
     gp <- set_param(gp, param)
     gp <- gp_fit(gp,x,y, ...)
-    if (verbose)
-      print(paste0('Energy: ', -gp$log_evidence))
+    gp_optim_iter_message(gp, verbose)
     gp_energy(gp)
   }
+  
+  gp_optim_start_message(gp, verbose)
   param0 <- get_param(gp)
   res <- stats::optim(param0, energy, method=method, control = list(reltol=tol))
   param <- res$par
@@ -142,3 +143,26 @@ gp_optim <- function(gp, x, y, method='Nelder-Mead', tol=1e-4, verbose=T, ...) {
   gp <- gp_fit(gp,x,y, ...)
   gp
 }
+
+gp_optim_start_message <- function(gp, verbose=T) {
+  if (!verbose)
+    return()
+  nam <- names(get_param(gp))
+  items <- sapply(seq_along(nam), function(i) paste0(sprintf('p%d: log ',i), nam[i]) )
+  cat('Optimizing parameters\n')
+  cat(paste(unname(items), collapse="\n"))
+  cat('\n\n')
+  
+  symbols <- sapply(seq_along(nam), function(i) sprintf('p%d',i))
+  row_items <- c(sprintf('%8s', symbols), sprintf('%10s\n','Energy'))
+  cat(paste0(row_items, collapse=' '))
+}
+
+gp_optim_iter_message <- function(gp, verbose=T) {
+  if (!verbose)
+    return()
+  row_items <- c(sprintf('%8.2f', get_param(gp)), sprintf('%10.2f', gp_energy(gp)))
+  cat(paste0(row_items, collapse=' '), '\n')
+}
+
+

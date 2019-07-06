@@ -343,8 +343,6 @@ rf_featmap.cf_nn <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   else
     # override the number of inputs, because using only a subset of inputs
     num_inputs <- length(object$ind)
-  if (num_feat %% 2 == 1)
-    stop('number of features must be an even number.')
   
   # draw the hidden layer weights randomly
   m <- num_feat
@@ -354,7 +352,7 @@ rf_featmap.cf_nn <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   
   featuremap <- function(x) {
     x_aug <- cbind(1, as.matrix(x)[,object$ind,drop=F])
-    h <- stats::pnorm(x_aug %*% w_aug) # hidden layers activations
+    h <- stats::pnorm(x_aug %*% w_aug) # hidden layer activations
     object$magn/sqrt(m)*h
   }
   return(featuremap)
