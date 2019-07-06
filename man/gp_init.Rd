@@ -4,7 +4,7 @@
 \alias{gp_init}
 \title{Initialize a GP model}
 \usage{
-gp_init(cfs = gpcf_sexp(), lik = lik_gaussian(), method = "full",
+gp_init(cfs = cf_sexp(), lik = lik_gaussian(), method = "full",
   num_basis = 100, rf_seed = 12345)
 }
 \arguments{
@@ -35,7 +35,7 @@ function values (inference time scales cubicly in \code{n}). \code{'rf'} uses ra
 time scales cubicly in the number of approximating basis functions \code{num_basis}. For
 stationary covariance functions random Fourier features (Rahimi and Recht, 2007) is used,
 and for non-stationary kernels using case specific method when possible (for example, drawing
-the hidden layer parameters randomly for \code{gpcf_nn}).
+the hidden layer parameters randomly for \code{cf_nn}).
 }
 \section{References}{
 
@@ -48,13 +48,13 @@ Rahimi, A. and Recht, B. (2008). Random features for large-scale kernel machines
 \examples{
 \donttest{
 # Basic usage (single covariance function)
-cf <- gpcf_sexp()
+cf <- cf_sexp()
 lik <- lik_binomial()
 gp <- gp_init(cf, lik)
 gp <- gp_optim(gp, x ,y, trials)
 
 # Approximate solution using random features
-gpa <- gp_init(gpcf_sexp(), method='rf', num_basis=200)
+gpa <- gp_init(cf_sexp(), method='rf', num_basis=200)
 gpa <- gp_optim(gpa, x, y)
 
 }

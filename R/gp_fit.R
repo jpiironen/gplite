@@ -31,7 +31,7 @@
 #' @examples
 #' \donttest{
 #' # Analytic approximation
-#' cf <- gpcf_sexp(lscale=0.3, magn=0.5)
+#' cf <- cf_sexp(lscale=0.3, magn=0.5)
 #' lik <- lik_binomial()
 #' gp <- gp_init(cf, lik)
 #' gp <- gp_fit(gp, x, y)
@@ -117,7 +117,7 @@ gp_laplace_linearized <- function(gp, x, y, featuremap, trials=NULL, jitter=NULL
 #' @examples
 #' \donttest{
 #' # Basic usage (single covariance function)
-#' cf <- gpcf_sexp()
+#' cf <- cf_sexp()
 #' lik <- lik_binomial()
 #' gp <- gp_init(cf, lik)
 #' gp <- gp_optim(gp, x, y, trials=trials)

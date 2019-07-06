@@ -2,25 +2,25 @@
 % Please edit documentation in R/cf.R
 \name{cf}
 \alias{cf}
-\alias{gpcf_const}
-\alias{gpcf_lin}
-\alias{gpcf_sexp}
-\alias{gpcf_matern32}
-\alias{gpcf_matern52}
-\alias{gpcf_nn}
+\alias{cf_const}
+\alias{cf_lin}
+\alias{cf_sexp}
+\alias{cf_matern32}
+\alias{cf_matern52}
+\alias{cf_nn}
 \title{Initialize covariance function}
 \usage{
-gpcf_const(magn = 1)
+cf_const(magn = 1)
 
-gpcf_lin(ind = NULL, magn = 1)
+cf_lin(ind = NULL, magn = 1)
 
-gpcf_sexp(ind = NULL, lscale = 0.1, magn = 1)
+cf_sexp(ind = NULL, lscale = 0.1, magn = 1)
 
-gpcf_matern32(ind = NULL, lscale = 0.1, magn = 1)
+cf_matern32(ind = NULL, lscale = 0.1, magn = 1)
 
-gpcf_matern52(ind = NULL, lscale = 0.1, magn = 1)
+cf_matern52(ind = NULL, lscale = 0.1, magn = 1)
 
-gpcf_nn(ind = NULL, sigma0 = 1, sigma = 1, magn = 1)
+cf_nn(ind = NULL, sigma0 = 1, sigma = 1, magn = 1)
 }
 \arguments{
 \item{magn}{Initial value for the magnitude hyperparameter (depicts the magnitude of the variation captured by the given covariance function).}
@@ -38,7 +38,7 @@ Functions for initializing the covariance functions which can then be passed to 
 \examples{
 \donttest{
 # Basic usage (single covariance function)
-cf <- gpcf_sexp()
+cf <- cf_sexp()
 lik <- lik_binomial()
 gp <- gp_init(cf, lik)
 gp <- gp_optim(gp, x ,y, trials)
@@ -47,7 +47,7 @@ gp <- gp_optim(gp, x ,y, trials)
 # More than one covariance function, and the function is additive 
 # in the first input, but has an interaction between inputs 2 and 3
 # (the functional form is f(x) = f(x_1) + f(x_2,x_3))
-cfs <- list(gpcf_const(), gpcf_sexp(1), gpcf_sexp(c(2,3)))
+cfs <- list(cf_const(), cf_sexp(1), cf_sexp(c(2,3)))
 lik <- lik_gaussian()
 gp <- gp_init(cf, lik)
 gp <- gp_optim(gp, x, y)

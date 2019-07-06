@@ -24,7 +24,7 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 \examples{
 \donttest{
 # Basic usage (single covariance function)
-cf <- gpcf_sexp()
+cf <- cf_sexp()
 lik <- lik_binomial()
 gp <- gp_init(cf, lik)
 e <- gp_energy(gp)

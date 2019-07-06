@@ -19,7 +19,7 @@
 #' @examples
 #' \donttest{
 #' # Basic usage (single covariance function)
-#' cf <- gpcf_sexp()
+#' cf <- cf_sexp()
 #' lik <- lik_binomial()
 #' gp <- gp_init(cf, lik)
 #' gp <- gp_optim(gp, x ,y, trials)
@@ -28,7 +28,7 @@
 #' # More than one covariance function, and the function is additive 
 #' # in the first input, but has an interaction between inputs 2 and 3
 #' # (the functional form is f(x) = f(x_1) + f(x_2,x_3))
-#' cfs <- list(gpcf_const(), gpcf_sexp(1), gpcf_sexp(c(2,3)))
+#' cfs <- list(cf_const(), cf_sexp(1), cf_sexp(c(2,3)))
 #' lik <- lik_gaussian()
 #' gp <- gp_init(cf, lik)
 #' gp <- gp_optim(gp, x, y)
@@ -42,7 +42,7 @@ NULL
 
 #' @rdname cf
 #' @export
-gpcf_const <- function(magn=1.0) {
+cf_const <- function(magn=1.0) {
   cf <- list()
   cf$magn <- magn
   class(cf) <- 'cf_const'
@@ -51,7 +51,7 @@ gpcf_const <- function(magn=1.0) {
 
 #' @rdname cf
 #' @export
-gpcf_lin <- function(ind=NULL, magn=1.0) {
+cf_lin <- function(ind=NULL, magn=1.0) {
   cf <- list()
   cf$ind <- ind
   cf$magn <- magn
@@ -61,7 +61,7 @@ gpcf_lin <- function(ind=NULL, magn=1.0) {
 
 #' @rdname cf
 #' @export
-gpcf_sexp <- function(ind=NULL, lscale=0.1, magn=1.0) {
+cf_sexp <- function(ind=NULL, lscale=0.1, magn=1.0) {
   cf <- list()
   cf$ind <- ind
   cf$lscale <- lscale
@@ -72,7 +72,7 @@ gpcf_sexp <- function(ind=NULL, lscale=0.1, magn=1.0) {
 
 #' @rdname cf
 #' @export
-gpcf_matern32 <- function(ind=NULL, lscale=0.1, magn=1.0) {
+cf_matern32 <- function(ind=NULL, lscale=0.1, magn=1.0) {
   cf <- list()
   cf$ind <- ind
   cf$lscale <- lscale
@@ -83,7 +83,7 @@ gpcf_matern32 <- function(ind=NULL, lscale=0.1, magn=1.0) {
 
 #' @rdname cf
 #' @export
-gpcf_matern52 <- function(ind=NULL, lscale=0.1, magn=1.0) {
+cf_matern52 <- function(ind=NULL, lscale=0.1, magn=1.0) {
   cf <- list()
   cf$ind <- ind
   cf$lscale <- lscale
@@ -94,7 +94,7 @@ gpcf_matern52 <- function(ind=NULL, lscale=0.1, magn=1.0) {
 
 #' @rdname cf
 #' @export
-gpcf_nn <- function(ind=NULL, sigma0=1.0, sigma=1.0, magn=1.0) {
+cf_nn <- function(ind=NULL, sigma0=1.0, sigma=1.0, magn=1.0) {
   cf <- list()
   cf$ind <- ind
   cf$sigma0 <- sigma0

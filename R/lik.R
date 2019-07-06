@@ -23,7 +23,7 @@
 #' @examples
 #' \donttest{
 #' # Basic usage 
-#' cf <- gpcf_sexp()
+#' cf <- cf_sexp()
 #' lik <- lik_binomial()
 #' gp <- gp_init(cf, lik)
 #' gp <- gp_optim(gp, x ,y, trials)

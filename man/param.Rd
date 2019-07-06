@@ -26,7 +26,7 @@ set_param(object, param, ...)
 \examples{
 \donttest{
 # Basic usage 
-gp <- gp_init(cf=gpcf_sexp(), lik=lik_gaussian())
+gp <- gp_init(cf=cf_sexp(), lik=lik_gaussian())
 print(get_param(gp)) # print out to see the parameter ordering
 gp <- set_param(gp, log(c(0.1,0.8,0.3))) # set some new values
 print(get_param(gp)) # check the result

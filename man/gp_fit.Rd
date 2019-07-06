@@ -47,7 +47,7 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 \examples{
 \donttest{
 # Analytic approximation
-cf <- gpcf_sexp(lscale=0.3, magn=0.5)
+cf <- cf_sexp(lscale=0.3, magn=0.5)
 lik <- lik_binomial()
 gp <- gp_init(cf, lik)
 gp <- gp_fit(gp, x, y)
