@@ -27,4 +27,7 @@ Biarch: TRUE
 RoxygenNote: 6.1.1
 SystemRequirements: GNU make
 Suggests: 
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
