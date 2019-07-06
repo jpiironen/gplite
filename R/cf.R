@@ -318,12 +318,12 @@ rf_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
 
 rf_featmap.cf_matern32 <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   # TODO: implement this
-  stop('Random Fourier feature for Matern kernels not implemented yet.')
+  stop('Random Fourier features for Matern kernels not implemented yet.')
 }
 
 rf_featmap.cf_matern52 <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   # TODO: implement this
-  stop('Random Fourier feature for Matern kernels not implemented yet.')
+  stop('Random Fourier features for Matern kernels not implemented yet.')
 }
 
 rf_featmap.cf_nn <- function(object, num_inputs, num_feat, seed=NULL, ...) {
