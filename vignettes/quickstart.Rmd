@@ -39,7 +39,7 @@ x <- rnorm(n)
 y <- sin(3*x)*exp(-abs(x)) +  rnorm(n)*sigma 
 ggplot() + 
   geom_point(aes(x=x,y=y), size=0.5) + 
-  xlab('x') + ylab('y')
+  xlab('x') + ylab('y') + xlim(-4.5,4.5)
 ```
 
 
@@ -67,7 +67,7 @@ exp(get_param(gp))
 We can easily make predictions with the fitted model using function ```gp_pred```.  So let's predict and visualize the results
 ```{r}
 # compute the predictive mean and variance in a grid of points
-xt <- seq(-5,5,len=300)
+xt <- seq(-4.5,4.5,len=300)
 pred <- gp_pred(gp, xt, var=T)
 
 # visualize
@@ -96,7 +96,7 @@ y <- rep(0,n)
 y[ycont > 0] <- 1
 trials <- rep(1,n)
 ggplot() + 
-  geom_point(aes(x=x,y=y)) + 
+  geom_point(aes(x=x,y=y), size=0.5) + 
   xlab('x') + ylab('y')
 ```
 
