@@ -57,6 +57,7 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=
   gp$cfs <- cfs
   gp$lik <- lik
   gp$method <- method
+  gp$fitted <- FALSE
   gp$num_basis <- num_basis
   gp$rf_seed <- rf_seed
   class(gp) <- 'gp'
@@ -116,14 +117,18 @@ set_param.gp <- function(object, param, ...) {
   }
   # likelihood parameters
   object$lik <- set_param(object$lik, param[j:length(param)])
+  object$fitted <- FALSE
   object
 }
 
 is_fitted.gp <- function(object, type, ...) {
   if (type=='analytic')
-    ifelse(is.null(object$fmean) && is.null(object$wmean), F, T)
+    fit_found <- ifelse(is.null(object$fmean) && is.null(object$wmean), F, T)
   else if (type=='sampling')
-    ifelse(is.null(object$fsample) && is.null(object$wsample), F, T)
+    fit_found <- ifelse(is.null(object$fsample) && is.null(object$wsample), F, T)
+  if (fit_found && object$fitted==FALSE)
+    stop('The GP object seems to contain a posterior fit, but is not refitted after setting new hyperparameter values. Please refit after calling set_param.')
+  return(fit_found)
 }
 
 

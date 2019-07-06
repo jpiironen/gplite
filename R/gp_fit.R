@@ -53,6 +53,7 @@ gp_fit <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
     gp <- gp_laplace_linearized(gp, x, y, featuremap, trials=trials, jitter=jitter, ...)
   } else
     stop('Unknown method: ', gp$method)
+  gp$fitted <- TRUE
   return(gp)
 }
 

@@ -12,6 +12,7 @@ gp_sample <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   } else {
     stop('Unknown method: ', gp$method)
   }
+  gp$fitted <- TRUE
   return(gp)
 }
 
