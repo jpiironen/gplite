@@ -250,12 +250,12 @@ prepare_inputmat <- function(x, ind=NULL) {
 
 
 
-# rff_cf functions
+# rf_featmap functions
 
-rff_featmap.list <- function(object, ...) {
+rf_featmap.list <- function(object, ...) {
   fmaps <- list()
   for (k in seq_along(object))
-    fmaps[[k]] <- rff_featmap(object[[k]], ...)
+    fmaps[[k]] <- rf_featmap(object[[k]], ...)
   
   featuremap <- function(x) {
     z <- c()
@@ -266,7 +266,7 @@ rff_featmap.list <- function(object, ...) {
   return(featuremap)
 }
 
-rff_featmap.cf_const <- function(object, ...) {
+rf_featmap.cf_const <- function(object, ...) {
   featuremap <- function(x) {
     n <- NROW(x)
     object$magn*rep(1,n)
@@ -274,7 +274,7 @@ rff_featmap.cf_const <- function(object, ...) {
   return(featuremap)
 }
 
-rff_featmap.cf_lin <- function(object, ...) {
+rf_featmap.cf_lin <- function(object, ...) {
   # for linear kernel, the linearization feature mapping is simply the identity
   # (with the features scaled down by the magnitude)
   featuremap <- function(x) {
@@ -283,7 +283,7 @@ rff_featmap.cf_lin <- function(object, ...) {
   return(featuremap)
 }
 
-rff_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+rf_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   #
   # spectral density of sexp kernel is given by:
   #     C*N(0,scale^2), where
@@ -316,19 +316,52 @@ rff_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   return(featuremap)
 }
 
-rff_featmap.cf_matern32 <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+rf_featmap.cf_matern32 <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+  # TODO: implement this
   stop('Random Fourier feature for Matern kernels not implemented yet.')
 }
 
-rff_featmap.cf_matern52 <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+rf_featmap.cf_matern52 <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+  # TODO: implement this
   stop('Random Fourier feature for Matern kernels not implemented yet.')
 }
 
-rff_featmap.cf_nn <- function(object, ...) {
-  stop('Can\'t form Fourier features for a neural network kernel (non-stationary).')
+rf_featmap.cf_nn <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+  #
+  # neural network kernel does not have a spectral density (because it's non-stationary),
+  # but we can draw the random features by drawing the hidden layer weights from the prior, 
+  # and then using the probit activations as the features
+  #
+  
+  # set random seed but ensure the old RNG state is restored on exit
+  rng_state_old <- .Random.seed
+  on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  set.seed(seed)
+  
+  if (is.null(object$ind))
+    object$ind <- c(1:num_inputs)
+  else
+    # override the number of inputs, because using only a subset of inputs
+    num_inputs <- length(object$ind)
+  if (num_feat %% 2 == 1)
+    stop('number of features must be an even number.')
+  
+  # draw the hidden layer weights randomly
+  m <- num_feat
+  w <- matrix(stats::rnorm(m*num_inputs), nrow=num_inputs, ncol=m)*object$sigma
+  w0 <- matrix(stats::rnorm(m), nrow=1, ncol=m)*object$sigma0
+  w_aug <- rbind(w0, w)
+  
+  featuremap <- function(x) {
+    x_aug <- cbind(1, as.matrix(x)[,object$ind,drop=F])
+    h <- stats::pnorm(x_aug %*% w_aug) # hidden layers activations
+    object$magn/sqrt(m)*h
+  }
+  return(featuremap)
+  
 }
 
-# TODO: implement other stationary covariance functions
+
 
 
 

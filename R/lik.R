@@ -86,7 +86,7 @@ set_param.lik_binomial <- function(object, param, ...) {
 get_stanmodel.lik_gaussian <- function(object, method, ...) {
   if (method == 'full') 
     return(stanmodels$gp_gaussian)
-  else if (method == 'rff') 
+  else if (method == 'rf') 
     return(stanmodels$gpa_gaussian)
   else
     stop('Got an unknown method: ', method)
@@ -98,7 +98,7 @@ get_stanmodel.lik_binomial <- function(object, method, ...) {
       return(stanmodels$gp_binomial_logit)
     else if (object$link == 'probit')
       return(stanmodels$gp_binomial_probit)
-  } else if (method == 'rff') {
+  } else if (method == 'rf') {
     if (object$link == 'logit')
       return(stanmodels$gpa_binomial_logit)
     else if (object$link == 'probit')

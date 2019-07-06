@@ -1,6 +1,4 @@
 
-# main gp functions
-
 
 
 
@@ -11,20 +9,29 @@
 #' 
 #' @param cfs The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.
 #' @param lik Likelihood (observation model). See \code{\link{lik}}.
-#' @param method Method for approximating the covariance function, can be one of 'full' or 'rff'.
-#' 'full' means that exact covariance function is used, and the inference will be on the n latent
-#' function values (inference time scales cubicly in n). 'rff' uses random Fourier features for 
-#' approximating the covariance function, which means the inference scales cubicly in the number of
-#' approximating basis functions \code{num_basis}.
-#' @param num_basis Number of basis functions in the covariance approximation for 'rff' and other
+#' @param method Method for approximating the covariance function, can be one of \code{'full'} 
+#' or \code{'rf'}. See below for details.
+#' @param num_basis Number of basis functions in the covariance approximation for 'rf' and other
 #' basis function methods.
-#' @param rff_seed Seed for random Fourier features for reproducible results.
+#' @param rf_seed Seed for random features for reproducible results.
 #' 
 #' @return A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
+#' 
+#' @details The argument \code{method} defines the method for approximating the covariance
+#' function calculation. \code{'full'} means that exact covariance function is used, meaning
+#' that the inference will be for the \code{n} latent
+#' function values (inference time scales cubicly in \code{n}). \code{'rf'} uses random features 
+#' (or basis functions) for approximating the covariance function, which means the inference
+#' time scales cubicly in the number of approximating basis functions \code{num_basis}. For
+#' stationary covariance functions random Fourier features (Rahimi and Recht, 2007) is used,
+#' and for non-stationary kernels using case specific method when possible (for example, drawing
+#' the hidden layer parameters randomly for \code{gpcf_nn}). 
 #' 
 #' @section References:
 #' 
 #' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
+#' 
+#' Rahimi, A. and Recht, B. (2008). Random features for large-scale kernel machines. Advances in Neural Information Processing Systems 20.
 #'
 #' @examples
 #' \donttest{
@@ -34,12 +41,16 @@
 #' gp <- gp_init(cf, lik)
 #' gp <- gp_optim(gp, x ,y, trials)
 #' 
+#' # Approximate solution using random features
+#' gpa <- gp_init(gpcf_sexp(), method='rf', num_basis=200)
+#' gpa <- gp_optim(gpa, x, y)
+#' 
 #' }
 #'
 
 #' @export
 gp_init <- function(cfs=gpcf_sexp(), lik=lik_gaussian(), method='full', num_basis=100,
-                    rff_seed=12345) {
+                    rf_seed=12345) {
   gp <- list()
   if (class(cfs) != 'list')
     cfs <- list(cfs)
@@ -47,7 +58,7 @@ gp_init <- function(cfs=gpcf_sexp(), lik=lik_gaussian(), method='full', num_basi
   gp$lik <- lik
   gp$method <- method
   gp$num_basis <- num_basis
-  gp$rff_seed <- rff_seed
+  gp$rf_seed <- rf_seed
   class(gp) <- 'gp'
   gp
 }

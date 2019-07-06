@@ -20,7 +20,7 @@ gpcf_matern32(ind = NULL, lscale = 0.1, magn = 1)
 
 gpcf_matern52(ind = NULL, lscale = 0.1, magn = 1)
 
-gpcf_nn(ind = NULL, sigma0 = 10, sigma = 0.1, magn = 1)
+gpcf_nn(ind = NULL, sigma0 = 1, sigma = 1, magn = 1)
 }
 \arguments{
 \item{magn}{Initial value for the magnitude hyperparameter (depicts the magnitude of the variation captured by the given covariance function).}

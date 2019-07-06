@@ -5,23 +5,20 @@
 \title{Initialize a GP model}
 \usage{
 gp_init(cfs = gpcf_sexp(), lik = lik_gaussian(), method = "full",
-  num_basis = 100, rff_seed = 12345)
+  num_basis = 100, rf_seed = 12345)
 }
 \arguments{
 \item{cfs}{The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.}
 
 \item{lik}{Likelihood (observation model). See \code{\link{lik}}.}
 
-\item{method}{Method for approximating the covariance function, can be one of 'full' or 'rff'.
-'full' means that exact covariance function is used, and the inference will be on the n latent
-function values (inference time scales cubicly in n). 'rff' uses random Fourier features for 
-approximating the covariance function, which means the inference scales cubicly in the number of
-approximating basis functions \code{num_basis}.}
+\item{method}{Method for approximating the covariance function, can be one of \code{'full'} 
+or \code{'rf'}. See below for details.}
 
-\item{num_basis}{Number of basis functions in the covariance approximation for 'rff' and other
+\item{num_basis}{Number of basis functions in the covariance approximation for 'rf' and other
 basis function methods.}
 
-\item{rff_seed}{Seed for random Fourier features for reproducible results.}
+\item{rf_seed}{Seed for random features for reproducible results.}
 }
 \value{
 A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
@@ -29,10 +26,23 @@ A GP model object that can be passed to other functions, for example when optimi
 \description{
 Initializes a GP model with given covariance function(s) and likelihood. The model can then be fitted using \code{\link{gp_fit}} or \code{\link{gp_sample}}. For hyperparameter optimization, see \code{\link{gp_optim}}
 }
+\details{
+The argument \code{method} defines the method for approximating the covariance
+function calculation. \code{'full'} means that exact covariance function is used, meaning
+that the inference will be for the \code{n} latent
+function values (inference time scales cubicly in \code{n}). \code{'rf'} uses random features 
+(or basis functions) for approximating the covariance function, which means the inference
+time scales cubicly in the number of approximating basis functions \code{num_basis}. For
+stationary covariance functions random Fourier features (Rahimi and Recht, 2007) is used,
+and for non-stationary kernels using case specific method when possible (for example, drawing
+the hidden layer parameters randomly for \code{gpcf_nn}).
+}
 \section{References}{
 
 
 Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
+
+Rahimi, A. and Recht, B. (2008). Random features for large-scale kernel machines. Advances in Neural Information Processing Systems 20.
 }
 
 \examples{
@@ -42,6 +52,10 @@ cf <- gpcf_sexp()
 lik <- lik_binomial()
 gp <- gp_init(cf, lik)
 gp <- gp_optim(gp, x ,y, trials)
+
+# Approximate solution using random features
+gpa <- gp_init(gpcf_sexp(), method='rf', num_basis=200)
+gpa <- gp_optim(gpa, x, y)
 
 }
 

@@ -52,8 +52,8 @@ eval_cf <- function (object, ...) {
   UseMethod("eval_cf", object)
 }
 
-rff_featmap <- function (object, ...) {
-  UseMethod("rff_featmap", object)
+rf_featmap <- function (object, ...) {
+  UseMethod("rf_featmap", object)
 }
 
 is_fitted <- function(object, type, ...) {

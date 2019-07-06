@@ -47,9 +47,9 @@ NULL
 gp_fit <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   if (gp$method == 'full') {
     gp <- gp_laplace_full(gp, x, y, trials=trials, jitter=jitter, ...)
-  } else if (gp$method == 'rff') {
+  } else if (gp$method == 'rf') {
     num_inputs <- NCOL(x)
-    featuremap <- rff_featmap(gp$cfs, num_inputs, gp$num_basis, seed=gp$rff_seed)
+    featuremap <- rf_featmap(gp$cfs, num_inputs, gp$num_basis, seed=gp$rf_seed)
     gp <- gp_laplace_linearized(gp, x, y, featuremap, trials=trials, jitter=jitter, ...)
   } else
     stop('Unknown method: ', gp$method)

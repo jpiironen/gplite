@@ -46,7 +46,7 @@ gp_pred <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
     # model fitted using mcmc, so predict using the draws from the posterior
     if (gp$method == 'full')
       pred <- gp_pred_full_mcmc(gp, xt, draws=draws, transform=transform, jitter=jitter)
-    else if (gp$method == 'rff')
+    else if (gp$method == 'rf')
       pred <- gp_pred_linearized_mcmc(gp, xt, draws=draws, transform=transform, jitter=jitter)
     else
       stop('Unknown method: ', gp$method)
@@ -57,7 +57,7 @@ gp_pred <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
     if (gp$method == 'full')
       pred <- gp_pred_full_analytic(gp, xt, var=var, draws=draws, 
                                     transform=transform, jitter=jitter)
-    else if (gp$method == 'rff')
+    else if (gp$method == 'rf')
       pred <- gp_pred_linearized_analytic(gp, xt, var=var, draws=draws,
                                           transform=transform, jitter=jitter)
     else
