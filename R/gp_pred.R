@@ -79,7 +79,7 @@ gp_pred_full_mcmc <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
   pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, gp$fsample))
   sample <- t(chol(pred_cov)) %*% matrix(stats::rnorm(nt*draws), nrow=nt) + pred_mean
   if (transform)
-    sample <- get_response(gp$lik, sample)
+    sample <- get_response(gp, sample)
   return(sample)
 }
 
@@ -88,7 +88,7 @@ gp_pred_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T, jitter=NULL
   zt <- gp$featuremap(xt)
   sample <- zt %*% gp$wsample
   if (transform)
-    sample <- get_response(gp$lik, sample)
+    sample <- get_response(gp, sample)
   return(sample)
 }
 
@@ -117,7 +117,7 @@ gp_pred_full_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter
       # sample from the predictive distribution
       sample <- t(chol(pred_cov)) %*% matrix(stats::rnorm(nt*draws), nrow=nt) + pred_mean
       if (transform)
-        sample <- get_response(gp$lik, sample)
+        sample <- get_response(gp, sample)
       return(sample)
     }
   }
@@ -143,7 +143,7 @@ gp_pred_linearized_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, 
       # sample from the predictive distribution
       sample <- t(chol(pred_cov)) %*% matrix(stats::rnorm(nt*draws), nrow=nt) + pred_mean
       if (transform)
-        sample <- get_response(gp$lik, sample)
+        sample <- get_response(gp, sample)
       return(sample)
     }
   }

@@ -52,6 +52,16 @@ lik_binomial <- function(link='logit') {
   lik
 }
 
+#' @rdname lik
+#' @export
+lik_betabinom <- function(link='logit', phi=0.1) {
+  lik <- list()
+  lik$phi <- phi
+  lik$link <- link
+  class(lik) <- 'lik_betabinom'
+  lik
+}
+
 
 
 # get_param functions
@@ -66,6 +76,12 @@ get_param.lik_binomial <- function(object, ...) {
   c()
 }
 
+get_param.lik_betabinom <- function(object, ...) {
+  param <- log(object$phi)
+  names(param) <- c('lik_betabinom.phi')
+  param
+}
+
 
 
 # set_param functions
@@ -76,6 +92,11 @@ set_param.lik_gaussian <- function(object, param, ...) {
 }
 
 set_param.lik_binomial <- function(object, param, ...) {
+  object
+}
+
+set_param.lik_betabinom <- function(object, param, ...) {
+  object$phi <- exp(param[1])
   object
 }
 
@@ -107,6 +128,19 @@ get_stanmodel.lik_binomial <- function(object, method, ...) {
     stop('Got an unknown method: ', method)
 }
 
+get_stanmodel.lik_betabinom <- function(object, method, ...) {
+  if (method == 'full') {
+    if (object$link == 'logit')
+      return(stanmodels$gp_betabinom_logit)
+    else if (object$link == 'probit')
+      stop('The given link function not yet implemented.')
+  } else if (method == 'rf') {
+    stop('Random feature implementation for the likelihood not implemented yet.')
+  } else
+    stop('Got an unknown method: ', method)
+}
+
+
 
 # get_standata functions
 
@@ -121,14 +155,21 @@ get_standata.lik_binomial <- function(object, ...) {
   list(trials=args$trials)
 }
 
+get_standata.lik_betabinom <- function(object, ...) {
+  args <- list(...)
+  if (is.null(args$trials))
+    stop('trials must be provided for the beta binomial likelihood.')
+  list(trials=args$trials, phi=object$phi)
+}
 
 
 
 
 # get_response functions
 
-get_response.gp <- function(object, ...) {
-  get_response(object$lik, ...)
+get_response.gp <- function(object, f, ...) {
+  # TODO: CHANGE SO THAT THIS WILL BE USED
+  get_response(object$lik, f, ...)
 }
 
 get_response.lik_gaussian <- function(object, f, ...) {
@@ -141,7 +182,16 @@ get_response.lik_binomial <- function(object, f, ...) {
   else if (object$link == 'logit')
     return(1/(1+exp(-f)))
   else
-    stop('Unknown link: ', object$links)
+    stop('Unknown link: ', object$link)
+}
+
+get_response.lik_betabinom <- function(object, f, ...) {
+  if (object$link == 'probit')
+    return(stats::pnorm(f))
+  else if (object$link == 'logit')
+    return(1/(1+exp(-f)))
+  else
+    stop('Unknown link: ', object$link)
 }
 
 
