@@ -4,11 +4,14 @@
 \alias{lik}
 \alias{lik_gaussian}
 \alias{lik_binomial}
+\alias{lik_betabinom}
 \title{Initialize likelihood}
 \usage{
 lik_gaussian(sigma = 0.5)
 
 lik_binomial(link = "logit")
+
+lik_betabinom(link = "logit", phi = 0.1)
 }
 \arguments{
 \item{sigma}{Initial value for the noise standard deviation.}
