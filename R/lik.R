@@ -115,27 +115,18 @@ get_stanmodel.lik_gaussian <- function(object, method, ...) {
 
 get_stanmodel.lik_binomial <- function(object, method, ...) {
   if (method == 'full') {
-    if (object$link == 'logit')
-      return(stanmodels$gp_binomial_logit)
-    else if (object$link == 'probit')
-      return(stanmodels$gp_binomial_probit)
+    return(stanmodels$gp_binomial)
   } else if (method == 'rf') {
-    if (object$link == 'logit')
-      return(stanmodels$gpa_binomial_logit)
-    else if (object$link == 'probit')
-      return(stanmodels$gpa_binomial_probit)
+    return(stanmodels$gpa_binomial)
   } else
     stop('Got an unknown method: ', method)
 }
 
 get_stanmodel.lik_betabinom <- function(object, method, ...) {
   if (method == 'full') {
-    if (object$link == 'logit')
-      return(stanmodels$gp_betabinom_logit)
-    else if (object$link == 'probit')
-      stop('The given link function not yet implemented.')
+    return(stanmodels$gp_betabinom)
   } else if (method == 'rf') {
-    stop('Random feature implementation for the likelihood not implemented yet.')
+    return(stanmodels$gpa_betabinom)
   } else
     stop('Got an unknown method: ', method)
 }
@@ -152,14 +143,22 @@ get_standata.lik_binomial <- function(object, ...) {
   args <- list(...)
   if (is.null(args$trials))
     stop('trials must be provided for the binomial likelihood.')
-  list(trials=args$trials)
+  if (object$link == 'logit')
+    link <- 0
+  else if (object$link == 'probit')
+    link <- 1
+  list(trials=args$trials, link=link)
 }
 
 get_standata.lik_betabinom <- function(object, ...) {
   args <- list(...)
   if (is.null(args$trials))
     stop('trials must be provided for the beta binomial likelihood.')
-  list(trials=args$trials, phi=object$phi)
+  if (object$link == 'logit')
+    link <- 0
+  else if (object$link == 'probit')
+    link <- 1
+  list(trials=args$trials, link=link, phi=object$phi)
 }
 
 

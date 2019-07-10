@@ -6,6 +6,7 @@ data {
   real<lower=0> phi; // dispersion parameter
   matrix[n,n] L; // cholesky of the covariance matrix (lower triangular) 
   int<lower=0> y[n];
+  int<lower=0> link;
 }
 
 parameters {
@@ -18,7 +19,10 @@ transformed parameters {
   vector[n] alpha;
   vector[n] beta;
   f = L*f_white;
-  mu = inv_logit(f);
+  if (link == 0)
+    mu = inv_logit(f);
+  else if (link == 1)
+    mu = Phi_approx(f);
   alpha = mu/phi;
   beta = (1-mu)/phi;
 }
