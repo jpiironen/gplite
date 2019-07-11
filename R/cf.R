@@ -309,8 +309,8 @@ rf_featmap.cf_lin <- function(object, ...) {
 rf_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   #
   # spectral density of sexp kernel is given by:
-  #     C*N(0,scale^2), where
-  # scale = 1/(2*pi*lscale) and C = (2*pi)^(d-1)/2*lscale^(d-1)
+  #     C*N(0,s^2), where
+  # s = 1/(2*pi*lscale) and C = (2*pi)^((d-1)/2) * lscale^(d-1)
   #
   
   # set random seed but ensure the old RNG state is restored on exit
@@ -329,7 +329,7 @@ rf_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   m <- num_feat/2
   scale <- 1/(2*pi*object$lscale) # scale of the spectral density
   w <- matrix(stats::rnorm(m*num_inputs), nrow=num_inputs, ncol=m)*scale # frequences
-  C <- (2*pi)^(num_inputs-1)/2*object$lscale^(num_inputs-1)
+  C <- (2*pi)^((num_inputs-1)/2) * object$lscale^(num_inputs-1)
   
   featuremap <- function(x) {
     x <- as.matrix(x)

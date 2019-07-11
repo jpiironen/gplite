@@ -121,6 +121,13 @@ set_param.gp <- function(object, param, ...) {
   object
 }
 
+get_featuremap.gp <- function(object, num_inputs, ...) {
+  if (object$method == 'rf')
+    return(rf_featmap(object$cfs, num_inputs, object$num_basis, seed=object$rf_seed))
+  else
+    stop('No feature map implementation for method: ', object$method)
+}
+
 is_fitted.gp <- function(object, type, ...) {
   if (type=='analytic')
     fit_found <- ifelse(is.null(object$fmean) && is.null(object$wmean), F, T)

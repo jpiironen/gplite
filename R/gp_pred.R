@@ -43,7 +43,9 @@
 gp_pred <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
   
   if (is_fitted(gp, 'sampling')) {
+    #
     # model fitted using mcmc, so predict using the draws from the posterior
+    #
     if (gp$method == 'full')
       pred <- gp_pred_full_mcmc(gp, xt, draws=draws, transform=transform, jitter=jitter)
     else if (gp$method == 'rf')
@@ -51,21 +53,33 @@ gp_pred <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
     else
       stop('Unknown method: ', gp$method)
   } else {
-    # model fitted using analytical approximation, so predict based on that
-    if (!is_fitted(gp, 'analytic')) 
-      # TODO: predict based on the prior
-      stop('The given model appears not to be fitted yet.')
-    if (gp$method == 'full')
-      pred <- gp_pred_full_analytic(gp, xt, var=var, draws=draws, 
-                                    transform=transform, jitter=jitter)
-    else if (gp$method == 'rf')
-      pred <- gp_pred_linearized_analytic(gp, xt, var=var, draws=draws,
-                                          transform=transform, jitter=jitter)
-    else
-      stop('Unknown method: ', gp$method)
+    #
+    # model fitted using analytical gaussian approximation (or not fitted at all),
+    # so predict based on that
+    #
+    if (!is_fitted(gp, 'analytic')) {
+      if (gp$method == 'full')
+        pred <- gp_pred_full_prior(gp, xt, var=var, draws=draws, 
+                                   transform=transform, jitter=jitter)
+      else if (gp$method == 'rf')
+        pred <- gp_pred_linearized_prior(gp, xt, var=var, draws=draws, 
+                                         transform=transform, jitter=jitter)
+      else
+        stop('Unknown method: ', gp$method)
+    } else {
+      if (gp$method == 'full')
+        pred <- gp_pred_full_analytic(gp, xt, var=var, draws=draws, 
+                                      transform=transform, jitter=jitter)
+      else if (gp$method == 'rf')
+        pred <- gp_pred_linearized_analytic(gp, xt, var=var, draws=draws,
+                                            transform=transform, jitter=jitter)
+      else
+        stop('Unknown method: ', gp$method)
+    }
   }
   return(pred)
 }
+
 
 gp_pred_full_mcmc <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
   
@@ -83,17 +97,6 @@ gp_pred_full_mcmc <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
     sample <- get_response(gp, sample)
   return(sample)
 }
-
-gp_pred_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T) {
-  
-  zt <- gp$featuremap(xt)
-  sample <- zt %*% gp$wsample
-  if (transform)
-    sample <- get_response(gp, sample)
-  return(sample)
-}
-
-
 
 gp_pred_full_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
   
@@ -125,6 +128,37 @@ gp_pred_full_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter
   return(pred_mean)
 }
 
+gp_pred_full_prior <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
+  
+  nt <- NROW(xt)
+  pred_mean <- rep(0,nt)
+  
+  if (var == T || !is.null(draws)) {
+    jitter <- get_jitter(gp, jitter)
+    pred_cov <- eval_cf(gp$cf, xt, xt) + jitter*diag(nt)
+    if (is.null(draws)) 
+      return(list(mean=pred_mean, var=diag(pred_cov)))
+    else {
+      # sample from the predictive distribution
+      sample <- t(chol(pred_cov)) %*% matrix(stats::rnorm(nt*draws), nrow=nt) + pred_mean
+      if (transform)
+        sample <- get_response(gp, sample)
+      return(sample)
+    }
+  }
+  return(pred_mean)
+}
+
+
+gp_pred_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T) {
+  
+  zt <- gp$featuremap(xt)
+  sample <- zt %*% gp$wsample
+  if (transform)
+    sample <- get_response(gp, sample)
+  return(sample)
+}
+
 gp_pred_linearized_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
   
   # compute the latent mean first
@@ -151,6 +185,30 @@ gp_pred_linearized_analytic <- function(gp, xt, var=F, draws=NULL, transform=T, 
   return(pred_mean)
 }
 
+gp_pred_linearized_prior <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
+  
+  nt <- NROW(xt)
+  pred_mean <- rep(0,nt)
+  
+  if (var == T || !is.null(draws)) {
+    num_inputs <- NCOL(xt)
+    featuremap <- get_featuremap(gp, num_inputs)
+    zt <- featuremap(xt)
+    jitter <- get_jitter(gp, jitter)
+    pred_cov <- zt %*% t(zt) + jitter*diag(nt)
+    
+    if (is.null(draws))
+      return(list(mean=pred_mean, var=diag(pred_cov)))
+    else {
+      # sample from the predictive distribution
+      sample <- t(chol(pred_cov)) %*% matrix(stats::rnorm(nt*draws), nrow=nt) + pred_mean
+      if (transform)
+        sample <- get_response(gp, sample)
+      return(sample)
+    }
+  }
+  return(pred_mean)
+}
 
 
 

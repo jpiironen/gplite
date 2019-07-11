@@ -31,6 +31,18 @@ for (ncf in 1:length(cfs)) {
   }
 }
 
+# these are gps which are only initialized, not fitted
+k <- 1
+gps_notfitted <- list()
+for (ncf in 1:length(cfs)) {
+  for (nrep in 1:3) {
+    gps_notfitted[[k]] <- gp_init(cfs=sample(cfs, ncf), lik=lik_gaussian())
+    k <- k+1
+  }
+}
+
+
+
 
 
 
@@ -112,7 +124,13 @@ test_that("gp_pred: error is raised (only) if model has not been refitted after
           resetting hyperparameters", {
   
   for (k in seq_along(gps)) {
+    gp0 <- gps_notfitted[[k]]
     gp <- gps[[k]]
+    
+    # prior predicion, should work fine
+    expect_silent(gp_pred(gp0, x, draws = 1))
+    expect_silent(gp_pred(gp0, x, var=T))
+    expect_silent(gp_pred(gp0, x, var=F))
     
     # should work fine
     expect_silent(gp_pred(gp, x, draws = 1))
@@ -133,6 +151,7 @@ test_that("gp_pred: error is raised (only) if model has not been refitted after
     gp1 <- gp_fit(gp,x,y)
     SWO(gp2 <- gp_sample(gp,x,y, iter=400, chains=1))
     
+    # these should again work fine
     expect_silent(gp_pred(gp1, x, draws = 1))
     expect_silent(gp_pred(gp1, x, var=T))
     expect_silent(gp_pred(gp1, x, var=F))

@@ -36,6 +36,10 @@ set_param <- function (object, param, ...) {
   UseMethod("set_param", object)
 }
 
+get_featuremap <- function(object, ...) {
+  UseMethod("get_featuremap", object)
+}
+
 get_stanmodel <- function(object, ...) {
   UseMethod("get_stanmodel", object)
 }
