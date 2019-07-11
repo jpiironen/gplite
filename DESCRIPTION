@@ -29,5 +29,6 @@ SystemRequirements: GNU make
 Suggests: 
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    ggplot2
 VignetteBuilder: knitr

@@ -31,13 +31,37 @@ covariance. If the input matrix has named columns, can also be a vector of colum
 Default is all the inputs.}
 
 \item{lscale}{Initial value for the length-scale hyperparameter.}
+
+\item{sigma0}{Prior std for the bias in the neural network covariance function.}
+
+\item{sigma}{Prior std for the weights in the hidden layers of the neural network 
+covariance function.}
 }
 \value{
 The covariance function object.
 }
 \description{
-Functions for initializing the covariance functions which can then be passed to \code{\link{gp_init}}.
+Functions for initializing the covariance functions which can then be passed 
+to \code{\link{gp_init}}. See section Details for explanation of what covariance 
+function is what.
 }
+\details{
+The supported covariance functions are (see Rasmussen and Williams, 2006):
+\describe{
+ \item{\code{cf_const}}{ Constant covariance function. }
+ \item{\code{cf_lin}}{ Linear covariance function. }
+ \item{\code{cf_sexp}}{ Squared exponential (or exponentiated quadratic, or Gaussian) covariance function.}
+ \item{\code{cf_matern32}}{ Matern nu=3/2 covariance function. }
+ \item{\code{cf_matern52}}{ Matern nu=5/2 covariance function. }
+ \item{\code{cf_nn}}{ Neural network covariance function. }
+}
+}
+\section{References}{
+
+
+Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
+}
+
 \examples{
 \donttest{
 # Basic usage (single covariance function)

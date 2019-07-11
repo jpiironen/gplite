@@ -5,18 +5,23 @@
 
 #' Initialize likelihood
 #'
-#' Functions for initializing the likelihood (observations model) which can then be passed to \code{\link{gp_init}}.
+#' Functions for initializing the likelihood (observation model) which can then be passed to \code{\link{gp_init}}.
+#' 
+#' The supported likelihoods are:
+#' \describe{
+#'  \item{\code{lik_gaussian}}{Gaussian likelihood. Has no links (uses identity link).}
+#'  \item{\code{lik_binomial}}{Binomial likelihood. Possible links: 'logit' or 'probit'.}
+#'  \item{\code{lik_betabinom}}{Beta binomial likelihood. Possible links: 'logit' or 'probit'.}
+#' }
+#' 
 #'
 #' @name lik
 #'
-#' @param link Link function if the likelihood supports non-identity links.
+#' @param link Link function if the likelihood supports non-identity links. See Details for 
+#' information about possible links for each likelihood.
 #' @param sigma Initial value for the noise standard deviation.
+#' @param phi The over dispersion parameter for beta binomial likelihood.
 #' 
-#' @details Different likelihoods have the following possible link functions:
-#' \describe{
-#'  \item{\code{lik_gaussian}}{No links (uses identity link).}
-#'  \item{\code{lik_binomial}}{'logit' or 'probit'}
-#' }
 #'
 #' @return The likelihood object.
 #' 

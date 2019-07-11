@@ -6,7 +6,20 @@
 
 #' Initialize covariance function
 #'
-#' Functions for initializing the covariance functions which can then be passed to \code{\link{gp_init}}.
+#' Functions for initializing the covariance functions which can then be passed 
+#' to \code{\link{gp_init}}. See section Details for explanation of what covariance 
+#' function is what.
+#' 
+#' The supported covariance functions are (see Rasmussen and Williams, 2006):
+#' \describe{
+#'  \item{\code{cf_const}}{ Constant covariance function. }
+#'  \item{\code{cf_lin}}{ Linear covariance function. }
+#'  \item{\code{cf_sexp}}{ Squared exponential (or exponentiated quadratic, or Gaussian) covariance function.}
+#'  \item{\code{cf_matern32}}{ Matern nu=3/2 covariance function. }
+#'  \item{\code{cf_matern52}}{ Matern nu=5/2 covariance function. }
+#'  \item{\code{cf_nn}}{ Neural network covariance function. }
+#' }
+#' 
 #'
 #' @name cf
 #'
@@ -16,8 +29,15 @@
 #' @param lscale Initial value for the length-scale hyperparameter.
 #' @param magn Initial value for the magnitude hyperparameter (depicts the magnitude of 
 #' the variation captured by the given covariance function).
+#' @param sigma0 Prior std for the bias in the neural network covariance function.
+#' @param sigma Prior std for the weights in the hidden layers of the neural network 
+#' covariance function. 
 #'
 #' @return The covariance function object.
+#' 
+#' @section References:
+#' 
+#' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
 #' 
 #' @examples
 #' \donttest{

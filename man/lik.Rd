@@ -16,19 +16,23 @@ lik_betabinom(link = "logit", phi = 0.1)
 \arguments{
 \item{sigma}{Initial value for the noise standard deviation.}
 
-\item{link}{Link function if the likelihood supports non-identity links.}
+\item{link}{Link function if the likelihood supports non-identity links. See Details for 
+information about possible links for each likelihood.}
+
+\item{phi}{The over dispersion parameter for beta binomial likelihood.}
 }
 \value{
 The likelihood object.
 }
 \description{
-Functions for initializing the likelihood (observations model) which can then be passed to \code{\link{gp_init}}.
+Functions for initializing the likelihood (observation model) which can then be passed to \code{\link{gp_init}}.
 }
 \details{
-Different likelihoods have the following possible link functions:
+The supported likelihoods are:
 \describe{
- \item{\code{lik_gaussian}}{No links (uses identity link).}
- \item{\code{lik_binomial}}{'logit' or 'probit'}
+ \item{\code{lik_gaussian}}{Gaussian likelihood. Has no links (uses identity link).}
+ \item{\code{lik_binomial}}{Binomial likelihood. Possible links: 'logit' or 'probit'.}
+ \item{\code{lik_betabinom}}{Beta binomial likelihood. Possible links: 'logit' or 'probit'.}
 }
 }
 \examples{
