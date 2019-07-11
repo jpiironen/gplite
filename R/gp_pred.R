@@ -47,12 +47,13 @@ gp_pred <- function(gp, xt, var=F, draws=NULL, transform=T, jitter=NULL) {
     if (gp$method == 'full')
       pred <- gp_pred_full_mcmc(gp, xt, draws=draws, transform=transform, jitter=jitter)
     else if (gp$method == 'rf')
-      pred <- gp_pred_linearized_mcmc(gp, xt, draws=draws, transform=transform, jitter=jitter)
+      pred <- gp_pred_linearized_mcmc(gp, xt, draws=draws, transform=transform)
     else
       stop('Unknown method: ', gp$method)
   } else {
     # model fitted using analytical approximation, so predict based on that
     if (!is_fitted(gp, 'analytic')) 
+      # TODO: predict based on the prior
       stop('The given model appears not to be fitted yet.')
     if (gp$method == 'full')
       pred <- gp_pred_full_analytic(gp, xt, var=var, draws=draws, 
@@ -83,7 +84,7 @@ gp_pred_full_mcmc <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
   return(sample)
 }
 
-gp_pred_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
+gp_pred_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T) {
   
   zt <- gp$featuremap(xt)
   sample <- zt %*% gp$wsample

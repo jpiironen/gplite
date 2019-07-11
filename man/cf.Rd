@@ -12,20 +12,23 @@
 \usage{
 cf_const(magn = 1)
 
-cf_lin(ind = NULL, magn = 1)
+cf_lin(vars = NULL, magn = 1)
 
-cf_sexp(ind = NULL, lscale = 0.1, magn = 1)
+cf_sexp(vars = NULL, lscale = 0.1, magn = 1)
 
-cf_matern32(ind = NULL, lscale = 0.1, magn = 1)
+cf_matern32(vars = NULL, lscale = 0.1, magn = 1)
 
-cf_matern52(ind = NULL, lscale = 0.1, magn = 1)
+cf_matern52(vars = NULL, lscale = 0.1, magn = 1)
 
-cf_nn(ind = NULL, sigma0 = 1, sigma = 1, magn = 1)
+cf_nn(vars = NULL, sigma0 = 1, sigma = 1, magn = 1)
 }
 \arguments{
-\item{magn}{Initial value for the magnitude hyperparameter (depicts the magnitude of the variation captured by the given covariance function).}
+\item{magn}{Initial value for the magnitude hyperparameter (depicts the magnitude of 
+the variation captured by the given covariance function).}
 
-\item{ind}{Indices of the inputs which are taken into account when calculating this covariance. Default is all the inputs.}
+\item{vars}{Indices of the inputs which are taken into account when calculating this
+covariance. If the input matrix has named columns, can also be a vector of column names.
+Default is all the inputs.}
 
 \item{lscale}{Initial value for the length-scale hyperparameter.}
 }

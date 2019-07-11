@@ -10,9 +10,12 @@
 #'
 #' @name cf
 #'
-#' @param ind Indices of the inputs which are taken into account when calculating this covariance. Default is all the inputs.
+#' @param vars Indices of the inputs which are taken into account when calculating this
+#'  covariance. If the input matrix has named columns, can also be a vector of column names.
+#'  Default is all the inputs.
 #' @param lscale Initial value for the length-scale hyperparameter.
-#' @param magn Initial value for the magnitude hyperparameter (depicts the magnitude of the variation captured by the given covariance function).
+#' @param magn Initial value for the magnitude hyperparameter (depicts the magnitude of 
+#' the variation captured by the given covariance function).
 #'
 #' @return The covariance function object.
 #' 
@@ -51,9 +54,9 @@ cf_const <- function(magn=1.0) {
 
 #' @rdname cf
 #' @export
-cf_lin <- function(ind=NULL, magn=1.0) {
+cf_lin <- function(vars=NULL, magn=1.0) {
   cf <- list()
-  cf$ind <- ind
+  cf$vars <- vars
   cf$magn <- magn
   class(cf) <- 'cf_lin'
   cf
@@ -61,9 +64,9 @@ cf_lin <- function(ind=NULL, magn=1.0) {
 
 #' @rdname cf
 #' @export
-cf_sexp <- function(ind=NULL, lscale=0.1, magn=1.0) {
+cf_sexp <- function(vars=NULL, lscale=0.1, magn=1.0) {
   cf <- list()
-  cf$ind <- ind
+  cf$vars <- vars
   cf$lscale <- lscale
   cf$magn <- magn
   class(cf) <- 'cf_sexp'
@@ -72,9 +75,9 @@ cf_sexp <- function(ind=NULL, lscale=0.1, magn=1.0) {
 
 #' @rdname cf
 #' @export
-cf_matern32 <- function(ind=NULL, lscale=0.1, magn=1.0) {
+cf_matern32 <- function(vars=NULL, lscale=0.1, magn=1.0) {
   cf <- list()
-  cf$ind <- ind
+  cf$vars <- vars
   cf$lscale <- lscale
   cf$magn <- magn
   class(cf) <- 'cf_matern32'
@@ -83,9 +86,9 @@ cf_matern32 <- function(ind=NULL, lscale=0.1, magn=1.0) {
 
 #' @rdname cf
 #' @export
-cf_matern52 <- function(ind=NULL, lscale=0.1, magn=1.0) {
+cf_matern52 <- function(vars=NULL, lscale=0.1, magn=1.0) {
   cf <- list()
-  cf$ind <- ind
+  cf$vars <- vars
   cf$lscale <- lscale
   cf$magn <- magn
   class(cf) <- 'cf_matern52'
@@ -94,9 +97,9 @@ cf_matern52 <- function(ind=NULL, lscale=0.1, magn=1.0) {
 
 #' @rdname cf
 #' @export
-cf_nn <- function(ind=NULL, sigma0=1.0, sigma=1.0, magn=1.0) {
+cf_nn <- function(vars=NULL, sigma0=1.0, sigma=1.0, magn=1.0) {
   cf <- list()
-  cf$ind <- ind
+  cf$vars <- vars
   cf$sigma0 <- sigma0
   cf$sigma <- sigma
   cf$magn <- magn
@@ -205,47 +208,47 @@ eval_cf.cf_const <- function(object, x1, x2, ...) {
 }
 
 eval_cf.cf_lin <- function(object, x1, x2, ...) {
-  x1 <- prepare_inputmat(x1, object$ind)
-  x2 <- prepare_inputmat(x2, object$ind)
+  x1 <- prepare_inputmat(x1, object$vars)
+  x2 <- prepare_inputmat(x2, object$vars)
   K <- object$magn^2* x1 %*% t(x2)
   return(K)
 }
 
 eval_cf.cf_sexp <- function(object, x1, x2, ...) {
-  x1 <- prepare_inputmat(x1, object$ind)
-  x2 <- prepare_inputmat(x2, object$ind)
+  x1 <- prepare_inputmat(x1, object$vars)
+  x2 <- prepare_inputmat(x2, object$vars)
   K <- cf_sexp_c(x1, x2, object$lscale, object$magn)
   return(K)
 }
 
 eval_cf.cf_matern32 <- function(object, x1, x2, ...) {
-  x1 <- prepare_inputmat(x1, object$ind)
-  x2 <- prepare_inputmat(x2, object$ind)
+  x1 <- prepare_inputmat(x1, object$vars)
+  x2 <- prepare_inputmat(x2, object$vars)
   K <- cf_matern32_c(x1, x2, object$lscale, object$magn)
   return(K)
 }
 
 eval_cf.cf_matern52 <- function(object, x1, x2, ...) {
-  x1 <- prepare_inputmat(x1, object$ind)
-  x2 <- prepare_inputmat(x2, object$ind)
+  x1 <- prepare_inputmat(x1, object$vars)
+  x2 <- prepare_inputmat(x2, object$vars)
   K <- cf_matern52_c(x1, x2, object$lscale, object$magn)
   return(K)
 }
 
 eval_cf.cf_nn <- function(object, x1, x2, ...) {
   d <- NCOL(x1)
-  x1 <- cbind(1, prepare_inputmat(x1, object$ind))
-  x2 <- cbind(1, prepare_inputmat(x2, object$ind))
+  x1 <- cbind(1, prepare_inputmat(x1, object$vars))
+  x2 <- cbind(1, prepare_inputmat(x2, object$vars))
   K <- cf_nn_c(x1, x2, object$sigma0, object$sigma, object$magn)
   return(K)
 }
 
 
-prepare_inputmat <- function(x, ind=NULL) {
-  if (is.null(ind))
+prepare_inputmat <- function(x, vars=NULL) {
+  if (is.null(vars))
     return(as.matrix(x))
   else
-    return(as.matrix(x)[,ind,drop=F])
+    return(as.matrix(x)[,vars,drop=F])
 }
 
 
@@ -295,11 +298,11 @@ rf_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
   set.seed(seed)
   
-  if (is.null(object$ind))
-    object$ind <- c(1:num_inputs)
+  if (is.null(object$vars))
+    object$vars <- c(1:num_inputs)
   else
     # override the number of inputs, because using only a subset of inputs
-    num_inputs <- length(object$ind)
+    num_inputs <- length(object$vars)
   if (num_feat %% 2 == 1)
     stop('number of features must be an even number.')
   
@@ -310,7 +313,7 @@ rf_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   
   featuremap <- function(x) {
     x <- as.matrix(x)
-    h <- x[,object$ind,drop=F] %*% w
+    h <- x[,object$vars,drop=F] %*% w
     object$magn*sqrt(C/m)*cbind(cos(h),sin(h))
   }
   return(featuremap)
@@ -338,11 +341,11 @@ rf_featmap.cf_nn <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
   set.seed(seed)
   
-  if (is.null(object$ind))
-    object$ind <- c(1:num_inputs)
+  if (is.null(object$vars))
+    object$vars <- c(1:num_inputs)
   else
     # override the number of inputs, because using only a subset of inputs
-    num_inputs <- length(object$ind)
+    num_inputs <- length(object$vars)
   
   # draw the hidden layer weights randomly
   m <- num_feat
@@ -351,7 +354,7 @@ rf_featmap.cf_nn <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   w_aug <- rbind(w0, w)
   
   featuremap <- function(x) {
-    x_aug <- cbind(1, as.matrix(x)[,object$ind,drop=F])
+    x_aug <- cbind(1, as.matrix(x)[,object$vars,drop=F])
     h <- stats::pnorm(x_aug %*% w_aug) # hidden layer activations
     object$magn/sqrt(m)*h
   }
