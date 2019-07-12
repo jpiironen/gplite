@@ -172,7 +172,6 @@ get_standata.lik_betabinom <- function(object, ...) {
 # get_response functions
 
 get_response.gp <- function(object, f, ...) {
-  # TODO: CHANGE SO THAT THIS WILL BE USED
   get_response(object$lik, f, ...)
 }
 
@@ -199,11 +198,34 @@ get_response.lik_betabinom <- function(object, f, ...) {
 }
 
 
+# generate_target functions
+
+generate_target.gp <- function(object, f, ...) {
+  generate_target(object$lik, f, ...)
+}
+
+generate_target.lik_gaussian <- function(object, f, ...) {
+  stats::rnorm(length(f))*object$sigma + f
+}
+
+generate_target.lik_binomial <- function(object, f, trials, ...) {
+  mu <- get_response(object, f)
+  stats::rbinom(length(f), trials, prob = mu)
+}
+
+generate_target.lik_betabinom <- function(object, f, trials, ...) {
+  mu <- get_response(object, f)
+  a <- mu/object$phi
+  b <- (1-mu)/object$phi
+  pr <- rbeta(length(f), a, b)
+  stats::rbinom(length(f), trials, prob = pr)
+}
+
 
 # function for determining the default amount of jitter on the covarince diagonal
 # for different likelihoods
 get_jitter <- function(gp, jitter) {
   if (!is.null(jitter))
     return(jitter)
-  return(1e-4)
+  return(1e-6)
 }

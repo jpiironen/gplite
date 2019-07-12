@@ -4,7 +4,7 @@
 #' Notice that this function does not optimize the hyperparameters in any way, 
 #' but only finds the Laplace approximation (or the analytical 
 #' true posterior in the case of Gaussian likelihood) to the latent values. 
-#' Function \code{gp_sample} draws from the posterior of the latent values 
+#' Function \code{gp_mcmc} draws from the posterior of the latent values 
 #' given the current hyperparameter estimates using MCMC. For optimizing the hyperparameter
 #' values, see \code{gp_optim}.
 #' 
@@ -19,7 +19,7 @@
 #' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4.
 #' @param ... Further arguments to be passed to \link{rstan}'s function 
 #' \code{\link[rstan]{optimizing}} (if \code{gp_fit} was called) or 
-#' \code{\link[rstan]{sampling}} (if \code{gp_sample} was called).
+#' \code{\link[rstan]{sampling}} (if \code{gp_mcmc} was called).
 #'
 #'
 #' @return An updated GP model object.
@@ -37,7 +37,7 @@
 #' gp <- gp_fit(gp, x, y)
 #' 
 #' # MCMC solution
-#' gpmc <- gp_sample(gp, x, y, trials=trials, chains=2, iter=1000)
+#' gpmc <- gp_mcmc(gp, x, y, trials=trials, chains=2, iter=1000)
 #' }
 #'
 NULL
