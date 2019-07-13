@@ -15,7 +15,8 @@
 #' latent values. 
 #' @param transform Whether to transform the draws of latent values to the same scale
 #'  as the target y.
-#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4.
+#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
+#'  Default is 1e-6.
 #'
 #'
 #' @return \code{gp_pred} returns a vector of predictive mean (one value for each row of

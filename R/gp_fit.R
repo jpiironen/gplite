@@ -16,7 +16,8 @@
 #' @param y Vector of n output (target) values.
 #' @param trials Vecton of length n giving the number of trials for each observation in binomial 
 #' (and beta binomial) model.
-#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4.
+#' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
+#'  Default is 1e-6.
 #' @param ... Further arguments to be passed to \link{rstan}'s function 
 #' \code{\link[rstan]{optimizing}} (if \code{gp_fit} was called) or 
 #' \code{\link[rstan]{sampling}} (if \code{gp_mcmc} was called).

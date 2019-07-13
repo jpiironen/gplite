@@ -19,7 +19,8 @@ latent values.}
 \item{transform}{Whether to transform the draws of latent values to the same scale
 as the target y.}
 
-\item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability. Default is 1e-4.}
+\item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability.
+Default is 1e-6.}
 
 \item{xnew}{N-by-d matrix of input values (N is the number of test points and d 
 the input dimension). 
