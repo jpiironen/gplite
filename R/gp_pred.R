@@ -53,7 +53,7 @@ NULL
 
 #' @rdname pred
 #' @export
-gp_pred <- function(gp, xnew, var=F, transform=T, jitter=NULL) {
+gp_pred <- function(gp, xnew, var=F, jitter=NULL) {
   
   if (is_fitted(gp, 'sampling')) 
     stop('Only gp_draw currently available for models fitted using gp_mcmc.')
@@ -62,17 +62,17 @@ gp_pred <- function(gp, xnew, var=F, transform=T, jitter=NULL) {
   if (!is_fitted(gp, 'analytic')) {
     # model not fitted, so predict based on the prior
     if (gp$method == 'full')
-      pred <- gp_pred_full_prior(gp, xnew, var=var, transform=transform, jitter=jitter)
+      pred <- gp_pred_full_prior(gp, xnew, var=var, jitter=jitter)
     else if (gp$method == 'rf')
-      pred <- gp_pred_linearized_prior(gp, xnew, var=var, transform=transform, jitter=jitter)
+      pred <- gp_pred_linearized_prior(gp, xnew, var=var, jitter=jitter)
     else
       stop('Unknown method: ', gp$method)
   } else {
     # model fitted using analytical approximation
     if (gp$method == 'full')
-      pred <- gp_pred_full_post(gp, xnew, var=var, transform=transform, jitter=jitter)
+      pred <- gp_pred_full_post(gp, xnew, var=var, jitter=jitter)
     else if (gp$method == 'rf')
-      pred <- gp_pred_linearized_post(gp, xnew, var=var, transform=transform, jitter=jitter)
+      pred <- gp_pred_linearized_post(gp, xnew, var=var, jitter=jitter)
     else
       stop('Unknown method: ', gp$method)
   }
@@ -81,10 +81,7 @@ gp_pred <- function(gp, xnew, var=F, transform=T, jitter=NULL) {
 
 
 
-gp_pred_full_post <- function(gp, xt, var=F, cov=F, transform=T, jitter=NULL) {
-  
-  # 
-  # TODO: transform is ignored
+gp_pred_full_post <- function(gp, xt, var=F, cov=F, jitter=NULL) {
   
   # compute the latent mean first
   K_chol <- gp$K_chol
@@ -108,9 +105,7 @@ gp_pred_full_post <- function(gp, xt, var=F, cov=F, transform=T, jitter=NULL) {
   return(pred_mean)
 }
 
-gp_pred_full_prior <- function(gp, xt, var=F, cov=F, transform=T, jitter=NULL) {
-  
-  # TODO: transform is ignored
+gp_pred_full_prior <- function(gp, xt, var=F, cov=F, jitter=NULL) {
   
   nt <- NROW(xt)
   pred_mean <- rep(0,nt)
@@ -128,9 +123,7 @@ gp_pred_full_prior <- function(gp, xt, var=F, cov=F, transform=T, jitter=NULL) {
 
 
 
-gp_pred_linearized_post <- function(gp, xt, var=F, transform=T, jitter=NULL) {
-  
-  # TODO: transform is ignored
+gp_pred_linearized_post <- function(gp, xt, var=F, jitter=NULL) {
   
   # compute the latent mean first
   zt <- gp$featuremap(xt)
@@ -147,9 +140,7 @@ gp_pred_linearized_post <- function(gp, xt, var=F, transform=T, jitter=NULL) {
   return(pred_mean)
 }
 
-gp_pred_linearized_prior <- function(gp, xt, var=F, transform=T, jitter=NULL) {
-  
-  # TODO: transform is ignored
+gp_pred_linearized_prior <- function(gp, xt, var=F, jitter=NULL) {
   
   nt <- NROW(xt)
   pred_mean <- rep(0,nt)

@@ -9,7 +9,7 @@
 gp_draw(gp, xnew, draws = NULL, transform = T, jitter = NULL,
   seed = NULL)
 
-gp_pred(gp, xnew, var = F, transform = T, jitter = NULL)
+gp_pred(gp, xnew, var = F, jitter = NULL)
 }
 \arguments{
 \item{gp}{A fitted GP model object.}
