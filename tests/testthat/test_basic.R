@@ -8,38 +8,39 @@ n <- 20
 nt <- 30
 x <- rnorm(n)
 xt <- rnorm(nt)
-y <- x^2 + 0.1*rnorm(n)
+y <- x^2 + 0.2*rnorm(n)
 
 
-# 
-cfs <- list(cf_const(), 
-            cf_lin(), 
+#
+cfs <- list(cf_const(),
+            cf_lin(),
             cf_sexp(),
-            cf_matern32(), 
-            cf_matern52(), 
+            cf_matern32(),
+            cf_matern52(),
             cf_nn())
+lik <- lik_gaussian()
 
 
 # create some gps with random covariance function combinations
 k <- 1
 gps <- list()
-for (ncf in 1:length(cfs)) {
-  for (nrep in 1:3) {
-    gp <- gp_init(cfs=sample(cfs, ncf), lik=lik_gaussian())
-    gps[[k]] <- gp_fit(gp,x,y)
-    k <- k+1
-  }
+
+# all covariance functions alone
+for (i in seq_along(cfs)) {
+  gp <- gp_init(cfs=cfs[[i]], lik=lik)
+  gps[[k]] <- gp_fit(gp,x,y)
+  k <- k+1
 }
 
-# these are gps which are only initialized, not fitted
-k <- 1
-gps_notfitted <- list()
-for (ncf in 1:length(cfs)) {
-  for (nrep in 1:3) {
-    gps_notfitted[[k]] <- gp_init(cfs=sample(cfs, ncf), lik=lik_gaussian())
-    k <- k+1
-  }
+# all pairs of covariance functions
+cf_comb <- combn(cfs,2)
+for (i in 1:NCOL(cf_comb)) {
+  gpsgp <- gp_init(cfs=cf_comb[,i], lik=lik)
+  gps[[k]] <- gp_fit(gp,x,y)
+  k <- k+1
 }
+
+
 
 
 
@@ -117,49 +118,12 @@ test_that("gp_fit: predictions are correctly calculated", {
 })
 
 
-# TODO: test that the mcmc and analytic prediction are the same for the gaussian model
 
 
-test_that("gp_pred: error is raised (only) if model has not been refitted after 
-          resetting hyperparameters", {
-  
-  for (k in seq_along(gps)) {
-    gp0 <- gps_notfitted[[k]]
-    gp <- gps[[k]]
-    
-    # prior predicion, should work fine
-    expect_silent(gp_pred(gp0, x, draws = 1))
-    expect_silent(gp_pred(gp0, x, var=T))
-    expect_silent(gp_pred(gp0, x, var=F))
-    
-    # should work fine
-    expect_silent(gp_pred(gp, x, draws = 1))
-    expect_silent(gp_pred(gp, x, var=T))
-    expect_silent(gp_pred(gp, x, var=F))
-    
-    # reset one of the hyperparameters
-    param <- get_param(gp)
-    param[1] <- 0.0
-    gp <- set_param(gp, param)
-    
-    # these should raise an error
-    expect_error(gp_pred(gp, x, draws=1))
-    expect_error(gp_pred(gp, x, var=T))
-    expect_error(gp_pred(gp, x, var=F))
-    
-    # refit the model
-    gp1 <- gp_fit(gp,x,y)
-    SWO(gp2 <- gp_sample(gp,x,y, iter=400, chains=1))
-    
-    # these should again work fine
-    expect_silent(gp_pred(gp1, x, draws = 1))
-    expect_silent(gp_pred(gp1, x, var=T))
-    expect_silent(gp_pred(gp1, x, var=F))
-    expect_silent(gp_pred(gp2, x, draws = 1))
-    expect_silent(gp_pred(gp2, x, var=T))
-    expect_silent(gp_pred(gp2, x, var=F))
-  }
-})
+
+
+
+
 
 
 

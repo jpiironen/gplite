@@ -24,7 +24,7 @@ basis function methods.}
 A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
 }
 \description{
-Initializes a GP model with given covariance function(s) and likelihood. The model can then be fitted using \code{\link{gp_fit}} or \code{\link{gp_sample}}. For hyperparameter optimization, see \code{\link{gp_optim}}
+Initializes a GP model with given covariance function(s) and likelihood. The model can then be fitted using \code{\link{gp_fit}} or \code{\link{gp_mcmc}}. For hyperparameter optimization, see \code{\link{gp_optim}}
 }
 \details{
 The argument \code{method} defines the method for approximating the covariance

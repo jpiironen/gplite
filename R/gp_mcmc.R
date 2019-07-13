@@ -2,7 +2,7 @@
 
 #' @rdname gp_fit
 #' @export
-gp_sample <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
+gp_mcmc <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   if (gp$method == 'full') {
     gp <- gp_mcmc_full(gp, x, y, trials=trials, jitter=jitter, ...)
   } else if (gp$method == 'rf') {
