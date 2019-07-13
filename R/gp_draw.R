@@ -5,7 +5,12 @@
 
 #' @rdname pred
 #' @export
-gp_draw <- function(gp, xnew, draws=NULL, transform=T, jitter=NULL) {
+gp_draw <- function(gp, xnew, draws=NULL, transform=T, jitter=NULL, seed=NULL) {
+  
+  # set random seed but ensure the old RNG state is restored on exit
+  rng_state_old <- .Random.seed
+  on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  set.seed(seed)
 
   if (is_fitted(gp, 'sampling')) {
     #
@@ -50,9 +55,15 @@ gp_draw <- function(gp, xnew, draws=NULL, transform=T, jitter=NULL) {
 
 gp_draw_full_mcmc <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
 
-  # TODO: this ignores draws, and sets it equal to the number of posterior draws
+  fsample <- gp$fsample
+  if (is.null(draws))
+    draws <- NCOL(fsample)
+  else if (draws > NCOL(fsample))
+    stop('Can\'t draw more than the provided GP has posterior draws.')
+  # permute the posterior draws and pick right number of draws
+  fsample <- fsample[,sample(1:NCOL(fsample))]
+  fsample <- fsample[,1:draws]
   
-  draws <- NCOL(gp$fsample)
   nt <- NROW(xt)
   jitter <- get_jitter(gp,jitter)
   Kt <- eval_cf(gp$cf, xt, gp$x)
@@ -60,8 +71,8 @@ gp_draw_full_mcmc <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
   K_chol <- gp$K_chol
   aux <- solve(K_chol, t(Kt))
   pred_cov <- Ktt - t(aux) %*% aux + jitter*diag(nt)
-  pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, gp$fsample))
-  sample <- mvnrnd(draws, pred_mean, chol_cov = t(chol(pred_cov)))
+  pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, fsample))
+  sample <- mvnrnd(draws, pred_mean[,1:draws], chol_cov = t(chol(pred_cov)))
   if (transform)
     sample <- get_response(gp, sample)
   return(sample)
@@ -88,10 +99,17 @@ gp_draw_full_prior <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
 
 gp_draw_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T) {
 
-  # TODO: this ignores draws, and sets it equal to the number of posterior draws
+  wsample <- gp$wsample
+  if (is.null(draws))
+    draws <- NCOL(wsample)
+  else if (draws > NCOL(wsample))
+    stop('Can\'t draw more than the provided GP has posterior draws.')
+  # permute the posterior draws and pick right number of draws
+  wsample <- wsample[,sample(1:NCOL(wsample))]
+  wsample <- wsample[,1:draws]
   
   zt <- gp$featuremap(xt)
-  sample <- zt %*% gp$wsample
+  sample <- zt %*% wsample
   if (transform)
     sample <- get_response(gp, sample)
   return(sample)

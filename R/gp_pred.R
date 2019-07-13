@@ -1,6 +1,7 @@
 #' Make predictions with a GP model
 #' 
-#' Function \code{gp_pred} can be used to make analytic predictions, whereas \code{gp_draw}
+#' Function \code{gp_pred} can be used to make analytic predictions for the latent function
+#' values at test points, whereas \code{gp_draw}
 #' can be used to draw from the predictive distribution (or from the prior if the GP has
 #' not been fitted yet.)
 #' 
@@ -20,7 +21,8 @@
 #'
 #'
 #' @return \code{gp_pred} returns a vector of predictive mean (one value for each row of
-#'  \code{xnew}), or a list with fields having both the mean and variance for each 
+#'  \code{xnew}) for the latent mean, or a list with fields having both the 
+#'  mean and variance for each 
 #'  observation if \code{var = TRUE}. \code{gp_draw} returns an N-by-draws
 #' matrix of random draws from the predictive distribution. 
 #'  
