@@ -6,12 +6,16 @@
 \alias{gp_pred}
 \title{Make predictions with a GP model}
 \usage{
-gp_draw(gp, xt, draws = NULL, transform = T, jitter = NULL)
+gp_draw(gp, xnew, draws = NULL, transform = T, jitter = NULL)
 
 gp_pred(gp, xnew, var = F, transform = T, jitter = NULL)
 }
 \arguments{
 \item{gp}{A fitted GP model object.}
+
+\item{xnew}{N-by-d matrix of input values (N is the number of test points and d 
+the input dimension). 
+Can also be a vector of length N if the model has only a single input.}
 
 \item{draws}{Number of draws to generate from the predictive distribution for the 
 latent values.}
@@ -22,16 +26,12 @@ as the target y.}
 \item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability.
 Default is 1e-6.}
 
-\item{xnew}{N-by-d matrix of input values (N is the number of test points and d 
-the input dimension). 
-Can also be a vector of length N if the model has only a single input.}
-
 \item{var}{Whether to compute the predictive variances along with predictive mean.}
 }
 \value{
 \code{gp_pred} returns a vector of predictive mean (one value for each row of
  \code{xnew}), or a list with fields having both the mean and variance for each 
- observation if \code{var=TRUE}. \code{gp_draw} returns an N-by-draws
+ observation if \code{var = TRUE}. \code{gp_draw} returns an N-by-draws
 matrix of random draws from the predictive distribution.
 }
 \description{

@@ -5,16 +5,16 @@
 
 #' @rdname pred
 #' @export
-gp_draw <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
+gp_draw <- function(gp, xnew, draws=NULL, transform=T, jitter=NULL) {
 
   if (is_fitted(gp, 'sampling')) {
     #
     # model fitted using mcmc, so predict using the draws from the posterior
     #
     if (gp$method == 'full')
-      pred <- gp_draw_full_mcmc(gp, xt, draws=draws, transform=transform, jitter=jitter)
+      pred <- gp_draw_full_mcmc(gp, xnew, draws=draws, transform=transform, jitter=jitter)
     else if (gp$method == 'rf')
-      pred <- gp_draw_linearized_mcmc(gp, xt, draws=draws, transform=transform)
+      pred <- gp_draw_linearized_mcmc(gp, xnew, draws=draws, transform=transform)
     else
       stop('Unknown method: ', gp$method)
   } else {
@@ -25,20 +25,20 @@ gp_draw <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
     if (is_fitted(gp, 'analytic')) {
       # draw from the analytical posterior approximation
       if (gp$method == 'full')
-        pred <- gp_draw_full_analytic(gp, xt, draws=draws,
+        pred <- gp_draw_full_analytic(gp, xnew, draws=draws,
                                       transform=transform, jitter=jitter)
       else if (gp$method == 'rf')
-        pred <- gp_draw_linearized_analytic(gp, xt, draws=draws,
+        pred <- gp_draw_linearized_analytic(gp, xnew, draws=draws,
                                             transform=transform, jitter=jitter)
       else
         stop('Unknown method: ', gp$method)
     } else {
       # draw from the prior
       if (gp$method == 'full')
-        pred <- gp_draw_full_prior(gp, xt, draws=draws,
+        pred <- gp_draw_full_prior(gp, xnew, draws=draws,
                                    transform=transform, jitter=jitter)
       else if (gp$method == 'rf')
-        pred <- gp_draw_linearized_prior(gp, xt, draws=draws,
+        pred <- gp_draw_linearized_prior(gp, xnew, draws=draws,
                                          transform=transform, jitter=jitter)
       else
         stop('Unknown method: ', gp$method)

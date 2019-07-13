@@ -21,7 +21,7 @@
 #'
 #' @return \code{gp_pred} returns a vector of predictive mean (one value for each row of
 #'  \code{xnew}), or a list with fields having both the mean and variance for each 
-#'  observation if \code{var=TRUE}. \code{gp_draw} returns an N-by-draws
+#'  observation if \code{var = TRUE}. \code{gp_draw} returns an N-by-draws
 #' matrix of random draws from the predictive distribution. 
 #'  
 #' @section References:
