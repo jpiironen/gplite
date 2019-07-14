@@ -2,6 +2,7 @@
 .Rproj.user
 *.Rproj
 .Rhistory
+.RData
 
 src/*.o
 src/*.so
