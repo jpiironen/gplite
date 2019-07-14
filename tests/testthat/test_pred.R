@@ -103,7 +103,7 @@ test_that("gp_pred: analytic prediction gives the same result as the sampling
     gp <- gp_fit(gps[[k]], x, yval[[k]], trials=trials)
     
     # analytic prediction for f at test points
-    pred <- gp_pred(gp,xt, var=T, transform=F)
+    pred <- gp_pred(gp,xt, var=T)
     
     # sampling based prediction
     draws <- gp_draw(gp,xt,draws=1e5, transform=F)

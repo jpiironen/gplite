@@ -11,8 +11,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   #collapse = TRUE,
-  fig.width = 5,
-  fig.retina = 4
+  fig.width = 7,
+  fig.retina = 8
 #  #comment = "#>"
 )
 ```
@@ -54,7 +54,7 @@ There's three hyperparameters in the model. We can see the initial values using 
 exp(get_param(gp))
 ```
 
-We can optimize the hyperparameters to the maximum marginal likelihood solution easily using ```gp_optim```.
+We can optimize the hyperparameters to the maximum marginal likelihood solution using ```gp_optim```.
 ```{r, results='hide'}
 gp <- gp_optim(gp, x, y)
 ```
@@ -106,11 +106,11 @@ gp <- gp_init(cfs = cf_sexp(), lik = lik_binomial())
 gp <- gp_optim(gp, x, y, trials = rep(1,n))
 ```
 
-Let us visualize the predictive fit. This is most conveniently done by drawing from the predictive distribution (using keyword ```draws``` in ```gp_pred```) and then computing the intervals from the obtained draws.
+Let us visualize the predictive fit. For a non-Gaussian likelihood, this is most conveniently done by drawing from the predictive distribution using ```gp_draw```, and then computing the intervals from the obtained draws.
 ```{r}
 # predict in a grid of points
 xt <- seq(-5,5,len=200)
-pred <- gp_pred(gp, xt, draws=4000)
+pred <- gp_draw(gp, xt, draws=1000)
 pred_mean <- rowMeans(pred)
 qt <- apply(pred, 1, quantile, c(0.05, 0.95))
 pred_lb <- qt[1,]
@@ -127,15 +127,15 @@ ggplot() +
 The fit looks reasonable, but one could expect that the predictive probabilities would be even closer to zero and one around the origin, given the data we see. Indeed, it is well known that the Laplace approximation tends to be too conservative and underestimate the extreme probabilities in this sort of cases (see, for example, Kuss and Rasmussen, 2005). 
 
 For more accurate inference, we can run MCMC for the latent values with the optimized hyperparameters.
-```{r}
-gpmc <- gp_sample(gp, x, y, trials=rep(1,n), iter=1000, chains=2)
+```{r, results='hide'}
+gpmc <- gp_mcmc(gp, x, y, trials=rep(1,n), iter=1000, chains=2)
 ```
 
 Let's visualize the fit again
 ```{r}
 # predict in a grid of points
 xt <- seq(-5,5,len=200)
-pred <- gp_pred(gpmc, xt)
+pred <- gp_draw(gpmc, xt)
 pred_mean <- rowMeans(pred)
 qt <- apply(pred, 1, quantile, c(0.05, 0.95))
 pred_lb <- qt[1,]
@@ -148,7 +148,7 @@ ggplot() +
   xlab('x') + ylab('y')
 ```
 
-As we see, the fit is substantially different in those cases where the predictive probability is close to zero or one. It is worthwhile to note that even though the Laplace approximation is not very accurate in the extreme cases, it gives reasonable estimates for the hyperparameters, and running the MCMC for the latent values given the hyperparameters is much more efficient than sampling the hyperparameters and the latent values jointly.
+As we see, the fit is substantially different in those cases where the predictive probability is close to zero or one. It is worthwhile to note that even though the Laplace approximation is not very accurate in the extreme cases, it gives reasonable estimates for the hyperparameters. Running the MCMC for the latent values given the hyperparameters gives then accurate estimates for the latent function values but is much more efficient than sampling the hyperparameters and the latent values jointly. In this case the MCMC takes only a few seconds.
 
 
 

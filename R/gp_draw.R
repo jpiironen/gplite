@@ -27,6 +27,8 @@ gp_draw <- function(gp, xnew, draws=NULL, transform=T, jitter=NULL, seed=NULL) {
     # model fitted using analytical gaussian approximation (or not fitted at all),
     # so predict based on that
     #
+    if (is.null(draws))
+      stop('Please provide the number of draws.')
     if (is_fitted(gp, 'analytic')) {
       # draw from the analytical posterior approximation
       if (gp$method == 'full')
@@ -80,7 +82,7 @@ gp_draw_full_mcmc <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
 
 gp_draw_full_analytic <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
   
-  pred <- gp_pred_full_post(gp, xt, cov=T, transform=F, jitter=jitter)
+  pred <- gp_pred_full_post(gp, xt, cov=T, jitter=jitter)
   sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
   if (transform)
     sample <- get_response(gp, sample)
@@ -89,7 +91,7 @@ gp_draw_full_analytic <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) 
 
 gp_draw_full_prior <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
 
-  pred <- gp_pred_full_prior(gp, xt, cov=T, transform=F, jitter=jitter)
+  pred <- gp_pred_full_prior(gp, xt, cov=T, jitter=jitter)
   sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
   if (transform)
     sample <- get_response(gp, sample)
@@ -105,7 +107,7 @@ gp_draw_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T) {
   else if (draws > NCOL(wsample))
     stop('Can\'t draw more than the provided GP has posterior draws.')
   # permute the posterior draws and pick right number of draws
-  wsample <- wsample[,sample(1:NCOL(wsample))]
+  wsample <- wsample[,sample(1:NCOL(wsample)),drop=F]
   wsample <- wsample[,1:draws]
   
   zt <- gp$featuremap(xt)
@@ -145,9 +147,9 @@ mvnrnd <- function(draws, mean, chol_cov=NULL, chol_prec=NULL) {
   # covariance or precision must be provided.
   d <- NROW(mean)
   if (!is.null(chol_cov))
-    r <- as.vector(mean) + chol_cov %*% matrix(stats::rnorm(d*draws), nrow=d)
+    r <- mean + chol_cov %*% matrix(stats::rnorm(d*draws), nrow=d)
   else if (!is.null(chol_prec))
-    r <- as.vector(mean) + solve(t(chol_prec), matrix(stats::rnorm(d*draws), nrow=d))
+    r <- mean + solve(t(chol_prec), matrix(stats::rnorm(d*draws), nrow=d))
   else
     stop('Both cov_chol and prec_chol can\'t be NULL.')
   return(r)
