@@ -210,9 +210,11 @@ set_param.cf_nn <- function(object, param, ...) {
 
 # eval_cf functions
 
-eval_cf.list <- function(object, x1, x2, ...) {
+eval_cf.list <- function(object, x1, x2, cfind=NULL, ...) {
+  if (is.null(cfind))
+    cfind <- seq_along(object)
   K <- 0
-  for (k in seq_along(object)) {
+  for (k in cfind) {
     K <- K + eval_cf(object[[k]], x1, x2, ...)
   }
   K
@@ -280,9 +282,11 @@ rf_featmap.list <- function(object, ...) {
   for (k in seq_along(object))
     fmaps[[k]] <- rf_featmap(object[[k]], ...)
   
-  featuremap <- function(x) {
+  featuremap <- function(x, cfind=NULL) {
+    if (is.null(cfind))
+      cfind <- seq_along(fmaps)
     z <- c()
-    for (k in seq_along(fmaps))
+    for (k in cfind)
       z <- cbind(z,fmaps[[k]](x))
     return(z)
   }

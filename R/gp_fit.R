@@ -91,6 +91,13 @@ gp_laplace_linearized <- function(gp, x, y, featuremap, trials=NULL, jitter=NULL
   return(gp)
 }
 
+get_wmean <- function(gp, cfind) {
+  # TODO: take into account cfind
+  stop('This functionality is not yet implemented.')
+  if (method != 'rf')
+    stop('Can return linearized weights only for GP with method \'rf\'.')
+  gp$wmean
+}
 
 
 
