@@ -21,7 +21,7 @@ gp_mcmc_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
-  K <- eval_cf(gp$cf, x, x) + jitter*diag(n)
+  K <- eval_cf(gp$cfs, x, x) + jitter*diag(n)
   gp$x <- x
   gp$K <- K
   gp$K_chol <- t(chol(K)) # lower triangular

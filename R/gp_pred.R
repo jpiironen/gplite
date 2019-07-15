@@ -85,8 +85,8 @@ gp_pred_full_post <- function(gp, xt, var=F, cov=F, jitter=NULL) {
   
   # compute the latent mean first
   K_chol <- gp$K_chol
-  Kt <- eval_cf(gp$cf, xt, gp$x)
-  Ktt <- eval_cf(gp$cf, xt, xt)
+  Kt <- eval_cf(gp$cfs, xt, gp$x)
+  Ktt <- eval_cf(gp$cfs, xt, xt)
   pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, gp$fmean))
   pred_mean <- as.vector(pred_mean)
   
@@ -112,7 +112,7 @@ gp_pred_full_prior <- function(gp, xt, var=F, cov=F, jitter=NULL) {
   
   if (var || cov) {
     jitter <- get_jitter(gp, jitter)
-    pred_cov <- eval_cf(gp$cf, xt, xt)
+    pred_cov <- eval_cf(gp$cfs, xt, xt)
     if (cov)
       return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
     else

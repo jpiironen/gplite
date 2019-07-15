@@ -68,8 +68,8 @@ gp_draw_full_mcmc <- function(gp, xt, draws=NULL, transform=T, jitter=NULL) {
   
   nt <- NROW(xt)
   jitter <- get_jitter(gp,jitter)
-  Kt <- eval_cf(gp$cf, xt, gp$x)
-  Ktt <- eval_cf(gp$cf, xt, xt)
+  Kt <- eval_cf(gp$cfs, xt, gp$x)
+  Ktt <- eval_cf(gp$cfs, xt, xt)
   K_chol <- gp$K_chol
   aux <- solve(K_chol, t(Kt))
   pred_cov <- Ktt - t(aux) %*% aux + jitter*diag(nt)
