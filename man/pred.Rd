@@ -6,10 +6,10 @@
 \alias{gp_pred}
 \title{Make predictions with a GP model}
 \usage{
-gp_draw(gp, xnew, draws = NULL, transform = T, jitter = NULL,
-  seed = NULL)
+gp_draw(gp, xnew, draws = NULL, transform = T, cfind = NULL,
+  jitter = NULL, seed = NULL)
 
-gp_pred(gp, xnew, var = F, jitter = NULL)
+gp_pred(gp, xnew, var = F, cfind = NULL, jitter = NULL)
 }
 \arguments{
 \item{gp}{A fitted GP model object.}

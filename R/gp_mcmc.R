@@ -6,9 +6,7 @@ gp_mcmc <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   if (gp$method == 'full') {
     gp <- gp_mcmc_full(gp, x, y, trials=trials, jitter=jitter, ...)
   } else if (gp$method == 'rf') {
-    num_inputs <- NCOL(x)
-    featuremap <- rf_featmap(gp$cfs, num_inputs, gp$num_basis, seed=gp$rf_seed)
-    gp <- gp_mcmc_linearized(gp, x, y, featuremap, trials=trials, ...)
+    gp <- gp_mcmc_linearized(gp, x, y, trials=trials, ...)
   } else {
     stop('Unknown method: ', gp$method)
   }
@@ -33,8 +31,9 @@ gp_mcmc_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
 }
 
 gp_mcmc_linearized <- function(gp, x, y, featuremap, trials=NULL, ...) {
-  gp$featuremap <- featuremap
-  z <- gp$featuremap(x)
+  num_inputs <- NCOL(x)
+  featuremap <- get_featuremap(gp, num_inputs)
+  z <- featuremap(x)
   n <- length(y)
   data <- c(list(n=n,m=ncol(z),Z=z,y=y), get_standata(gp$lik, trials=trials))
   model <- get_stanmodel(gp$lik, gp$method)

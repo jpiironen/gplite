@@ -125,20 +125,17 @@ gp_pred_full_prior <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
 
 gp_pred_linearized_post <- function(gp, xt, var=F, cfind=NULL, jitter=NULL) {
   
-  # TODO: take into account cfind
-  if (!is.null(cfind))
-    stop('cfind not supported for method rf yet.')
-  
   # compute the latent mean first
-  zt <- gp$featuremap(xt, cfind)
-  pred_mean <- as.vector(zt %*% gp$wmean)
+  featuremap <- get_featuremap(gp, num_inputs = NCOL(xt))
+  zt <- featuremap(xt, cfind)
+  wmean <- get_w_mean(gp, cfind)
+  pred_mean <- as.vector(zt %*% wmean)
   
   if (var == T) {
     # covariance of the latent function
     nt <- length(pred_mean)
-    jitter <- get_jitter(gp,jitter) 
-    aux <- solve(gp$wprec_chol, t(zt))
-    pred_cov <- t(aux) %*% aux + jitter*diag(nt)
+    wcov <- get_w_cov(gp, cfind)
+    pred_cov <- zt %*% (wcov %*% t(zt))
     return(list(mean=pred_mean, var=diag(pred_cov)))
   }
   return(pred_mean)
@@ -146,19 +143,15 @@ gp_pred_linearized_post <- function(gp, xt, var=F, cfind=NULL, jitter=NULL) {
 
 gp_pred_linearized_prior <- function(gp, xt, var=F, cfind=NULL, jitter=NULL) {
   
-  # TODO: take into account cfind
-  if (!is.null(cfind))
-    stop('cfind not supported for method rf yet.')
-  
+  # mean is zero
   nt <- NROW(xt)
   pred_mean <- rep(0,nt)
   
   if (var == T) {
     num_inputs <- NCOL(xt)
     featuremap <- get_featuremap(gp, num_inputs)
-    zt <- featuremap(xt)
-    jitter <- get_jitter(gp, jitter)
-    pred_cov <- zt %*% t(zt) + jitter*diag(nt)
+    zt <- featuremap(xt, cfind)
+    pred_cov <- zt %*% t(zt) 
     return(list(mean=pred_mean, var=diag(pred_cov)))
   }
   return(pred_mean)

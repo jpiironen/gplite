@@ -56,7 +56,7 @@ test_that("gp_pred: error is raised (only) if model has not been refitted after
             
   for (k in seq_along(gps)) {
     gp0 <- gps[[k]]
-    gp <- gp_fit(gps[[k]], x, yval[[k]], trials=trials)
+    gp <- gp_fit(gp0, x, yval[[k]], trials=trials)
     
     # prior predicion, should work fine
     expect_silent(gp_draw(gp0, x, draws = 1))

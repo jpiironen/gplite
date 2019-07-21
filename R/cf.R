@@ -277,10 +277,10 @@ prepare_inputmat <- function(x, vars=NULL) {
 
 # rf_featmap functions
 
-rf_featmap.list <- function(object, ...) {
+rf_featmap.list <- function(object, num_feat, ...) {
   fmaps <- list()
   for (k in seq_along(object))
-    fmaps[[k]] <- rf_featmap(object[[k]], ...)
+    fmaps[[k]] <- rf_featmap(object[[k]], num_feat[k], ...)
   
   featuremap <- function(x, cfind=NULL) {
     if (is.null(cfind))
@@ -310,7 +310,7 @@ rf_featmap.cf_lin <- function(object, ...) {
   return(featuremap)
 }
 
-rf_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+rf_featmap.cf_sexp <- function(object, num_feat, num_inputs, seed=NULL, ...) {
   #
   # spectral density of sexp kernel is given by:
   #     C*N(0,s^2), where
@@ -343,17 +343,17 @@ rf_featmap.cf_sexp <- function(object, num_inputs, num_feat, seed=NULL, ...) {
   return(featuremap)
 }
 
-rf_featmap.cf_matern32 <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+rf_featmap.cf_matern32 <- function(object, num_feat, num_inputs, seed=NULL, ...) {
   # TODO: implement this
   stop('Random Fourier features for Matern kernels not implemented yet.')
 }
 
-rf_featmap.cf_matern52 <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+rf_featmap.cf_matern52 <- function(object, num_feat, num_inputs, seed=NULL, ...) {
   # TODO: implement this
   stop('Random Fourier features for Matern kernels not implemented yet.')
 }
 
-rf_featmap.cf_nn <- function(object, num_inputs, num_feat, seed=NULL, ...) {
+rf_featmap.cf_nn <- function(object, num_feat, num_inputs, seed=NULL, ...) {
   #
   # neural network kernel does not have a spectral density (because it's non-stationary),
   # but we can draw the random features by drawing the hidden layer weights from the prior, 

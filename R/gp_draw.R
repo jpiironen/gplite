@@ -20,7 +20,7 @@ gp_draw <- function(gp, xnew, draws=NULL, transform=T, cfind=NULL, jitter=NULL, 
       pred <- gp_draw_full_mcmc(gp, xnew, draws=draws, transform=transform, 
                                 cfind=cfind, jitter=jitter)
     else if (gp$method == 'rf')
-      pred <- gp_draw_linearized_mcmc(gp, xnew, draws=draws, transform=transform)
+      pred <- gp_draw_linearized_mcmc(gp, xnew, draws=draws, transform=transform, cfind=cfind)
     else
       stop('Unknown method: ', gp$method)
   } else {
@@ -36,8 +36,8 @@ gp_draw <- function(gp, xnew, draws=NULL, transform=T, cfind=NULL, jitter=NULL, 
         pred <- gp_draw_full_analytic(gp, xnew, draws=draws, transform=transform,
                                       cfind=cfind, jitter=jitter)
       else if (gp$method == 'rf')
-        pred <- gp_draw_linearized_analytic(gp, xnew, draws=draws,
-                                            transform=transform, jitter=jitter)
+        pred <- gp_draw_linearized_analytic(gp, xnew, draws=draws, transform=transform,
+                                            cfind=cfind, jitter=jitter)
       else
         stop('Unknown method: ', gp$method)
     } else {
@@ -46,8 +46,8 @@ gp_draw <- function(gp, xnew, draws=NULL, transform=T, cfind=NULL, jitter=NULL, 
         pred <- gp_draw_full_prior(gp, xnew, draws=draws, transform=transform,
                                    cfind=cfind, jitter=jitter)
       else if (gp$method == 'rf')
-        pred <- gp_draw_linearized_prior(gp, xnew, draws=draws,
-                                         transform=transform, jitter=jitter)
+        pred <- gp_draw_linearized_prior(gp, xnew, draws=draws, transform=transform,
+                                         cfind=cfind, jitter=jitter)
       else
         stop('Unknown method: ', gp$method)
     }
@@ -102,11 +102,7 @@ gp_draw_full_prior <- function(gp, xt, draws=NULL, transform=T, cfind=NULL, jitt
 
 gp_draw_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T, cfind=NULL) {
   
-  # TODO: take into account cfind
-  if (!is.null(cfind))
-    stop('cfind not supported for method rf yet.')
-
-  wsample <- gp$wsample
+  wsample <- get_w_sample(gp, cfind)
   if (is.null(draws))
     draws <- NCOL(wsample)
   else if (draws > NCOL(wsample))
@@ -115,7 +111,9 @@ gp_draw_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T, cfind=NULL)
   wsample <- wsample[,sample(1:NCOL(wsample)),drop=F]
   wsample <- wsample[,1:draws]
   
-  zt <- gp$featuremap(xt)
+  num_inputs <- NCOL(xt)
+  featuremap <- get_featuremap(gp, num_inputs)
+  zt <- featuremap(xt, cfind)
   sample <- zt %*% wsample
   if (transform)
     sample <- get_response(gp, sample)
@@ -124,14 +122,14 @@ gp_draw_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T, cfind=NULL)
 
 gp_draw_linearized_analytic <- function(gp, xt, draws=NULL, transform=T,
                                         cfind=NULL, jitter=NULL) {
-  
-  # TODO: take into account cfind
-  if (!is.null(cfind))
-    stop('cfind not supported for method rf yet.')
 
   # draw from the posterior of w
-  zt <- gp$featuremap(xt)
-  w <- mvnrnd(draws, gp$wmean, chol_prec=gp$wprec_chol)
+  num_inputs <- NCOL(xt)
+  featuremap <- get_featuremap(gp, num_inputs)
+  zt <- featuremap(xt, cfind)
+  wmean <- get_w_mean(gp, cfind)
+  wcov <- get_w_cov(gp, cfind)
+  w <- mvnrnd(draws, wmean, chol_cov = t(chol(wcov)))
   sample <- zt %*% w
   if (transform)
     sample <- get_response(gp, sample)
@@ -140,17 +138,13 @@ gp_draw_linearized_analytic <- function(gp, xt, draws=NULL, transform=T,
 
 gp_draw_linearized_prior <- function(gp, xt, var=F, draws=NULL, transform=T,
                                      cfind=NULL, jitter=NULL) {
-  
-  # TODO: take into account cfind
-  if (!is.null(cfind))
-    stop('cfind not supported for method rf yet.')
 
   # draw from the prior of w
   num_inputs <- NCOL(xt)
   featuremap <- get_featuremap(gp, num_inputs)
-  zt <- featuremap(xt)
+  zt <- featuremap(xt, cfind)
   num_feat <- NCOL(zt)
-  w <- matrix(stats::rnorm(num_feat*draws), nrow=num_feat)
+  w <- matrix(stats::rnorm(num_feat*draws), nrow=num_feat) # draw from the prior (standard Gaussian)
   sample <- zt %*% w
   if (transform)
     sample <- get_response(gp, sample)

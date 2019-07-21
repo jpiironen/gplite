@@ -58,7 +58,7 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=
   gp$lik <- lik
   gp$method <- method
   gp$fitted <- FALSE
-  gp$num_basis <- num_basis
+  gp$num_basis <- check_num_basis(cfs, num_basis)
   gp$rf_seed <- rf_seed
   class(gp) <- 'gp'
   gp
@@ -123,7 +123,7 @@ set_param.gp <- function(object, param, ...) {
 
 get_featuremap.gp <- function(object, num_inputs, ...) {
   if (object$method == 'rf')
-    return(rf_featmap(object$cfs, num_inputs, object$num_basis, seed=object$rf_seed))
+    return(rf_featmap(object$cfs, object$num_basis, num_inputs=num_inputs, seed=object$rf_seed))
   else
     stop('No feature map implementation for method: ', object$method)
 }
@@ -140,6 +140,53 @@ is_fitted.gp <- function(object, type, ...) {
 
 
 
+# below are some functions for handling the linearized gp
+
+check_num_basis <- function(cfs, num_basis, num_inputs=NA) {
+  if (length(num_basis) == 1)
+    num_basis <- rep(num_basis, length(cfs))
+  if (length(num_basis) != length(cfs))
+    stop('The length of num_basis must match to the number of covariance functions.')
+  for (k in seq_along(cfs))
+    if (class(cfs[[k]]) == 'cf_const')
+      num_basis[k] <- 1
+    else if (class(cfs[[k]]) == 'cf_lin')
+      num_basis[k] <- num_inputs
+  return(num_basis)
+}
+
+get_weight_inds <- function(gp, cfind=NULL) {
+  if (is.null(cfind))
+    cfind <- seq_along(gp$cfs)
+  end_points <- c(0, cumsum(gp$num_basis))
+  inds <- c()
+  for (k in cfind)
+    inds <- c(inds, (end_points[k]+1):end_points[k+1])
+  return(inds)
+}
+
+get_w_mean <- function(gp, cfind=NULL) {
+  if (is.null(cfind))
+    cfind <- seq_along(gp$cfs)
+  inds <- get_weight_inds(gp, cfind)
+  w <- gp$wmean[inds]
+  return(w)
+}
+
+get_w_cov <- function(gp, cfind=NULL) {
+  if (is.null(cfind))
+    cfind <- seq_along(gp$cfs)
+  inds <- get_weight_inds(gp, cfind)
+  return(gp$wcov[inds,inds])
+}
+
+
+get_w_sample <- function(gp, cfind=NULL) {
+  if (is.null(cfind))
+    cfind <- seq_along(gp$cfs)
+  inds <- get_weight_inds(gp, cfind)
+  return(gp$wsample[inds,,drop=F])
+}
 
 
 
