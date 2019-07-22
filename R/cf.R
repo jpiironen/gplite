@@ -12,12 +12,14 @@
 #' 
 #' The supported covariance functions are (see Rasmussen and Williams, 2006):
 #' \describe{
-#'  \item{\code{cf_const}}{ Constant covariance function. }
-#'  \item{\code{cf_lin}}{ Linear covariance function. }
+#'  \item{\code{cf_const}}{ Constant covariance function. Can be used to model the intercept. }
+#'  \item{\code{cf_lin}}{ Linear covariance function. Produces linear functions. }
 #'  \item{\code{cf_sexp}}{ Squared exponential (or exponentiated quadratic, or Gaussian) covariance function.}
 #'  \item{\code{cf_matern32}}{ Matern nu=3/2 covariance function. }
 #'  \item{\code{cf_matern52}}{ Matern nu=5/2 covariance function. }
 #'  \item{\code{cf_nn}}{ Neural network covariance function. }
+#'  \item{\code{cf_periodic}}{ Periodic covariance function. The periodicity is achieved by mapping the
+#'  original inputs through sine and cosine functions, and then applying the base kernel in this new space.}
 #' }
 #' 
 #'
@@ -32,6 +34,9 @@
 #' @param sigma0 Prior std for the bias in the neural network covariance function.
 #' @param sigma Prior std for the weights in the hidden layers of the neural network 
 #' covariance function. 
+#' @param period Period length for the periodic covariance function.
+#' @param cf_base Base covariance function that is used to model the variability within each period 
+#' in periodic covariance function.
 #'
 #' @return The covariance function object.
 #' 
@@ -53,7 +58,7 @@
 #' # (the functional form is f(x) = f(x_1) + f(x_2,x_3))
 #' cfs <- list(cf_const(), cf_sexp(1), cf_sexp(c(2,3)))
 #' lik <- lik_gaussian()
-#' gp <- gp_init(cf, lik)
+#' gp <- gp_init(cfs, lik)
 #' gp <- gp_optim(gp, x, y)
 #' 
 #' }
@@ -84,7 +89,7 @@ cf_lin <- function(vars=NULL, magn=1.0) {
 
 #' @rdname cf
 #' @export
-cf_sexp <- function(vars=NULL, lscale=0.1, magn=1.0) {
+cf_sexp <- function(vars=NULL, lscale=0.3, magn=1.0) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
@@ -95,7 +100,7 @@ cf_sexp <- function(vars=NULL, lscale=0.1, magn=1.0) {
 
 #' @rdname cf
 #' @export
-cf_matern32 <- function(vars=NULL, lscale=0.1, magn=1.0) {
+cf_matern32 <- function(vars=NULL, lscale=0.3, magn=1.0) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
@@ -106,7 +111,7 @@ cf_matern32 <- function(vars=NULL, lscale=0.1, magn=1.0) {
 
 #' @rdname cf
 #' @export
-cf_matern52 <- function(vars=NULL, lscale=0.1, magn=1.0) {
+cf_matern52 <- function(vars=NULL, lscale=0.3, magn=1.0) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
@@ -127,6 +132,16 @@ cf_nn <- function(vars=NULL, sigma0=1.0, sigma=1.0, magn=1.0) {
   cf
 }
 
+#' @rdname cf
+#' @export 
+cf_periodic <- function(vars, period, cf_base=cf_sexp()) {
+  cf <- list()
+  cf$vars <- vars
+  cf$period <- period
+  cf$base <- cf_base
+  class(cf) <- 'cf_periodic'
+  cf
+}
 
 
 # get_param functions
@@ -167,6 +182,17 @@ get_param.cf_nn <- function(object, ...) {
   param
 }
 
+get_param.cf_periodic <- function(object, ...) {
+  param <- get_param(object$base)
+  param <- c(object$period, param)
+  names(param)[1] <- 'cf_periodic.period'
+  newnames <- lapply(names(param), function(name) {
+    id <- unlist(strsplit(name,'.', fixed=T))[2]
+    paste0('cf_periodic.',id)
+  })
+  names(param) <- unlist(newnames)
+  param
+}
 
 
 # set_param functions
@@ -203,6 +229,12 @@ set_param.cf_nn <- function(object, param, ...) {
   object$sigma0 <- exp(param[1])
   object$sigma <- exp(param[2])
   object$magn <- exp(param[3])
+  object
+}
+
+set_param.cf_periodic <- function(object, param, ...) {
+  object$period <- param[1]
+  object$base <- set_param(object$base, param[2:length(param)])
   object
 }
 
@@ -262,6 +294,16 @@ eval_cf.cf_nn <- function(object, x1, x2, ...) {
   x1 <- cbind(1, prepare_inputmat(x1, object$vars))
   x2 <- cbind(1, prepare_inputmat(x2, object$vars))
   K <- cf_nn_c(x1, x2, object$sigma0, object$sigma, object$magn)
+  return(K)
+}
+
+eval_cf.cf_periodic <- function(object, x1, x2, ...) {
+  x1 <- prepare_inputmat(x1, object$vars)
+  x2 <- prepare_inputmat(x2, object$vars)
+  period <- object$period
+  x1_transf <- cbind(sin(2*pi/period*x1), cos(2*pi/period*x1))
+  x2_transf <- cbind(sin(2*pi/period*x2), cos(2*pi/period*x2))
+  K <- eval_cf(object$base, x1_transf, x2_transf)
   return(K)
 }
 
@@ -383,10 +425,23 @@ rf_featmap.cf_nn <- function(object, num_feat, num_inputs, seed=NULL, ...) {
     object$magn/sqrt(m)*h
   }
   return(featuremap)
-  
 }
 
-
+rf_featmap.cf_periodic <- function(object, num_feat, num_inputs, seed=NULL, ...) {
+  
+  if (is.null(object$vars))
+    object$vars <- c(1:num_inputs)
+  else
+    # override the number of inputs, because using only a subset of inputs
+    num_inputs <- length(object$vars)
+  
+  featuremap_base <- rf_featmap(object$base, num_feat, num_inputs=2*length(object$vars), seed=seed)
+  featuremap <- function(x) {
+    x_transf <- cbind(sin(2*pi/object$period*x), cos(2*pi/object$period*x))
+    featuremap_base(x_transf)
+  }
+  return(featuremap)
+}
 
 
 
