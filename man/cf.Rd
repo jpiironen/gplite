@@ -9,6 +9,7 @@
 \alias{cf_matern52}
 \alias{cf_nn}
 \alias{cf_periodic}
+\alias{cf_prod}
 \title{Initialize covariance function}
 \usage{
 cf_const(magn = 1)
@@ -24,6 +25,8 @@ cf_matern52(vars = NULL, lscale = 0.3, magn = 1)
 cf_nn(vars = NULL, sigma0 = 1, sigma = 1, magn = 1)
 
 cf_periodic(vars, period, cf_base = cf_sexp())
+
+cf_prod(...)
 }
 \arguments{
 \item{magn}{Initial value for the magnitude hyperparameter (depicts the magnitude of 
