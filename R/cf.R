@@ -143,8 +143,25 @@ cf_periodic <- function(vars, period, cf_base=cf_sexp()) {
   cf
 }
 
+#' @rdname cf
+#' @export
+cf_prod <- function(...) {
+  cf <- list()
+  cf$cfs <- list(...)
+  class(cf) <- 'cf_prod'
+  cf
+}
+
+
 
 # get_param functions
+
+get_param.list <- function(object, ...) {
+  param <- c()
+  for (k in seq_along(object))
+    param <- c(param, get_param(object[[k]]))
+  param
+}
 
 get_param.cf_const <- function(object, ...) {
   param <- log(object$magn)
@@ -185,6 +202,7 @@ get_param.cf_nn <- function(object, ...) {
 get_param.cf_periodic <- function(object, ...) {
   param <- get_param(object$base)
   param <- c(object$period, param)
+  # overwrite the parameter names of the base kernel
   names(param)[1] <- 'cf_periodic.period'
   newnames <- lapply(names(param), function(name) {
     id <- unlist(strsplit(name,'.', fixed=T))[2]
@@ -194,8 +212,23 @@ get_param.cf_periodic <- function(object, ...) {
   param
 }
 
+get_param.cf_prod <- function(object, ...) {
+  get_param(object$cfs)
+}
+
+
 
 # set_param functions
+
+set_param.list <- function(object, param, ...) {
+  j <- 1
+  for (k in seq_along(object)) {
+    np <- length(get_param(object[[k]]))
+    object[[k]] <- set_param(object[[k]], param[j:(j+np)])
+    j <- j + np
+  }
+  object
+}
 
 set_param.cf_const <- function(object, param, ...) {
   object$magn <- exp(param[1])
@@ -235,6 +268,11 @@ set_param.cf_nn <- function(object, param, ...) {
 set_param.cf_periodic <- function(object, param, ...) {
   object$period <- param[1]
   object$base <- set_param(object$base, param[2:length(param)])
+  object
+}
+
+set_param.cf_prod <- function(object, param, ...) {
+  object$cfs <- set_param(object$cfs, param)
   object
 }
 
@@ -307,6 +345,12 @@ eval_cf.cf_periodic <- function(object, x1, x2, ...) {
   return(K)
 }
 
+eval_cf.cf_prod <- function(object, x1, x2, ...) {
+  K <- 1
+  for (k in seq_along(object$cfs))
+    K <- K*eval_cf(object$cfs[[k]], x1, x2, ...)
+  K
+}
 
 prepare_inputmat <- function(x, vars=NULL) {
   if (is.null(vars))
@@ -443,6 +487,25 @@ rf_featmap.cf_periodic <- function(object, num_feat, num_inputs, seed=NULL, ...)
   return(featuremap)
 }
 
+rf_featmap.cf_prod <- function(object, num_feat, num_inputs, seed=NULL, ...) {
+  cf_types <- sapply(object$cfs, class)
+  if ('cf_lin' %in% cf_types || 'cf_const' %in% cf_types)
+    stop('Random features for product kernel containing constant or linear kernel not implemented yet.')
+  fmaps <- list()
+  for (k in seq_along(object$cfs))
+    fmaps[[k]] <- rf_featmap(object$cfs[[k]], num_feat, num_inputs, seed, ...)
+  featuremap <- function(x) {
+    # the random features are obtained by taking the product of the random features 
+    # of the kernels in the product
+    z <- 1
+    for (k in seq_along(object$cfs))
+      z <- z*fmaps[[k]](x)
+    z
+  }
+  return(featuremap)
+  #featuremap <- rf_featmap(object$cfs, num_feat)
+  #stop('Random features for product kernel not implemented yet.')
+}
 
 
 
