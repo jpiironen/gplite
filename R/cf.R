@@ -20,6 +20,7 @@
 #'  \item{\code{cf_nn}}{ Neural network covariance function. }
 #'  \item{\code{cf_periodic}}{ Periodic covariance function. The periodicity is achieved by mapping the
 #'  original inputs through sine and cosine functions, and then applying the base kernel in this new space.}
+#'  \item{\code{cf_prod}}{ Product of two or more covariance functions. }
 #' }
 #' 
 #'
@@ -37,6 +38,7 @@
 #' @param period Period length for the periodic covariance function.
 #' @param cf_base Base covariance function that is used to model the variability within each period 
 #' in periodic covariance function.
+#' @param ... Meaning depends on context. For \code{cf_prod} pass in the covariance functions in the product. 
 #'
 #' @return The covariance function object.
 #' 
@@ -134,7 +136,7 @@ cf_nn <- function(vars=NULL, sigma0=1.0, sigma=1.0, magn=1.0) {
 
 #' @rdname cf
 #' @export 
-cf_periodic <- function(vars, period, cf_base=cf_sexp()) {
+cf_periodic <- function(vars=NULL, period=1, cf_base=cf_sexp()) {
   cf <- list()
   cf$vars <- vars
   cf$period <- period

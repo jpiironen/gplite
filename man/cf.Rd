@@ -47,6 +47,8 @@ covariance function.}
 
 \item{cf_base}{Base covariance function that is used to model the variability within each period 
 in periodic covariance function.}
+
+\item{...}{Meaning depends on context. For \code{cf_prod} pass in the covariance functions in the product.}
 }
 \value{
 The covariance function object.
@@ -67,6 +69,7 @@ The supported covariance functions are (see Rasmussen and Williams, 2006):
  \item{\code{cf_nn}}{ Neural network covariance function. }
  \item{\code{cf_periodic}}{ Periodic covariance function. The periodicity is achieved by mapping the
  original inputs through sine and cosine functions, and then applying the base kernel in this new space.}
+ \item{\code{cf_prod}}{ Product of two or more covariance functions. }
 }
 }
 \section{References}{
