@@ -24,7 +24,7 @@ cf_matern52(vars = NULL, lscale = 0.3, magn = 1)
 
 cf_nn(vars = NULL, sigma0 = 1, sigma = 1, magn = 1)
 
-cf_periodic(vars, period, cf_base = cf_sexp())
+cf_periodic(vars = NULL, period = 1, cf_base = cf_sexp())
 
 cf_prod(...)
 }

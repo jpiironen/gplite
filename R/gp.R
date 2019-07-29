@@ -98,7 +98,7 @@ gp_energy <- function(gp) {
 #' @export
 get_param.gp <- function(object, ...) {
   # pack the covariance function and likelihood parameters
-  param <- get_param(gp$cfs)
+  param <- get_param(object$cfs)
   param <- c(param, get_param(object$lik))
   param
 }
@@ -108,7 +108,7 @@ set_param.gp <- function(object, param, ...) {
   # unpack the covariance function and likelihood parameters
   object$cfs <- set_param(object$cfs, param)
   np_lik <- length(get_param(object$lik))
-  object$lik <- set_param(object$lik, tail(param,np_lik))
+  object$lik <- set_param(object$lik, utils::tail(param,np_lik))
   object$fitted <- FALSE
   object
 }

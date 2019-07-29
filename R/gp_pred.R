@@ -16,8 +16,11 @@
 #' latent values. 
 #' @param transform Whether to transform the draws of latent values to the same scale
 #'  as the target y.
+#' @param cfind Indices of covariance functions to be used in the prediction. By default uses
+#' all covariance functions.
 #' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
 #'  Default is 1e-6.
+#' @param seed Random seed for draws.
 #'
 #'
 #' @return \code{gp_pred} returns a vector of predictive mean (one value for each row of
@@ -44,7 +47,7 @@
 #' # draw from the predictive distribution based on the analytic posterior approximation
 #' draws <- gp_pred(gp, xnew, draws=1000) 
 #' 
-#' # fit using mcmc and predict using that
+#' # fit using mcmc and draw from the predictive distribution
 #' gpmc <- gp_mcmc(gp, x, y, trials=trials, iter=1000, chains=2)
 #' draws <- gp_draw(gpmc, xnew)
 #' }

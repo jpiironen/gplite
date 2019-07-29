@@ -52,7 +52,6 @@ get_response <- function(object, ...) {
   UseMethod("get_response", object)
 }
 
-#' @export 
 generate_target <- function(object, ...) {
   UseMethod("generate_target", object)
 }
