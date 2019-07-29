@@ -217,7 +217,7 @@ generate_target.lik_betabinom <- function(object, f, trials, ...) {
   mu <- get_response(object, f)
   a <- mu/object$phi
   b <- (1-mu)/object$phi
-  pr <- rbeta(length(f), a, b)
+  pr <- stats::rbeta(length(f), a, b)
   stats::rbinom(length(f), trials, prob = pr)
 }
 

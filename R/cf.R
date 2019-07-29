@@ -12,12 +12,15 @@
 #' 
 #' The supported covariance functions are (see Rasmussen and Williams, 2006):
 #' \describe{
-#'  \item{\code{cf_const}}{ Constant covariance function. }
-#'  \item{\code{cf_lin}}{ Linear covariance function. }
+#'  \item{\code{cf_const}}{ Constant covariance function. Can be used to model the intercept. }
+#'  \item{\code{cf_lin}}{ Linear covariance function. Produces linear functions. }
 #'  \item{\code{cf_sexp}}{ Squared exponential (or exponentiated quadratic, or Gaussian) covariance function.}
 #'  \item{\code{cf_matern32}}{ Matern nu=3/2 covariance function. }
 #'  \item{\code{cf_matern52}}{ Matern nu=5/2 covariance function. }
 #'  \item{\code{cf_nn}}{ Neural network covariance function. }
+#'  \item{\code{cf_periodic}}{ Periodic covariance function. The periodicity is achieved by mapping the
+#'  original inputs through sine and cosine functions, and then applying the base kernel in this new space.}
+#'  \item{\code{cf_prod}}{ Product of two or more covariance functions. }
 #' }
 #' 
 #'
@@ -32,6 +35,10 @@
 #' @param sigma0 Prior std for the bias in the neural network covariance function.
 #' @param sigma Prior std for the weights in the hidden layers of the neural network 
 #' covariance function. 
+#' @param period Period length for the periodic covariance function.
+#' @param cf_base Base covariance function that is used to model the variability within each period 
+#' in periodic covariance function.
+#' @param ... Meaning depends on context. For \code{cf_prod} pass in the covariance functions in the product. 
 #'
 #' @return The covariance function object.
 #' 
@@ -53,7 +60,7 @@
 #' # (the functional form is f(x) = f(x_1) + f(x_2,x_3))
 #' cfs <- list(cf_const(), cf_sexp(1), cf_sexp(c(2,3)))
 #' lik <- lik_gaussian()
-#' gp <- gp_init(cf, lik)
+#' gp <- gp_init(cfs, lik)
 #' gp <- gp_optim(gp, x, y)
 #' 
 #' }
@@ -84,7 +91,7 @@ cf_lin <- function(vars=NULL, magn=1.0) {
 
 #' @rdname cf
 #' @export
-cf_sexp <- function(vars=NULL, lscale=0.1, magn=1.0) {
+cf_sexp <- function(vars=NULL, lscale=0.3, magn=1.0) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
@@ -95,7 +102,7 @@ cf_sexp <- function(vars=NULL, lscale=0.1, magn=1.0) {
 
 #' @rdname cf
 #' @export
-cf_matern32 <- function(vars=NULL, lscale=0.1, magn=1.0) {
+cf_matern32 <- function(vars=NULL, lscale=0.3, magn=1.0) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
@@ -106,7 +113,7 @@ cf_matern32 <- function(vars=NULL, lscale=0.1, magn=1.0) {
 
 #' @rdname cf
 #' @export
-cf_matern52 <- function(vars=NULL, lscale=0.1, magn=1.0) {
+cf_matern52 <- function(vars=NULL, lscale=0.3, magn=1.0) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
@@ -127,9 +134,36 @@ cf_nn <- function(vars=NULL, sigma0=1.0, sigma=1.0, magn=1.0) {
   cf
 }
 
+#' @rdname cf
+#' @export 
+cf_periodic <- function(vars=NULL, period=1, cf_base=cf_sexp()) {
+  cf <- list()
+  cf$vars <- vars
+  cf$period <- period
+  cf$base <- cf_base
+  class(cf) <- 'cf_periodic'
+  cf
+}
+
+#' @rdname cf
+#' @export
+cf_prod <- function(...) {
+  cf <- list()
+  cf$cfs <- list(...)
+  class(cf) <- 'cf_prod'
+  cf
+}
+
 
 
 # get_param functions
+
+get_param.list <- function(object, ...) {
+  param <- c()
+  for (k in seq_along(object))
+    param <- c(param, get_param(object[[k]]))
+  param
+}
 
 get_param.cf_const <- function(object, ...) {
   param <- log(object$magn)
@@ -167,9 +201,36 @@ get_param.cf_nn <- function(object, ...) {
   param
 }
 
+get_param.cf_periodic <- function(object, ...) {
+  param <- get_param(object$base)
+  param <- c(object$period, param)
+  # overwrite the parameter names of the base kernel
+  names(param)[1] <- 'cf_periodic.period'
+  newnames <- lapply(names(param), function(name) {
+    id <- unlist(strsplit(name,'.', fixed=T))[2]
+    paste0('cf_periodic.',id)
+  })
+  names(param) <- unlist(newnames)
+  param
+}
+
+get_param.cf_prod <- function(object, ...) {
+  get_param(object$cfs)
+}
+
 
 
 # set_param functions
+
+set_param.list <- function(object, param, ...) {
+  j <- 1
+  for (k in seq_along(object)) {
+    np <- length(get_param(object[[k]]))
+    object[[k]] <- set_param(object[[k]], param[j:(j+np)])
+    j <- j + np
+  }
+  object
+}
 
 set_param.cf_const <- function(object, param, ...) {
   object$magn <- exp(param[1])
@@ -203,6 +264,17 @@ set_param.cf_nn <- function(object, param, ...) {
   object$sigma0 <- exp(param[1])
   object$sigma <- exp(param[2])
   object$magn <- exp(param[3])
+  object
+}
+
+set_param.cf_periodic <- function(object, param, ...) {
+  object$period <- param[1]
+  object$base <- set_param(object$base, param[2:length(param)])
+  object
+}
+
+set_param.cf_prod <- function(object, param, ...) {
+  object$cfs <- set_param(object$cfs, param)
   object
 }
 
@@ -265,6 +337,22 @@ eval_cf.cf_nn <- function(object, x1, x2, ...) {
   return(K)
 }
 
+eval_cf.cf_periodic <- function(object, x1, x2, ...) {
+  x1 <- prepare_inputmat(x1, object$vars)
+  x2 <- prepare_inputmat(x2, object$vars)
+  period <- object$period
+  x1_transf <- cbind(sin(2*pi/period*x1), cos(2*pi/period*x1))
+  x2_transf <- cbind(sin(2*pi/period*x2), cos(2*pi/period*x2))
+  K <- eval_cf(object$base, x1_transf, x2_transf)
+  return(K)
+}
+
+eval_cf.cf_prod <- function(object, x1, x2, ...) {
+  K <- 1
+  for (k in seq_along(object$cfs))
+    K <- K*eval_cf(object$cfs[[k]], x1, x2, ...)
+  K
+}
 
 prepare_inputmat <- function(x, vars=NULL) {
   if (is.null(vars))
@@ -383,11 +471,43 @@ rf_featmap.cf_nn <- function(object, num_feat, num_inputs, seed=NULL, ...) {
     object$magn/sqrt(m)*h
   }
   return(featuremap)
-  
 }
 
+rf_featmap.cf_periodic <- function(object, num_feat, num_inputs, seed=NULL, ...) {
+  
+  if (is.null(object$vars))
+    object$vars <- c(1:num_inputs)
+  else
+    # override the number of inputs, because using only a subset of inputs
+    num_inputs <- length(object$vars)
+  
+  featuremap_base <- rf_featmap(object$base, num_feat, num_inputs=2*length(object$vars), seed=seed)
+  featuremap <- function(x) {
+    x_transf <- cbind(sin(2*pi/object$period*x), cos(2*pi/object$period*x))
+    featuremap_base(x_transf)
+  }
+  return(featuremap)
+}
 
-
+rf_featmap.cf_prod <- function(object, num_feat, num_inputs, seed=NULL, ...) {
+  cf_types <- sapply(object$cfs, class)
+  if ('cf_lin' %in% cf_types || 'cf_const' %in% cf_types)
+    stop('Random features for product kernel containing constant or linear kernel not implemented yet.')
+  fmaps <- list()
+  for (k in seq_along(object$cfs))
+    fmaps[[k]] <- rf_featmap(object$cfs[[k]], num_feat, num_inputs, seed, ...)
+  featuremap <- function(x) {
+    # the random features are obtained by taking the product of the random features 
+    # of the kernels in the product
+    z <- 1
+    for (k in seq_along(object$cfs))
+      z <- z*fmaps[[k]](x)
+    z
+  }
+  return(featuremap)
+  #featuremap <- rf_featmap(object$cfs, num_feat)
+  #stop('Random features for product kernel not implemented yet.')
+}
 
 
 

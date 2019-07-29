@@ -8,19 +8,25 @@
 \alias{cf_matern32}
 \alias{cf_matern52}
 \alias{cf_nn}
+\alias{cf_periodic}
+\alias{cf_prod}
 \title{Initialize covariance function}
 \usage{
 cf_const(magn = 1)
 
 cf_lin(vars = NULL, magn = 1)
 
-cf_sexp(vars = NULL, lscale = 0.1, magn = 1)
+cf_sexp(vars = NULL, lscale = 0.3, magn = 1)
 
-cf_matern32(vars = NULL, lscale = 0.1, magn = 1)
+cf_matern32(vars = NULL, lscale = 0.3, magn = 1)
 
-cf_matern52(vars = NULL, lscale = 0.1, magn = 1)
+cf_matern52(vars = NULL, lscale = 0.3, magn = 1)
 
 cf_nn(vars = NULL, sigma0 = 1, sigma = 1, magn = 1)
+
+cf_periodic(vars = NULL, period = 1, cf_base = cf_sexp())
+
+cf_prod(...)
 }
 \arguments{
 \item{magn}{Initial value for the magnitude hyperparameter (depicts the magnitude of 
@@ -36,6 +42,13 @@ Default is all the inputs.}
 
 \item{sigma}{Prior std for the weights in the hidden layers of the neural network 
 covariance function.}
+
+\item{period}{Period length for the periodic covariance function.}
+
+\item{cf_base}{Base covariance function that is used to model the variability within each period 
+in periodic covariance function.}
+
+\item{...}{Meaning depends on context. For \code{cf_prod} pass in the covariance functions in the product.}
 }
 \value{
 The covariance function object.
@@ -48,12 +61,15 @@ function is what.
 \details{
 The supported covariance functions are (see Rasmussen and Williams, 2006):
 \describe{
- \item{\code{cf_const}}{ Constant covariance function. }
- \item{\code{cf_lin}}{ Linear covariance function. }
+ \item{\code{cf_const}}{ Constant covariance function. Can be used to model the intercept. }
+ \item{\code{cf_lin}}{ Linear covariance function. Produces linear functions. }
  \item{\code{cf_sexp}}{ Squared exponential (or exponentiated quadratic, or Gaussian) covariance function.}
  \item{\code{cf_matern32}}{ Matern nu=3/2 covariance function. }
  \item{\code{cf_matern52}}{ Matern nu=5/2 covariance function. }
  \item{\code{cf_nn}}{ Neural network covariance function. }
+ \item{\code{cf_periodic}}{ Periodic covariance function. The periodicity is achieved by mapping the
+ original inputs through sine and cosine functions, and then applying the base kernel in this new space.}
+ \item{\code{cf_prod}}{ Product of two or more covariance functions. }
 }
 }
 \section{References}{
@@ -76,7 +92,7 @@ gp <- gp_optim(gp, x ,y, trials)
 # (the functional form is f(x) = f(x_1) + f(x_2,x_3))
 cfs <- list(cf_const(), cf_sexp(1), cf_sexp(c(2,3)))
 lik <- lik_gaussian()
-gp <- gp_init(cf, lik)
+gp <- gp_init(cfs, lik)
 gp <- gp_optim(gp, x, y)
 
 }
