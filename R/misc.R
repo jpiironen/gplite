@@ -16,11 +16,7 @@ prepare_inputmat <- function(x, vars=NULL) {
 
 
 
-is_fixed_param <- function(cf) {
-  sapply(cf$priors, function(prior) {
-    class(prior) == 'prior_fixed'
-  })
-}
+
 
 
 is_fixed <- function(object, param_names) {
