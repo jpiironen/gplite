@@ -72,76 +72,87 @@ NULL
 
 #' @rdname cf
 #' @export
-cf_const <- function(magn=1.0) {
+cf_const <- function(magn=1.0, prior_magn=prior_logunif()) {
   cf <- list()
   cf$magn <- magn
-  class(cf) <- 'cf_const'
+  cf$priors <- list(magn=prior_magn)
+  class(cf) <- c('cf_const', 'cf')
   cf
 }
 
 #' @rdname cf
 #' @export
-cf_lin <- function(vars=NULL, magn=1.0) {
-  cf <- list()
-  cf$vars <- vars
-  cf$magn <- magn
-  class(cf) <- 'cf_lin'
-  cf
-}
-
-#' @rdname cf
-#' @export
-cf_sexp <- function(vars=NULL, lscale=0.3, magn=1.0) {
+cf_lin <- function(vars=NULL, magn=1.0, prior_magn=prior_logunif()) {
   cf <- list()
   cf$vars <- vars
-  cf$lscale <- lscale
   cf$magn <- magn
-  class(cf) <- 'cf_sexp'
+  cf$priors <- list(magn=prior_magn)
+  class(cf) <- c('cf_lin', 'cf')
   cf
 }
 
 #' @rdname cf
 #' @export
-cf_matern32 <- function(vars=NULL, lscale=0.3, magn=1.0) {
+cf_sexp <- function(vars=NULL, lscale=0.3, magn=1.0,
+                    prior_lscale=prior_logunif(), prior_magn=prior_logunif()) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
   cf$magn <- magn
-  class(cf) <- 'cf_matern32'
+  cf$priors <- list(lscale=prior_lscale, magn=prior_magn)
+  class(cf) <- c('cf_sexp', 'cf')
   cf
 }
 
 #' @rdname cf
 #' @export
-cf_matern52 <- function(vars=NULL, lscale=0.3, magn=1.0) {
+cf_matern32 <- function(vars=NULL, lscale=0.3, magn=1.0,
+                        prior_lscale=prior_logunif(), prior_magn=prior_logunif()) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
   cf$magn <- magn
-  class(cf) <- 'cf_matern52'
+  cf$priors <- list(lscale=prior_lscale, magn=prior_magn)
+  class(cf) <- c('cf_matern32', 'cf')
   cf
 }
 
 #' @rdname cf
 #' @export
-cf_nn <- function(vars=NULL, sigma0=1.0, sigma=1.0, magn=1.0) {
+cf_matern52 <- function(vars=NULL, lscale=0.3, magn=1.0,
+                        prior_lscale=prior_logunif(), prior_magn=prior_logunif()) {
+  cf <- list()
+  cf$vars <- vars
+  cf$lscale <- lscale
+  cf$magn <- magn
+  cf$priors <- list(lscale=prior_lscale, magn=prior_magn)
+  class(cf) <- c('cf_matern52', 'cf')
+  cf
+}
+
+#' @rdname cf
+#' @export
+cf_nn <- function(vars=NULL, sigma0=1.0, sigma=1.0, magn=1.0,
+                  prior_sigma0=prior_logunif(), prior_sigma=prior_logunif(), prior_magn=prior_logunif()) {
   cf <- list()
   cf$vars <- vars
   cf$sigma0 <- sigma0
   cf$sigma <- sigma
   cf$magn <- magn
-  class(cf) <- 'cf_nn'
+  cf$priors <- list(sigma0=prior_sigma0, sigma=prior_sigma, magn=prior_magn)
+  class(cf) <- c('cf_nn', 'cf')
   cf
 }
 
 #' @rdname cf
 #' @export 
-cf_periodic <- function(vars=NULL, period=1, cf_base=cf_sexp()) {
+cf_periodic <- function(vars=NULL, period=1, cf_base=cf_sexp(), prior_period=prior_logunif()) {
   cf <- list()
   cf$vars <- vars
   cf$period <- period
   cf$base <- cf_base
-  class(cf) <- 'cf_periodic'
+  cf$priors <- list(period=prior_period)
+  class(cf) <- c('cf_periodic', 'cf')
   cf
 }
 
@@ -150,8 +161,47 @@ cf_periodic <- function(vars=NULL, period=1, cf_base=cf_sexp()) {
 cf_prod <- function(...) {
   cf <- list()
   cf$cfs <- list(...)
-  class(cf) <- 'cf_prod'
+  class(cf) <- c('cf_prod', 'cf')
   cf
+}
+
+
+
+
+get_name.cf <- function(object, ...) {
+  class(object)[1]
+}
+
+
+
+# get_param_names functions
+
+get_param_names.cf_const <- function(object) {
+  c('magn')
+}
+
+get_param_names.cf_lin <- function(object) {
+  c('magn')
+}
+
+get_param_names.cf_sexp <- function(object) {
+  c('lscale', 'magn')
+}
+
+get_param_names.cf_matern32 <- function(object) {
+  c('lscale', 'magn')
+}
+
+get_param_names.cf_matern52 <- function(object) {
+  c('lscale', 'magn')
+}
+
+get_param_names.cf_nn <- function(object) {
+  c('sigma0', 'sigma', 'magn')
+}
+
+get_param_names.cf_periodic <- function(object) {
+  c('period')
 }
 
 
@@ -165,52 +215,24 @@ get_param.list <- function(object, ...) {
   param
 }
 
-get_param.cf_const <- function(object, ...) {
-  param <- log(object$magn)
-  names(param) <- 'cf_const.magn'
-  param
-}
-
-get_param.cf_lin <- function(object, ...) {
-  param <- log(object$magn)
-  names(param) <- 'cf_lin.magn'
-  param
-}
-
-get_param.cf_sexp <- function(object, ...) {
-  param <- log(c(object$lscale, object$magn))
-  names(param) <- c('cf_sexp.lscale','cf_sexp.magn')
-  param
-}
-
-get_param.cf_matern32 <- function(object, ...) {
-  param <- log(c(object$lscale, object$magn))
-  names(param) <- c('cf_matern32.lscale','cf_matern32.magn')
-  param
-}
-
-get_param.cf_matern52 <- function(object, ...) {
-  param <- log(c(object$lscale, object$magn))
-  names(param) <- c('cf_matern52.lscale','cf_matern52.magn')
-  param
-}
-
-get_param.cf_nn <- function(object, ...) {
-  param <- log(c(object$sigma0, object$sigma, object$magn))
-  names(param) <- c('cf_nn.sigma0', 'cf_nn.sigma', 'cf_nn.magn')
+get_param.cf <- function(object, ...) {
+  param_names <- filter_fixed(object, get_param_names(object))
+  if (length(param_names) == 0)
+    return(NULL)
+  param <- unlist(object[param_names])
+  names(param) <- add_obj_name(object, names(param))
+  param <- log(param)
   param
 }
 
 get_param.cf_periodic <- function(object, ...) {
   param <- get_param(object$base)
-  param <- c(object$period, param)
+  if (!is_fixed(object, 'period')) {
+    param <- c(log(object$period), param)
+    names(param)[1] <- 'cf_periodic.period'
+  }
   # overwrite the parameter names of the base kernel
-  names(param)[1] <- 'cf_periodic.period'
-  newnames <- lapply(names(param), function(name) {
-    id <- unlist(strsplit(name,'.', fixed=T))[2]
-    paste0('cf_periodic.',id)
-  })
-  names(param) <- unlist(newnames)
+  names(param) <- add_obj_name(object, rm_obj_name(object$base, names(param)))
   param
 }
 
@@ -226,50 +248,26 @@ set_param.list <- function(object, param, ...) {
   j <- 1
   for (k in seq_along(object)) {
     np <- length(get_param(object[[k]]))
-    object[[k]] <- set_param(object[[k]], param[j:(j+np)])
+    if (np > 0)
+      object[[k]] <- set_param(object[[k]], param[j:(j+np-1)])
     j <- j + np
   }
   object
 }
 
-set_param.cf_const <- function(object, param, ...) {
-  object$magn <- exp(param[1])
-  object
-}
-
-set_param.cf_lin <- function(object, param, ...) {
-  object$magn <- exp(param[1])
-  object
-}
-
-set_param.cf_sexp <- function(object, param, ...) {
-  object$lscale <- exp(param[1])
-  object$magn <- exp(param[2])
-  object
-}
-
-set_param.cf_matern32 <- function(object, param, ...) {
-  object$lscale <- exp(param[1])
-  object$magn <- exp(param[2])
-  object
-}
-
-set_param.cf_matern52 <- function(object, param, ...) {
-  object$lscale <- exp(param[1])
-  object$magn <- exp(param[2])
-  object
-}
-
-set_param.cf_nn <- function(object, param, ...) {
-  object$sigma0 <- exp(param[1])
-  object$sigma <- exp(param[2])
-  object$magn <- exp(param[3])
+set_param.cf <- function(object, param, ...) {
+  param_names <- filter_fixed(object, names(param))
+  param_names <- rm_obj_name(object, param_names)
+  for (j in seq_along(param_names))
+    object[[param_names[j]]] <- unname(exp(param[j]))
   object
 }
 
 set_param.cf_periodic <- function(object, param, ...) {
-  object$period <- param[1]
-  object$base <- set_param(object$base, param[2:length(param)])
+  fixed_period <- is_fixed(object, 'period')
+  if (!fixed_period)
+    object$period <- exp(param[1])
+  object$base <- set_param(object$base, tail(param, length(param)-fixed_period))
   object
 }
 
@@ -354,12 +352,7 @@ eval_cf.cf_prod <- function(object, x1, x2, ...) {
   K
 }
 
-prepare_inputmat <- function(x, vars=NULL) {
-  if (is.null(vars))
-    return(as.matrix(x))
-  else
-    return(as.matrix(x)[,vars,drop=F])
-}
+
 
 
 
@@ -505,8 +498,6 @@ rf_featmap.cf_prod <- function(object, num_feat, num_inputs, seed=NULL, ...) {
     z
   }
   return(featuremap)
-  #featuremap <- rf_featmap(object$cfs, num_feat)
-  #stop('Random features for product kernel not implemented yet.')
 }
 
 

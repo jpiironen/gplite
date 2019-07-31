@@ -41,10 +41,11 @@ NULL
 
 #' @rdname lik
 #' @export
-lik_gaussian <- function(sigma=0.5) {
+lik_gaussian <- function(sigma=0.5, prior_sigma=prior_logunif()) {
   lik <- list()
   lik$sigma <- sigma
-  class(lik) <- 'lik_gaussian'
+  lik$priors <- list(sigma=prior_sigma)
+  class(lik) <- c('lik_gaussian', 'lik')
   lik
 }
 
@@ -53,37 +54,52 @@ lik_gaussian <- function(sigma=0.5) {
 lik_binomial <- function(link='logit') {
   lik <- list()
   lik$link <- link
-  class(lik) <- 'lik_binomial'
+  class(lik) <- c('lik_binomial', 'lik')
   lik
 }
 
 #' @rdname lik
 #' @export
-lik_betabinom <- function(link='logit', phi=0.1) {
-  lik <- list()
+lik_betabinom <- function(link='logit', phi=0.1, prior_phi=prior_logunif()) {
+  lik <- list() 
   lik$phi <- phi
   lik$link <- link
-  class(lik) <- 'lik_betabinom'
+  lik$priors <- list(phi=prior_phi)
+  class(lik) <- c('lik_betabinom', 'lik')
   lik
+}
+
+
+get_name.lik <- function(object, ...) {
+  class(object)[1]
+}
+
+
+# get_param_names functions
+
+get_param_names.lik_gaussian <- function(object) {
+  c('sigma')
+}
+
+get_param_names.lik_binomial <- function(object) {
+  c()
+}
+
+get_param_names.lik_betabinom <- function(object) {
+  c('phi')
 }
 
 
 
 # get_param functions
 
-get_param.lik_gaussian <- function(object, ...) {
-  param <- log(object$sigma)
-  names(param) <- c('lik_gaussian.sigma')
-  param
-}
-
-get_param.lik_binomial <- function(object, ...) {
-  c()
-}
-
-get_param.lik_betabinom <- function(object, ...) {
-  param <- log(object$phi)
-  names(param) <- c('lik_betabinom.phi')
+get_param.lik <- function(object, ...) {
+  param_names <- filter_fixed(object, get_param_names(object))
+  if (length(param_names) == 0)
+    return(NULL)
+  param <- unlist(object[param_names])
+  names(param) <- add_obj_name(object, names(param))
+  param <- log(param)
   param
 }
 
@@ -91,17 +107,11 @@ get_param.lik_betabinom <- function(object, ...) {
 
 # set_param functions
 
-set_param.lik_gaussian <- function(object, param, ...) {
-  object$sigma <- exp(param[1])
-  object
-}
-
-set_param.lik_binomial <- function(object, param, ...) {
-  object
-}
-
-set_param.lik_betabinom <- function(object, param, ...) {
-  object$phi <- exp(param[1])
+set_param.lik <- function(object, param, ...) {
+  param_names <- filter_fixed(object, names(param))
+  param_names <- rm_obj_name(object, param_names)
+  for (j in seq_along(param_names))
+    object[[param_names[j]]] <- unname(exp(param[j]))
   object
 }
 

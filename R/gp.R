@@ -52,7 +52,7 @@
 gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=100,
                     rf_seed=12345) {
   gp <- list()
-  if (class(cfs) != 'list')
+  if (!('list' %in% class(cfs)))
     cfs <- list(cfs)
   gp$cfs <- cfs
   gp$lik <- lik
@@ -140,9 +140,9 @@ check_num_basis <- function(cfs, num_basis, num_inputs=NA) {
   if (length(num_basis) != length(cfs))
     stop('The length of num_basis must match to the number of covariance functions.')
   for (k in seq_along(cfs))
-    if (class(cfs[[k]]) == 'cf_const')
+    if (get_name(cfs[[k]]) == 'cf_const')
       num_basis[k] <- 1
-    else if (class(cfs[[k]]) == 'cf_lin')
+    else if (get_name(cfs[[k]]) == 'cf_lin')
       num_basis[k] <- num_inputs
   return(num_basis)
 }

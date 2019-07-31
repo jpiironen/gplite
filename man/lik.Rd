@@ -7,11 +7,11 @@
 \alias{lik_betabinom}
 \title{Initialize likelihood}
 \usage{
-lik_gaussian(sigma = 0.5)
+lik_gaussian(sigma = 0.5, prior_sigma = prior_logunif())
 
 lik_binomial(link = "logit")
 
-lik_betabinom(link = "logit", phi = 0.1)
+lik_betabinom(link = "logit", phi = 0.1, prior_phi = prior_logunif())
 }
 \arguments{
 \item{sigma}{Initial value for the noise standard deviation.}
