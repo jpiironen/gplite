@@ -168,6 +168,8 @@ cf_prod <- function(...) {
 
 
 
+# for figuring out the name of the cf conveniently
+
 get_name.cf <- function(object, ...) {
   class(object)[1]
 }
@@ -412,9 +414,13 @@ rf_featmap.cf_sexp <- function(object, num_feat, num_inputs, seed=NULL, ...) {
     stop('number of features must be an even number.')
   
   m <- num_feat/2
-  scale <- 1/(2*pi*object$lscale) # scale of the spectral density
+  
+  # this is the tricky part; the equations commented out should be correct, but the 
+  # lenght-scale and magnitude do not match to the full GP. the simpler equations 
+  # just seem to work correctly instead..
+  scale <- 1/object$lscale # 1/(2*pi*object$lscale) # scale of the spectral density
+  C <- 1 # (2*pi)^((num_inputs-1)/2) * object$lscale^(num_inputs-1) # normalization constant
   w <- matrix(stats::rnorm(m*num_inputs), nrow=num_inputs, ncol=m)*scale # frequences
-  C <- (2*pi)^((num_inputs-1)/2) * object$lscale^(num_inputs-1)
   
   featuremap <- function(x) {
     x <- as.matrix(x)
