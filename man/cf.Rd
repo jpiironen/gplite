@@ -12,19 +12,25 @@
 \alias{cf_prod}
 \title{Initialize covariance function}
 \usage{
-cf_const(magn = 1)
+cf_const(magn = 1, prior_magn = prior_logunif())
 
-cf_lin(vars = NULL, magn = 1)
+cf_lin(vars = NULL, magn = 1, prior_magn = prior_logunif())
 
-cf_sexp(vars = NULL, lscale = 0.3, magn = 1)
+cf_sexp(vars = NULL, lscale = 0.3, magn = 1,
+  prior_lscale = prior_logunif(), prior_magn = prior_logunif())
 
-cf_matern32(vars = NULL, lscale = 0.3, magn = 1)
+cf_matern32(vars = NULL, lscale = 0.3, magn = 1,
+  prior_lscale = prior_logunif(), prior_magn = prior_logunif())
 
-cf_matern52(vars = NULL, lscale = 0.3, magn = 1)
+cf_matern52(vars = NULL, lscale = 0.3, magn = 1,
+  prior_lscale = prior_logunif(), prior_magn = prior_logunif())
 
-cf_nn(vars = NULL, sigma0 = 1, sigma = 1, magn = 1)
+cf_nn(vars = NULL, sigma0 = 1, sigma = 1, magn = 1,
+  prior_sigma0 = prior_logunif(), prior_sigma = prior_logunif(),
+  prior_magn = prior_logunif())
 
-cf_periodic(vars = NULL, period = 1, cf_base = cf_sexp())
+cf_periodic(vars = NULL, period = 1, cf_base = cf_sexp(),
+  prior_period = prior_logunif())
 
 cf_prod(...)
 }

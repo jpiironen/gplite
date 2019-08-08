@@ -26,14 +26,22 @@ NULL
 
 #' @rdname param
 #' @export
-get_param <- function (object, ...) {
+get_param <- function(object, ...) {
   UseMethod("get_param", object)
 }
 
 #' @rdname param
 #' @export
-set_param <- function (object, param, ...) {
+set_param <- function(object, param, ...) {
   UseMethod("set_param", object)
+}
+
+get_name <- function(object, ...) {
+  UseMethod("get_name")
+}
+
+get_param_names <- function(object, ...) {
+  UseMethod("get_param_names", object)
 }
 
 get_featuremap <- function(object, ...) {
