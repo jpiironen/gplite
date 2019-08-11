@@ -122,7 +122,8 @@ get_featuremap.gp <- function(object, num_inputs, ...) {
 
 is_fitted.gp <- function(object, type, ...) {
   if (type=='analytic')
-    fit_found <- ifelse(is.null(object$fmean) && is.null(object$wmean), F, T)
+    fit_found <- !is.null(object$fit) # TODO: dummy, fix this!
+    #fit_found <- ifelse(is.null(object$fmean) && is.null(object$wmean), F, T)
   else if (type=='sampling')
     fit_found <- ifelse(is.null(object$fsample) && is.null(object$wsample), F, T)
   if (fit_found && object$fitted==FALSE)

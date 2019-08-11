@@ -76,6 +76,19 @@ gp_laplace_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   return(gp)
 }
 
+gp_laplace_full2 <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
+  x <- as.matrix(x)
+  n <- length(y)
+  jitter <- get_jitter(gp,jitter)
+  K <- eval_cf(gp$cfs, x, x) + jitter*diag(n)
+  gp$x <- x
+  gp$K <- K
+  gp$fit <- approx_laplace_iterated(gp, y, trials=trials)
+  gp$log_evidence <- gp$fit$log_evidence # TODO: this if a bit awkward..
+  return(gp)
+}
+
+
 gp_laplace_linearized <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)

@@ -108,6 +108,32 @@ gp_pred_full_post <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   return(pred_mean)
 }
 
+gp_pred_full_post2 <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+  
+  # compute the latent mean first
+  Kt <- eval_cf(gp$cfs, xt, gp$x, cfind)
+  Ktt <- eval_cf(gp$cfs, xt, xt, cfind)
+  K_chol <- gp$fit$K_chol
+  fmean <- gp$fit$fmean
+  pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, fmean))
+  pred_mean <- as.vector(pred_mean)
+  
+  if (var || cov) {
+    # (co)variance of the latent function
+    nt <- length(pred_mean)
+    jitter <- get_jitter(gp,jitter)
+    C_chol <- gp$fit$C_chol
+    aux <- solve(C_chol, t(Kt))
+    pred_cov <- Ktt - t(aux) %*% aux
+    if (cov)
+      return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
+    else
+      return(list(mean = pred_mean, var = diag(pred_cov)))
+  }
+  return(pred_mean)
+}
+
+
 gp_pred_full_prior <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   
   nt <- NROW(xt)

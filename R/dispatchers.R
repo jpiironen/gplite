@@ -56,6 +56,14 @@ get_standata <- function(object, ...) {
   UseMethod("get_standata", object)
 }
 
+get_pseudodata <- function(object, ...) {
+  UseMethod("get_pseudodata", object)
+}
+
+get_loglik <- function(object, ...) {
+  UseMethod("get_loglik", object)
+}
+
 get_response <- function(object, ...) {
   UseMethod("get_response", object)
 }
