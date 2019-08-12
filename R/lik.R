@@ -119,46 +119,44 @@ set_param.lik <- function(object, param, ...) {
 
 # get_pseudodata functions
 
+get_pseudodata.lik <- function(object, f, y, eps=1e-6, ...) {
+  model <- get_stanmodel(object, lik_only=T)
+  data <- c(list(n=length(y), y=y), get_standata(object, ...))
+  capture.output(
+    # get the stanfit-object corresponding to the likelihood
+    fit <- sampling(model, data=data, chains=1, iter=1, algorithm='Fixed_param')
+  )
+  grad <- rstan::grad_log_prob(fit, f)
+  grad2 <- (rstan::grad_log_prob(fit, f+eps) - grad) / eps # second derivatives
+  attr(grad, 'log_prob') <- NULL
+  attr(grad2, 'log_prob') <- NULL
+  list(z = f-grad/grad2, var = -1/grad2)
+}
+
 get_pseudodata.lik_gaussian <- function(object, f, y, ...) {
   n <- length(y)
   loglik <- sum(dnorm(y, mean=f, sd=object$sigma, log=T))
   list(z = y, var = object$sigma^2*rep(1,n), loglik = loglik)
 }
 
-get_pseudodata.lik_binomial <- function(object, f, y, trials, eps=1e-4, ...) {
-  model <- get_stanmodel(object)
-  capture.output(
-    # get the stanfit corresponding to the likelihood
-    fit <- sampling(model, data=list(n=length(y), y=y, trials=trials), 
-                    chains=1, iter=1, algorithm='Fixed_param')
-    )
-  grad <- rstan::grad_log_prob(fit, f)
-  #loglik <- attr(grad, 'log_prob')
-  grad2 <- (rstan::grad_log_prob(fit, f+eps) - grad) / eps # second derivatives
-  attr(grad, 'log_prob') <- NULL
-  attr(grad2, 'log_prob') <- NULL
-  list(z = -grad/grad2, var = -1/grad2)
-  #stop('get_pseudodata not implemented for lik_binomial yet.')
-}
-
-get_pseudodata.lik_betabinom <- function(object, f, y, trials, ...) {
-  stop('get_pseudodata not implemented for lik_betabinom yet.')
-}
 
 
 
 # get_loglik functions
 
+get_loglik.lik <- function(object, f, y, ...) {
+  model <- get_stanmodel(object, lik_only=T)
+  data <- c(list(n=length(y), y=y), get_standata(object, ...))
+  capture.output(
+    # get the stanfit-object corresponding to the likelihood
+    fit <- sampling(model, data=data, chains=1, iter=1, algorithm='Fixed_param')
+  )
+  loglik <- rstan::log_prob(fit, f)
+  loglik
+}
+
 get_loglik.lik_gaussian <- function(object, f, y, ...) {
   sum(dnorm(y, mean=f, sd=object$sigma, log=T))
-}
-
-get_loglik.lik_binomial <- function(object, f, y, trials, ...) {
-  stop('get_loglik not implemented for lik_binomial yet.')
-}
-
-get_loglik.lik_betabinom <- function(object, f, y, trials, ...) {
-  stop('get_loglik not implemented for lik_betabinom yet.')
 }
 
 
@@ -166,7 +164,7 @@ get_loglik.lik_betabinom <- function(object, f, y, trials, ...) {
 
 # get_stanmodel functions
 
-get_stanmodel.lik_gaussian <- function(object, method, ...) {
+get_stanmodel.lik_gaussian <- function(object, method = 'full', lik_only = FALSE, ...) {
   if (method == 'full') 
     return(stanmodels$gp_gaussian)
   else if (method == 'rf') 
@@ -175,19 +173,27 @@ get_stanmodel.lik_gaussian <- function(object, method, ...) {
     stop('Got an unknown method: ', method)
 }
 
-get_stanmodel.lik_binomial <- function(object, method, ...) {
+get_stanmodel.lik_binomial <- function(object, method = 'full', lik_only = FALSE, ...) {
   if (method == 'full') {
+    if (lik_only)
+      return(stanmodels$lik_binomial)
     return(stanmodels$gp_binomial)
   } else if (method == 'rf') {
+    if (lik_only)
+      return(stanmodels$lik_binomial)
     return(stanmodels$gpa_binomial)
   } else
     stop('Got an unknown method: ', method)
 }
 
-get_stanmodel.lik_betabinom <- function(object, method, ...) {
+get_stanmodel.lik_betabinom <- function(object, method = 'full', lik_only = FALSE, ...) {
   if (method == 'full') {
+    if (lik_only)
+      return(stanmodels$lik_betabinom)
     return(stanmodels$gp_betabinom)
   } else if (method == 'rf') {
+    if (lik_only)
+      return(stanmodels$lik_betabinom)
     return(stanmodels$gpa_betabinom)
   } else
     stop('Got an unknown method: ', method)

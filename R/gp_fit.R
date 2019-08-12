@@ -57,7 +57,7 @@ gp_fit <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
 }
 
 
-gp_laplace_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
+gp_laplace_full_old <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
@@ -76,7 +76,7 @@ gp_laplace_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   return(gp)
 }
 
-gp_laplace_full2 <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
+gp_laplace_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)

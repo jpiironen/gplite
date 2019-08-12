@@ -71,6 +71,8 @@ RcppExport SEXP _rcpp_module_boot_stan_fit4gp_gaussian_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4gpa_betabinom_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4gpa_binomial_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4gpa_gaussian_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4lik_betabinom_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4lik_binomial_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_gplite_cf_sexp_c", (DL_FUNC) &_gplite_cf_sexp_c, 4},
@@ -83,6 +85,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4gpa_betabinom_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gpa_betabinom_mod, 0},
     {"_rcpp_module_boot_stan_fit4gpa_binomial_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gpa_binomial_mod, 0},
     {"_rcpp_module_boot_stan_fit4gpa_gaussian_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gpa_gaussian_mod, 0},
+    {"_rcpp_module_boot_stan_fit4lik_betabinom_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4lik_betabinom_mod, 0},
+    {"_rcpp_module_boot_stan_fit4lik_binomial_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4lik_binomial_mod, 0},
     {NULL, NULL, 0}
 };
 

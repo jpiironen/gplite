@@ -60,7 +60,6 @@ gp_pred <- function(gp, xnew, var=F, cfind=NULL, jitter=NULL) {
   
   if (is_fitted(gp, 'sampling')) 
     stop('Only gp_draw currently available for models fitted using gp_mcmc.')
-    
 
   if (!is_fitted(gp, 'analytic')) {
     # model not fitted, so predict based on the prior
@@ -84,7 +83,7 @@ gp_pred <- function(gp, xnew, var=F, cfind=NULL, jitter=NULL) {
 
 
 
-gp_pred_full_post <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+gp_pred_full_post_old <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
   K_chol <- gp$K_chol
@@ -108,7 +107,7 @@ gp_pred_full_post <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   return(pred_mean)
 }
 
-gp_pred_full_post2 <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+gp_pred_full_post <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
   Kt <- eval_cf(gp$cfs, xt, gp$x, cfind)
