@@ -122,12 +122,11 @@ get_featuremap.gp <- function(object, num_inputs, ...) {
 
 is_fitted.gp <- function(object, type, ...) {
   if (type=='analytic')
-    fit_found <- !is.null(object$fit) # TODO: dummy, fix this!
-    #fit_found <- ifelse(is.null(object$fmean) && is.null(object$wmean), F, T)
+    fit_found <- !is.null(object$fit)
   else if (type=='sampling')
     fit_found <- ifelse(is.null(object$fsample) && is.null(object$wsample), F, T)
   if (fit_found && object$fitted==FALSE)
-    stop('The GP object seems to contain a posterior fit, but is not refitted after setting new hyperparameter values. Please refit after calling set_param.')
+    stop('The GP object seems to contain a posterior fit, but is not refitted after setting new hyperparameter values. Please refit using gp_fit or gp_mcmc after calling set_param.')
   return(fit_found)
 }
 
