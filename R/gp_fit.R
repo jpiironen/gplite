@@ -57,25 +57,6 @@ gp_fit <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
 }
 
 
-gp_laplace_full_old <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
-  x <- as.matrix(x)
-  n <- length(y)
-  jitter <- get_jitter(gp,jitter)
-  K <- eval_cf(gp$cfs, x, x) + jitter*diag(n)
-  gp$x <- x
-  gp$K <- K
-  gp$K_chol <- t(chol(K)) # lower triangular
-  data <- c(list(n=n,L=gp$K_chol,y=y), get_standata(gp$lik, trials=trials))
-  model <- get_stanmodel(gp$lik, gp$method)
-  gp$fit <- rstan::optimizing(model, data=data, hessian=T, as_vector=F, init=0, ...)
-  gp$fmean <- as.vector(gp$fit$par$f) # posterior mean for f
-  fw_prec_chol <- t(chol(-as.matrix(gp$fit$hessian))) # cholesky of precision for the whitened f
-  aux <- solve(t(gp$K_chol),fw_prec_chol)
-  gp$fprec_chol <- t(chol(aux %*% t(aux))) # cholesky of precision for f
-  gp$log_evidence <- gp$fit$value + 0.5*n*log(2*pi) - sum(log(diag(fw_prec_chol)))
-  return(gp)
-}
-
 gp_laplace_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)

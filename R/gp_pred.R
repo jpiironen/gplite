@@ -82,31 +82,6 @@ gp_pred <- function(gp, xnew, var=F, cfind=NULL, jitter=NULL) {
 }
 
 
-
-gp_pred_full_post_old <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
-  
-  # compute the latent mean first
-  K_chol <- gp$K_chol
-  Kt <- eval_cf(gp$cfs, xt, gp$x, cfind)
-  Ktt <- eval_cf(gp$cfs, xt, xt, cfind)
-  pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, gp$fmean))
-  pred_mean <- as.vector(pred_mean)
-  
-  if (var || cov) {
-    # (co)variance of the latent function
-    nt <- length(pred_mean)
-    jitter <- get_jitter(gp,jitter)
-    aux1 <- solve(K_chol, t(Kt))
-    aux2 <- solve(gp$fprec_chol, solve(t(K_chol), solve(K_chol, t(Kt))))
-    pred_cov <- Ktt - t(aux1) %*% aux1 + t(aux2) %*% aux2 
-    if (cov)
-      return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
-    else
-      return(list(mean = pred_mean, var = diag(pred_cov)))
-  }
-  return(pred_mean)
-}
-
 gp_pred_full_post <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
