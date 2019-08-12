@@ -3,14 +3,13 @@
 
 
 
-approx_laplace <- function(gp, y, fhat_old, ...) {
+approx_laplace <- function(gp, K, y, fhat_old, ...) {
   
   # calculate first the new estimate for posterior mean for f
   pobs <- get_pseudodata(gp$lik, fhat_old, y, ...)
   z <- pobs$z
   V <- pobs$var
   n <- length(z)
-  K <- gp$K
   K_chol <- t(chol(K))
   C_chol <- t(chol(K+diag(V)))
   fhat_new <- K %*% backsolve(t(C_chol), forwardsolve(C_chol, z)) 
@@ -27,20 +26,18 @@ approx_laplace <- function(gp, y, fhat_old, ...) {
 }
 
 
-approx_laplace_iterated <- function(gp, y, maxiter=100, tol=1e-4, ...) {
+approx_laplace_iterated <- function(gp, K, y, maxiter=100, tol=1e-4, ...) {
   
   # this is the newton iteration, so iterate the second order approximation
   # to the log likelihood by updating the mean until convergence
   
   n <- length(y)
   fhat <- rep(0, n)
-  if (is.null(gp$K))
-    stop('Internal error: covariance K not yet initialized.')
   if ('lik_gaussian' %in% class(gp$lik))
     maxiter <- 1
   
   for (iter in 1:maxiter) {
-    approx <- approx_laplace(gp, y, fhat, ...)
+    approx <- approx_laplace(gp, K, y, fhat, ...)
     diff <- max(abs(fhat - approx$fmean))
     fhat <- approx$fmean
     if (diff < tol)

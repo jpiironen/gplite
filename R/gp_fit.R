@@ -63,8 +63,7 @@ gp_laplace_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   jitter <- get_jitter(gp,jitter)
   K <- eval_cf(gp$cfs, x, x) + jitter*diag(n)
   gp$x <- x
-  gp$K <- K
-  gp$fit <- approx_laplace_iterated(gp, y, trials=trials)
+  gp$fit <- approx_laplace_iterated(gp, K, y, trials=trials)
   gp$log_evidence <- gp$fit$log_evidence # TODO: this if a bit awkward..
   return(gp)
 }
