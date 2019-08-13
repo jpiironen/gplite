@@ -258,8 +258,8 @@ set_param.list <- function(object, param, ...) {
 }
 
 set_param.cf <- function(object, param, ...) {
-  param_names <- filter_fixed(object, names(param))
-  param_names <- rm_obj_name(object, param_names)
+  param_names <- rm_obj_name(object, names(param))
+  param_names <- filter_fixed(object, param_names)
   for (j in seq_along(param_names))
     object[[param_names[j]]] <- unname(exp(param[j]))
   object
@@ -269,7 +269,7 @@ set_param.cf_periodic <- function(object, param, ...) {
   fixed_period <- is_fixed(object, 'period')
   if (!fixed_period)
     object$period <- exp(param[1])
-  object$base <- set_param(object$base, tail(param, length(param)-fixed_period))
+  object$base <- set_param(object$base, tail(param, length(param)-!fixed_period))
   object
 }
 
