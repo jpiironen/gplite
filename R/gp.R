@@ -58,8 +58,10 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=
   gp$lik <- lik
   gp$method <- method
   gp$fitted <- FALSE
-  gp$num_basis <- check_num_basis(cfs, num_basis)
-  gp$rf_seed <- rf_seed
+  if (method == 'rf') {
+    gp$num_basis <- check_num_basis(cfs, num_basis)
+    gp$rf_seed <- rf_seed
+  }
   class(gp) <- 'gp'
   gp
 }

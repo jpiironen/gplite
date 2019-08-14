@@ -40,7 +40,7 @@
 #'
 #' 
 #' @export
-gp_optim <- function(gp, x, y, method='Nelder-Mead', tol=1e-4, maxiter=200, verbose=T, warnings=T, ...) {
+gp_optim <- function(gp, x, y, method='Nelder-Mead', tol=1e-4, maxiter=500, verbose=T, warnings=T, ...) {
   energy <- function(param) {
     gp <- set_param(gp, param)
     gp <- gp_fit(gp,x,y, ...)
