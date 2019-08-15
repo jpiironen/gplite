@@ -69,9 +69,10 @@ test_that("gp_fit: marginal likelihood is correctly calculated", {
       log_evidence <- gp$log_evidence
       
       # analytic marginal likelihood for Gaussian likelihood 
-      # (see Rasmussen and Williams, 2006)
-      Ky <- gp$K + gp$lik$sigma^2*diag(n)
-      L <- t(chol(Ky))
+      # (see Rasmussen and Williams, 2006
+      K <- eval_cf(gp$cfs, x, x)
+      C <- K + gp$lik$sigma^2*diag(n)
+      L <- t(chol(C))
       aux <- solve(L,y)
       log_evidence_analytic <- c( -0.5*t(aux) %*% aux -sum(log(diag(L))) -n/2*log(2*pi) )
       
@@ -102,10 +103,11 @@ test_that("gp_fit: predictions are correctly calculated", {
       pred <- gp_pred(gp,xt,var=T, jitter = 1e-6)
       
       # analytic predictive equations mean and variance
-      Ktt <- eval_cf(gp$cfs, xt, xt)
+      K <- eval_cf(gp$cfs, x, x)
       Kt <- eval_cf(gp$cfs, xt, x)
-      Ky <- gp$K + gp$lik$sigma^2*diag(n)
-      L <- t(chol(Ky))
+      Ktt <- eval_cf(gp$cfs, xt, xt)
+      C <- K + gp$lik$sigma^2*diag(n)
+      L <- t(chol(C))
       alpha <- solve(t(L),solve(L,y))
       aux <- solve(L,t(Kt))
       pred_mean_analytic <- c(Kt %*% alpha)
