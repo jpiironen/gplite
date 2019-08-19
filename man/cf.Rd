@@ -10,6 +10,7 @@
 \alias{cf_nn}
 \alias{cf_periodic}
 \alias{cf_prod}
+\alias{*.cf}
 \title{Initialize covariance function}
 \usage{
 cf_const(magn = 1, prior_magn = prior_logunif())
@@ -33,10 +34,14 @@ cf_periodic(vars = NULL, period = 1, cf_base = cf_sexp(),
   prior_period = prior_logunif())
 
 cf_prod(...)
+
+\method{*}{cf}(cf1, cf2)
 }
 \arguments{
 \item{magn}{Initial value for the magnitude hyperparameter (depicts the magnitude of 
 the variation captured by the given covariance function).}
+
+\item{prior_magn}{Prior for hypeparameter \code{magn}. See \code{\link{priors}}.}
 
 \item{vars}{Indices of the inputs which are taken into account when calculating this
 covariance. If the input matrix has named columns, can also be a vector of column names.
@@ -44,15 +49,23 @@ Default is all the inputs.}
 
 \item{lscale}{Initial value for the length-scale hyperparameter.}
 
+\item{prior_lscale}{Prior for hyperparameter \code{lscale}. See \code{\link{priors}}.}
+
 \item{sigma0}{Prior std for the bias in the neural network covariance function.}
 
 \item{sigma}{Prior std for the weights in the hidden layers of the neural network 
 covariance function.}
 
+\item{prior_sigma0}{Prior for hyperparameter \code{sigma0}. See \code{\link{priors}}.}
+
+\item{prior_sigma}{Prior for hyperparameter \code{sigma}. See \code{\link{priors}}.}
+
 \item{period}{Period length for the periodic covariance function.}
 
 \item{cf_base}{Base covariance function that is used to model the variability within each period 
 in periodic covariance function.}
+
+\item{prior_period}{Prior for hyperparameter \code{period}. See \code{\link{priors}}.}
 
 \item{...}{Meaning depends on context. For \code{cf_prod} pass in the covariance functions in the product.}
 }

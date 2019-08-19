@@ -14,7 +14,7 @@
 #' }
 #' 
 #'
-#' @name prior
+#' @name priors
 #'
 #' @return The hyperprior object.
 #' 
@@ -38,7 +38,7 @@ NULL
 
 
 
-#' @rdname prior
+#' @rdname priors
 #' @export
 prior_fixed <- function() {
   prior <- list()
@@ -47,7 +47,7 @@ prior_fixed <- function() {
 }
 
 
-#' @rdname prior
+#' @rdname priors
 #' @export
 prior_logunif <- function() {
   prior <- list()

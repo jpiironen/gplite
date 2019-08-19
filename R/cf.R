@@ -38,6 +38,11 @@
 #' @param period Period length for the periodic covariance function.
 #' @param cf_base Base covariance function that is used to model the variability within each period 
 #' in periodic covariance function.
+#' @param prior_magn Prior for hypeparameter \code{magn}. See \code{\link{priors}}.
+#' @param prior_lscale Prior for hyperparameter \code{lscale}. See \code{\link{priors}}.
+#' @param prior_sigma0 Prior for hyperparameter \code{sigma0}. See \code{\link{priors}}.
+#' @param prior_sigma Prior for hyperparameter \code{sigma}. See \code{\link{priors}}.
+#' @param prior_period Prior for hyperparameter \code{period}. See \code{\link{priors}}.
 #' @param ... Meaning depends on context. For \code{cf_prod} pass in the covariance functions in the product. 
 #'
 #' @return The covariance function object.
@@ -165,7 +170,11 @@ cf_prod <- function(...) {
   cf
 }
 
-
+#' @rdname cf
+#' @export
+'*.cf' <- function(cf1, cf2) {
+  cf_prod(cf1,cf2)
+}
 
 
 # for figuring out the name of the cf conveniently
@@ -269,7 +278,7 @@ set_param.cf_periodic <- function(object, param, ...) {
   fixed_period <- is_fixed(object, 'period')
   if (!fixed_period)
     object$period <- exp(param[1])
-  object$base <- set_param(object$base, tail(param, length(param)-!fixed_period))
+  object$base <- set_param(object$base, utils::tail(param, length(param)-!fixed_period))
   object
 }
 
