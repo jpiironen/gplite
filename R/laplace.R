@@ -50,3 +50,44 @@ approx_laplace_iterated <- function(gp, K, y, maxiter=100, tol=1e-4, ...) {
 
 
 
+approx_laplace_linearized <- function(gp, Z, y, fhat_old, ...) {
+  
+  # calculate first the new estimate for posterior mean for f
+  pobs <- get_pseudodata(gp$lik, fhat_old, y, ...)
+  z <- pobs$z
+  V <- pobs$var
+  n <- length(z)
+  
+  p <- ncol(Z)
+  Z_scaled <- Z/sqrt(V)
+  wprec_prior <- diag(p)
+  H <- t(Z_scaled) %*% Z_scaled
+  L <- solve(H + wprec_prior)
+  what <- backsolve(t(L), forwardsolve(L, t(Z) %*% (z/V)))
+  wcov <- backsolve(t(L), forwardsolve(L))
+  wcov_logdet <- 0 # TODO: Implement this
+  fhat_new <- Z %*% what
+  
+  log_prior <- -0.5*n*log(2*pi) - 0.5*sum(what^2)
+  log_lik <- get_loglik(gp$lik, fhat_new, y, ...) 
+  log_evidence <- 0.5*n*log(2*pi) + 0.5*wcov_logdet + log_prior + log_lik
+  list(wmean=what, wcov=wcov, log_evidence=log_evidence)
+  
+  ############ old stuff #########
+  K_chol <- t(chol(K))
+  C_chol <- t(chol(K+diag(V)))
+  fhat_new <- K %*% backsolve(t(C_chol), forwardsolve(C_chol, z)) 
+  
+  # compute the log marginal likelihood
+  K_logdet <- 2*sum(log(diag(K_chol)))
+  C_logdet <- 2*sum(log(diag(C_chol)))
+  V_logdet <- sum(log(V))
+  aux <- forwardsolve(K_chol, fhat_new)
+  log_prior <- -0.5*n*log(2*pi) - 0.5*K_logdet - 0.5*sum(aux^2)
+  log_lik <- get_loglik(gp$lik, fhat_new, y, ...) 
+  log_evidence <- 0.5*n*log(2*pi) + 0.5*(K_logdet - C_logdet + V_logdet) + log_prior + log_lik
+  list(fmean=fhat_new, K_chol=K_chol, C_chol=C_chol, log_evidence=log_evidence)
+}
+
+
+
