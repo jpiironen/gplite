@@ -49,7 +49,7 @@ gp_fit <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   if (gp$method == 'full') {
     gp <- gp_laplace_full(gp, x, y, trials=trials, jitter=jitter, ...)
   } else if (gp$method == 'rf') {
-    gp <- gp_laplace_linearized2(gp, x, y, trials=trials, jitter=jitter, ...)
+    gp <- gp_laplace_linearized(gp, x, y, trials=trials, jitter=jitter, ...)
   } else
     stop('Unknown method: ', gp$method)
   gp$fitted <- TRUE
@@ -69,7 +69,7 @@ gp_laplace_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
 }
 
 
-gp_laplace_linearized <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
+gp_laplace_linearized_old <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)
   gp$num_basis <- check_num_basis(gp$cfs, gp$num_basis, NCOL(x))
@@ -86,7 +86,7 @@ gp_laplace_linearized <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   return(gp)
 }
 
-gp_laplace_linearized2 <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
+gp_laplace_linearized <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)
   gp$num_basis <- check_num_basis(gp$cfs, gp$num_basis, NCOL(x))
