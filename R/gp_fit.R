@@ -49,7 +49,7 @@ gp_fit <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   if (gp$method == 'full') {
     gp <- gp_laplace_full(gp, x, y, trials=trials, jitter=jitter, ...)
   } else if (gp$method == 'rf') {
-    gp <- gp_laplace_linearized(gp, x, y, trials=trials, jitter=jitter, ...)
+    gp <- gp_laplace_linearized2(gp, x, y, trials=trials, jitter=jitter, ...)
   } else
     stop('Unknown method: ', gp$method)
   gp$fitted <- TRUE
@@ -78,10 +78,21 @@ gp_laplace_linearized <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   data <- c(list(n=n,m=ncol(z),Z=z,y=y), get_standata(gp$lik, trials=trials))
   model <- get_stanmodel(gp$lik, gp$method)
   gp$fit <- rstan::optimizing(model, data=data, hessian=T, as_vector=F, init=0, ...)
+  gp$fit2 <- approx_laplace_linearized_iterated(gp, z, y)
   gp$wmean <- as.vector(gp$fit$par$w)
   gp$wprec_chol <- t(chol(-as.matrix(gp$fit$hessian))) # cholesky of precision
   gp$wcov <- solve(t(gp$wprec_chol), solve(gp$wprec_chol, diag(length(gp$wmean))))
   gp$log_evidence <- gp$fit$value + 0.5*n*log(2*pi) - sum(log(diag(gp$wprec_chol)))
+  return(gp)
+}
+
+gp_laplace_linearized2 <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
+  num_inputs <- NCOL(x)
+  featuremap <- get_featuremap(gp, num_inputs)
+  gp$num_basis <- check_num_basis(gp$cfs, gp$num_basis, NCOL(x))
+  z <- featuremap(x)
+  gp$fit <- approx_laplace_linearized_iterated(gp, z, y, trials=trials)
+  gp$log_evidence <- gp$fit$log_evidence # TODO: this is UGLY
   return(gp)
 }
 

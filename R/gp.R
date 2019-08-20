@@ -163,7 +163,7 @@ get_w_mean <- function(gp, cfind=NULL) {
   if (is.null(cfind))
     cfind <- seq_along(gp$cfs)
   inds <- get_weight_inds(gp, cfind)
-  w <- gp$wmean[inds]
+  w <- gp$fit$wmean[inds]
   return(w)
 }
 
@@ -171,7 +171,7 @@ get_w_cov <- function(gp, cfind=NULL) {
   if (is.null(cfind))
     cfind <- seq_along(gp$cfs)
   inds <- get_weight_inds(gp, cfind)
-  return(gp$wcov[inds,inds])
+  return(gp$fit$wcov[inds,inds])
 }
 
 
