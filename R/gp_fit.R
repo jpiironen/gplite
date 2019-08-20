@@ -64,7 +64,6 @@ gp_laplace_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   K <- eval_cf(gp$cfs, x, x) + jitter*diag(n)
   gp$x <- x
   gp$fit <- approx_laplace_iterated(gp, K, y, trials=trials)
-  gp$log_evidence <- gp$fit$log_evidence # TODO: this if a bit awkward..
   return(gp)
 }
 
@@ -75,7 +74,6 @@ gp_laplace_linearized <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   gp$num_basis <- check_num_basis(gp$cfs, gp$num_basis, NCOL(x))
   z <- featuremap(x)
   gp$fit <- approx_laplace_linearized_iterated(gp, z, y, trials=trials)
-  gp$log_evidence <- gp$fit$log_evidence # TODO: this is UGLY
   return(gp)
 }
 

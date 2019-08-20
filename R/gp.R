@@ -94,7 +94,7 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=
 gp_energy <- function(gp) {
   if (!is_fitted(gp, type='analytic'))
     stop('The GP must be fitted. Call gp_fit first.')
-  -gp$log_evidence
+  -gp$fit$log_evidence
 }
 
 #' @export
