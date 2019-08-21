@@ -16,10 +16,14 @@ lik_betabinom(link = "logit", phi = 0.1, prior_phi = prior_logunif())
 \arguments{
 \item{sigma}{Initial value for the noise standard deviation.}
 
+\item{prior_sigma}{Prior for hyperparameter \code{sigma}. See \code{\link{priors}}.}
+
 \item{link}{Link function if the likelihood supports non-identity links. See Details for 
 information about possible links for each likelihood.}
 
 \item{phi}{The over dispersion parameter for beta binomial likelihood.}
+
+\item{prior_phi}{Prior for hyperparameter \code{phi}. See \code{\link{priors}}.}
 }
 \value{
 The likelihood object.

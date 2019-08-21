@@ -21,6 +21,8 @@
 #' information about possible links for each likelihood.
 #' @param sigma Initial value for the noise standard deviation.
 #' @param phi The over dispersion parameter for beta binomial likelihood.
+#' @param prior_sigma Prior for hyperparameter \code{sigma}. See \code{\link{priors}}.
+#' @param prior_phi Prior for hyperparameter \code{phi}. See \code{\link{priors}}.
 #' 
 #'
 #' @return The likelihood object.
@@ -122,7 +124,7 @@ set_param.lik <- function(object, param, ...) {
 get_pseudodata.lik <- function(object, f, y, eps=1e-6, ...) {
   model <- get_stanmodel(object, lik_only=T)
   data <- c(list(n=length(y), y=y), get_standata(object, ...))
-  capture.output(
+  utils::capture.output(
     # get the stanfit-object corresponding to the likelihood
     fit <- sampling(model, data=data, chains=1, iter=1, algorithm='Fixed_param')
   )
@@ -135,7 +137,7 @@ get_pseudodata.lik <- function(object, f, y, eps=1e-6, ...) {
 
 get_pseudodata.lik_gaussian <- function(object, f, y, ...) {
   n <- length(y)
-  loglik <- sum(dnorm(y, mean=f, sd=object$sigma, log=T))
+  loglik <- sum(stats::dnorm(y, mean=f, sd=object$sigma, log=T))
   list(z = y, var = object$sigma^2*rep(1,n), loglik = loglik)
 }
 
@@ -147,7 +149,7 @@ get_pseudodata.lik_gaussian <- function(object, f, y, ...) {
 get_loglik.lik <- function(object, f, y, ...) {
   model <- get_stanmodel(object, lik_only=T)
   data <- c(list(n=length(y), y=y), get_standata(object, ...))
-  capture.output(
+  utils::capture.output(
     # get the stanfit-object corresponding to the likelihood
     fit <- sampling(model, data=data, chains=1, iter=1, algorithm='Fixed_param')
   )
@@ -156,7 +158,7 @@ get_loglik.lik <- function(object, f, y, ...) {
 }
 
 get_loglik.lik_gaussian <- function(object, f, y, ...) {
-  sum(dnorm(y, mean=f, sd=object$sigma, log=T))
+  sum(stats::dnorm(y, mean=f, sd=object$sigma, log=T))
 }
 
 

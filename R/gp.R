@@ -94,7 +94,7 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=
 gp_energy <- function(gp) {
   if (!is_fitted(gp, type='analytic'))
     stop('The GP must be fitted. Call gp_fit first.')
-  -gp$log_evidence
+  -gp$fit$log_evidence
 }
 
 #' @export
@@ -163,7 +163,7 @@ get_w_mean <- function(gp, cfind=NULL) {
   if (is.null(cfind))
     cfind <- seq_along(gp$cfs)
   inds <- get_weight_inds(gp, cfind)
-  w <- gp$wmean[inds]
+  w <- gp$fit$wmean[inds]
   return(w)
 }
 
@@ -171,7 +171,7 @@ get_w_cov <- function(gp, cfind=NULL) {
   if (is.null(cfind))
     cfind <- seq_along(gp$cfs)
   inds <- get_weight_inds(gp, cfind)
-  return(gp$wcov[inds,inds])
+  return(gp$fit$wcov[inds,inds])
 }
 
 

@@ -5,7 +5,7 @@
 \title{Optimize hyperparameters of a GP model}
 \usage{
 gp_optim(gp, x, y, method = "Nelder-Mead", tol = 1e-04,
-  maxiter = 200, verbose = T, warnings = T, ...)
+  maxiter = 500, verbose = T, warnings = T, ...)
 }
 \arguments{
 \item{gp}{The gp model object to be fitted.}
