@@ -91,10 +91,13 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=
 #'
 
 #' @export
-gp_energy <- function(gp) {
+gp_energy <- function(gp, include_prior=T) {
   if (!is_fitted(gp, type='analytic'))
     stop('The GP must be fitted. Call gp_fit first.')
-  -gp$fit$log_evidence
+  energy <- -gp$fit$log_evidence
+  if (include_prior)
+    energy <- energy - lpdf_prior(gp)
+  energy
 }
 
 #' @export
@@ -113,6 +116,10 @@ set_param.gp <- function(object, param, ...) {
   object$lik <- set_param(object$lik, utils::tail(param,np_lik))
   object$fitted <- FALSE
   object
+}
+
+lpdf_prior.gp <- function(object, ...) {
+  lpdf_prior(object$cfs) + lpdf_prior(object$lik)
 }
 
 get_featuremap.gp <- function(object, num_inputs, ...) {

@@ -84,5 +84,8 @@ is_fitted <- function(object, type, ...) {
   UseMethod("is_fitted", object)
 }
 
+lpdf_prior <- function(object, ...) {
+  UseMethod("lpdf_prior", object)
+}
 
 

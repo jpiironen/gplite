@@ -56,4 +56,30 @@ prior_logunif <- function() {
 }
 
 
+#' @rdname priors
+#' @export
+prior_half_t <- function(df=1, scale=1) {
+  prior <- list()
+  prior$df <- df
+  prior$scale <- scale
+  class(prior) <- 'prior_half_t'
+  return(prior)
+}
+
+
+
+# lpdf_prior functions
+
+lpdf_prior.prior_logunif <- function(object, param) {
+  0
+}
+
+lpdf_prior.prior_half_t <- function(object, param) {
+  theta <- exp(param) # actual parameter, positively constrained
+  logdet_jacobian <- param
+  log(2) - log(object$scale) + dt(theta/object$scale, df=object$df, log=T) + logdet_jacobian
+}
+
+
+
 

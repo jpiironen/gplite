@@ -365,6 +365,26 @@ eval_cf.cf_prod <- function(object, x1, x2, ...) {
 
 
 
+# lpdf_prior function(s)
+
+lpdf_prior.list <- function(object, ...) {
+  lp <- 0
+  for (k in seq_along(object))
+    lp <- lp + lpdf_prior(object[[k]])
+  lp
+}
+
+lpdf_prior.cf <- function(object, ...) {
+  param <- get_param(object)
+  param_names <- rm_obj_name(object, names(param))
+  param_names <- filter_fixed(object, param_names)
+  lp <- 0
+  for (j in seq_along(param_names))
+    lp <- lp + lpdf_prior(object$priors[[param_names[j]]], unname(param[j]))
+  lp
+}
+
+
 
 
 # rf_featmap functions

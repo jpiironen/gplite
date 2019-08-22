@@ -4,11 +4,14 @@
 \alias{priors}
 \alias{prior_fixed}
 \alias{prior_logunif}
+\alias{prior_half_t}
 \title{Initialize prior for hyperparameter}
 \usage{
 prior_fixed()
 
 prior_logunif()
+
+prior_half_t(df = 1, scale = 1)
 }
 \value{
 The hyperprior object.
