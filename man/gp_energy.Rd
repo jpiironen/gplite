@@ -4,7 +4,7 @@
 \alias{gp_energy}
 \title{Energy of a GP model}
 \usage{
-gp_energy(gp)
+gp_energy(gp, include_prior = T)
 }
 \arguments{
 \item{gp}{The fitted GP model.}

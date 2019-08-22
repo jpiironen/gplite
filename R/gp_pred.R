@@ -60,7 +60,6 @@ gp_pred <- function(gp, xnew, var=F, cfind=NULL, jitter=NULL) {
   
   if (is_fitted(gp, 'sampling')) 
     stop('Only gp_draw currently available for models fitted using gp_mcmc.')
-    
 
   if (!is_fitted(gp, 'analytic')) {
     # model not fitted, so predict based on the prior
@@ -83,23 +82,23 @@ gp_pred <- function(gp, xnew, var=F, cfind=NULL, jitter=NULL) {
 }
 
 
-
 gp_pred_full_post <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
-  K_chol <- gp$K_chol
   Kt <- eval_cf(gp$cfs, xt, gp$x, cfind)
   Ktt <- eval_cf(gp$cfs, xt, xt, cfind)
-  pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, gp$fmean))
+  K_chol <- gp$fit$K_chol
+  fmean <- gp$fit$fmean
+  pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, fmean))
   pred_mean <- as.vector(pred_mean)
   
   if (var || cov) {
     # (co)variance of the latent function
     nt <- length(pred_mean)
     jitter <- get_jitter(gp,jitter)
-    aux1 <- solve(K_chol, t(Kt))
-    aux2 <- solve(gp$fprec_chol, solve(t(K_chol), solve(K_chol, t(Kt))))
-    pred_cov <- Ktt - t(aux1) %*% aux1 + t(aux2) %*% aux2 
+    C_chol <- gp$fit$C_chol
+    aux <- solve(C_chol, t(Kt))
+    pred_cov <- Ktt - t(aux) %*% aux
     if (cov)
       return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
     else
@@ -107,6 +106,7 @@ gp_pred_full_post <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   }
   return(pred_mean)
 }
+
 
 gp_pred_full_prior <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   

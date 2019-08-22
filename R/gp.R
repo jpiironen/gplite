@@ -58,8 +58,10 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=
   gp$lik <- lik
   gp$method <- method
   gp$fitted <- FALSE
-  gp$num_basis <- check_num_basis(cfs, num_basis)
-  gp$rf_seed <- rf_seed
+  if (method == 'rf') {
+    gp$num_basis <- check_num_basis(cfs, num_basis)
+    gp$rf_seed <- rf_seed
+  }
   class(gp) <- 'gp'
   gp
 }
@@ -89,10 +91,13 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=
 #'
 
 #' @export
-gp_energy <- function(gp) {
+gp_energy <- function(gp, include_prior=T) {
   if (!is_fitted(gp, type='analytic'))
     stop('The GP must be fitted. Call gp_fit first.')
-  -gp$log_evidence
+  energy <- -gp$fit$log_evidence
+  if (include_prior)
+    energy <- energy - lpdf_prior(gp)
+  energy
 }
 
 #' @export
@@ -113,6 +118,10 @@ set_param.gp <- function(object, param, ...) {
   object
 }
 
+lpdf_prior.gp <- function(object, ...) {
+  lpdf_prior(object$cfs) + lpdf_prior(object$lik)
+}
+
 get_featuremap.gp <- function(object, num_inputs, ...) {
   if (object$method == 'rf')
     return(rf_featmap(object$cfs, object$num_basis, num_inputs=num_inputs, seed=object$rf_seed))
@@ -122,11 +131,11 @@ get_featuremap.gp <- function(object, num_inputs, ...) {
 
 is_fitted.gp <- function(object, type, ...) {
   if (type=='analytic')
-    fit_found <- ifelse(is.null(object$fmean) && is.null(object$wmean), F, T)
+    fit_found <- is.list(object$fit)
   else if (type=='sampling')
     fit_found <- ifelse(is.null(object$fsample) && is.null(object$wsample), F, T)
   if (fit_found && object$fitted==FALSE)
-    stop('The GP object seems to contain a posterior fit, but is not refitted after setting new hyperparameter values. Please refit after calling set_param.')
+    stop('The GP object seems to contain a posterior fit, but is not refitted after setting new hyperparameter values. Please refit using gp_fit or gp_mcmc after calling set_param.')
   return(fit_found)
 }
 
@@ -161,7 +170,7 @@ get_w_mean <- function(gp, cfind=NULL) {
   if (is.null(cfind))
     cfind <- seq_along(gp$cfs)
   inds <- get_weight_inds(gp, cfind)
-  w <- gp$wmean[inds]
+  w <- gp$fit$wmean[inds]
   return(w)
 }
 
@@ -169,7 +178,7 @@ get_w_cov <- function(gp, cfind=NULL) {
   if (is.null(cfind))
     cfind <- seq_along(gp$cfs)
   inds <- get_weight_inds(gp, cfind)
-  return(gp$wcov[inds,inds])
+  return(gp$fit$wcov[inds,inds])
 }
 
 

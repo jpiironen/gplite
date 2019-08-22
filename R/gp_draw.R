@@ -29,7 +29,7 @@ gp_draw <- function(gp, xnew, draws=NULL, transform=T, cfind=NULL, jitter=NULL, 
     # so predict based on that
     #
     if (is.null(draws))
-      stop('Please provide the number of draws.')
+      draws <- 1
     if (is_fitted(gp, 'analytic')) {
       # draw from the analytical posterior approximation
       if (gp$method == 'full')
