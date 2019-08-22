@@ -340,8 +340,8 @@ eval_cf.cf_matern52 <- function(object, x1, x2, ...) {
 
 eval_cf.cf_nn <- function(object, x1, x2, ...) {
   d <- NCOL(x1)
-  x1 <- cbind(1, prepare_inputmat(x1, object$vars))
-  x2 <- cbind(1, prepare_inputmat(x2, object$vars))
+  x1 <- prepare_inputmat(x1, object$vars)
+  x2 <- prepare_inputmat(x2, object$vars)
   K <- cf_nn_c(x1, x2, object$sigma0, object$sigma, object$magn)
   return(K)
 }
