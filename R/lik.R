@@ -135,6 +135,7 @@ lpdf_prior.lik <- function(object, ...) {
 # get_pseudodata functions
 
 get_pseudodata.lik <- function(object, f, y, eps=1e-6, ...) {
+get_pseudodata.lik <- function(object, f, y, eps=1e-6, min_curv=1e-3, ...) {
   model <- get_stanmodel(object, lik_only=T)
   data <- c(list(n=length(y), y=y), get_standata(object, ...))
   utils::capture.output(
@@ -145,6 +146,7 @@ get_pseudodata.lik <- function(object, f, y, eps=1e-6, ...) {
   grad2 <- (rstan::grad_log_prob(fit, f+eps) - grad) / eps # second derivatives
   attr(grad, 'log_prob') <- NULL
   attr(grad2, 'log_prob') <- NULL
+  grad2 <- pmin(grad2, -min_curv)
   list(z = f-grad/grad2, var = -1/grad2)
 }
 
@@ -161,7 +163,7 @@ get_pseudodata.lik_gaussian <- function(object, f, y, ...) {
 
 get_loglik.lik <- function(object, f, y, ...) {
   model <- get_stanmodel(object, lik_only=T)
-  data <- c(list(n=length(y), y=y), get_standata(object, ...))
+  data <- c(list(n=length(y), y=as.array(y)), get_standata(object, ...))
   utils::capture.output(
     # get the stanfit-object corresponding to the likelihood
     fit <- sampling(model, data=data, chains=1, iter=1, algorithm='Fixed_param')
@@ -230,7 +232,7 @@ get_standata.lik_binomial <- function(object, ...) {
     link <- 0
   else if (object$link == 'probit')
     link <- 1
-  list(trials=args$trials, link=link)
+  list(trials=as.array(args$trials), link=link)
 }
 
 get_standata.lik_betabinom <- function(object, ...) {
@@ -241,7 +243,7 @@ get_standata.lik_betabinom <- function(object, ...) {
     link <- 0
   else if (object$link == 'probit')
     link <- 1
-  list(trials=args$trials, link=link, phi=object$phi)
+  list(trials=as.array(args$trials), link=link, phi=object$phi)
 }
 
 
