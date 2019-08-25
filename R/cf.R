@@ -493,12 +493,13 @@ rf_featmap.cf_nn <- function(object, num_feat, num_inputs, seed=NULL, ...) {
   # draw the hidden layer weights randomly
   m <- num_feat
   w <- matrix(stats::rnorm(m*num_inputs), nrow=num_inputs, ncol=m)*object$sigma
-  w0 <- matrix(stats::rnorm(m), nrow=1, ncol=m)*object$sigma0
+  w0 <- matrix(stats::rnorm(m), nrow=1, ncol=m)*object$sigma0*object$sigma
   w_aug <- rbind(w0, w)
+  erf <- function(t) stats::pnorm(t, sd=sqrt(0.5)) - stats::pnorm(-t, sd=sqrt(0.5))
   
   featuremap <- function(x) {
     x_aug <- cbind(1, as.matrix(x)[,object$vars,drop=F])
-    h <- stats::pnorm(x_aug %*% w_aug) # hidden layer activations
+    h <- erf(x_aug %*% w_aug) # hidden layer activations
     object$magn/sqrt(m)*h
   }
   return(featuremap)
