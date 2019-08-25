@@ -17,7 +17,8 @@ cfs <- list(cf_const(),
             cf_sexp(),
             cf_matern32(),
             cf_matern52(),
-            cf_nn())
+            cf_nn(),
+            cf_periodic())
 lik <- lik_gaussian()
 
 
@@ -66,10 +67,10 @@ test_that("gp_fit: marginal likelihood is correctly calculated", {
       param <- param0 + rnorm(length(param0))*scale_perturb
       gp <- set_param(gp, param)
       gp <- gp_fit(gp,x,y)
-      log_evidence <- gp$log_evidence
+      log_evidence <- gp$fit$log_evidence
       
       # analytic marginal likelihood for Gaussian likelihood 
-      # (see Rasmussen and Williams, 2006
+      # (see Rasmussen and Williams, 2006)
       K <- eval_cf(gp$cfs, x, x)
       C <- K + gp$lik$sigma^2*diag(n)
       L <- t(chol(C))

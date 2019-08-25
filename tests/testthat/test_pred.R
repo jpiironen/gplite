@@ -19,7 +19,8 @@ cfs <- list(cf_const(),
             cf_sexp(),
             cf_matern32(), 
             cf_matern52(), 
-            cf_nn())
+            cf_nn(),
+            cf_periodic())
 
 liks <- list(lik_gaussian(), 
              lik_binomial('logit'), lik_binomial('probit'),

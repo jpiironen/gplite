@@ -17,8 +17,8 @@ trials <- sample(10, n, replace = T)
 cfs <- list(cf_const(), 
             cf_lin(), 
             cf_sexp(),
-            cf_nn(sigma0=1, prior_sigma0 = prior_fixed()) # for numerical robustness
-            ) 
+            cf_nn(),
+            cf_periodic()) 
 
 liks <- list(lik_gaussian(), 
              lik_binomial('logit'), lik_binomial('probit'),
@@ -56,6 +56,7 @@ test_that("gp_pred: error is raised (only) if model has not been refitted after
           resetting hyperparameters", {
             
   for (k in seq_along(gps)) {
+
     gp0 <- gps[[k]]
     gp <- gp_fit(gp0, x, yval[[k]], trials=trials)
     
