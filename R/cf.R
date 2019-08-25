@@ -368,7 +368,7 @@ eval_cf.cf_prod <- function(object, x1, x2, ...) {
 
 
 
-# lpdf_prior function(s)
+# lpdf_prior functions
 
 lpdf_prior.list <- function(object, ...) {
   lp <- 0
@@ -387,6 +387,13 @@ lpdf_prior.cf <- function(object, ...) {
   lp
 }
 
+lpdf_prior.cf_prod <- function(object, ...) {
+  lpdf_prior(object$cfs)
+}
+
+lpdf_prior.cf_periodic <- function(object, ...) {
+  lpdf_prior(object$priors$period) + lpdf_prior(object$base)
+}
 
 
 

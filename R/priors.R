@@ -70,6 +70,10 @@ prior_half_t <- function(df=1, scale=1) {
 
 # lpdf_prior functions
 
+lpdf_prior.prior_fixed <- function(object, param) {
+  0
+}
+
 lpdf_prior.prior_logunif <- function(object, param) {
   0
 }
