@@ -134,10 +134,9 @@ lpdf_prior.lik <- function(object, ...) {
 
 # get_pseudodata functions
 
-get_pseudodata.lik <- function(object, f, y, eps=1e-6, ...) {
 get_pseudodata.lik <- function(object, f, y, eps=1e-6, min_curv=1e-3, ...) {
   model <- get_stanmodel(object, lik_only=T)
-  data <- c(list(n=length(y), y=y), get_standata(object, ...))
+  data <- c(list(n=length(y), y=as.array(y)), get_standata(object, ...))
   utils::capture.output(
     # get the stanfit-object corresponding to the likelihood
     fit <- sampling(model, data=data, chains=1, iter=1, algorithm='Fixed_param')
