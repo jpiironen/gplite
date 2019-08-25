@@ -134,7 +134,7 @@ lpdf_prior.lik <- function(object, ...) {
 
 # get_pseudodata functions
 
-get_pseudodata.lik <- function(object, f, y, eps=1e-6, min_curv=1e-3, ...) {
+get_pseudodata.lik <- function(object, f, y, eps=1e-6, ...) {
   model <- get_stanmodel(object, lik_only=T)
   data <- c(list(n=length(y), y=as.array(y)), get_standata(object, ...))
   utils::capture.output(
@@ -145,7 +145,6 @@ get_pseudodata.lik <- function(object, f, y, eps=1e-6, min_curv=1e-3, ...) {
   grad2 <- (rstan::grad_log_prob(fit, f+eps) - grad) / eps # second derivatives
   attr(grad, 'log_prob') <- NULL
   attr(grad2, 'log_prob') <- NULL
-  grad2 <- pmin(grad2, -min_curv)
   list(z = f-grad/grad2, var = -1/grad2)
 }
 

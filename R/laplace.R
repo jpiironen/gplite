@@ -10,7 +10,7 @@ approx_laplace <- function(gp, K, y, fhat_old, ...) {
   z <- pobs$z
   V <- pobs$var
   n <- length(z)
-  K_chol <- t(chol(K)) # TODO: this might be numerically unstable, but perhaps this is not needed, since it cancels out when computing marginal likelihood?
+  K_chol <- t(chol(K)) # TODO: this might be numerically unstable, but perhaps it is not needed, since it cancels out when computing marginal likelihood?
   C_chol <- t(chol(K+diag(V)))
   fhat_new <- K %*% backsolve(t(C_chol), forwardsolve(C_chol, z)) 
   
@@ -57,17 +57,16 @@ approx_laplace_linearized <- function(gp, Z, y, fhat_old, ...) {
   z <- pobs$z
   V <- pobs$var
   n <- length(z)
-  
   d <- NCOL(Z)
-  Z_scaled <- Z/sqrt(V)
   wprec_prior <- diag(d)
-  H <- t(Z_scaled) %*% Z_scaled
+  H <- t(Z) %*% (Z/V)
   L <- t(chol(H + wprec_prior))
   what <- backsolve(t(L), forwardsolve(L, t(Z) %*% (z/V)))
   wcov <- backsolve(t(L), forwardsolve(L, diag(d)))
   wcov_logdet <- -2*sum(log(diag(L)))
   fhat_new <- Z %*% what
   
+  # compute the log marginal likelihood
   log_prior <- -0.5*d*log(2*pi) - 0.5*sum(what^2)
   log_lik <- get_loglik(gp$lik, fhat_new, y, ...) 
   log_evidence <- 0.5*n*log(2*pi) + 0.5*wcov_logdet + log_prior + log_lik
