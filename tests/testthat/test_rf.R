@@ -17,7 +17,8 @@ trials <- sample(10, n, replace = T)
 cfs <- list(cf_const(), 
             cf_lin(), 
             cf_sexp(),
-            cf_nn())
+            cf_nn(sigma0=1, prior_sigma0 = prior_fixed()) # for numerical robustness
+            ) 
 
 liks <- list(lik_gaussian(), 
              lik_binomial('logit'), lik_binomial('probit'),

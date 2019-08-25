@@ -93,15 +93,15 @@ arma::mat cf_nn_c(arma::mat x1, // input matrix 1
   size_t n2 = x2.n_rows;
   arma::mat K(n1,n2);
   double magn2 = magn*magn;
-  double sigma0_sq = sigma0*sigma0;
+  double sigma0_sq = sigma0*sigma0*sigma*sigma;
   double a,b,c;
   size_t i,j;
   
   for (i=0; i<n1; i++) {
     for (j=0; j<n2; j++) {
-      a = sigma0_sq + sum((x1.row(i)/sigma) % (x2.row(j)/sigma));
-      b = sigma0_sq + sum(square(x1.row(i)/sigma));
-      c = sigma0_sq + sum(square(x2.row(j)/sigma));
+      a = sigma0_sq + sum((x1.row(i)*sigma) % (x2.row(j)*sigma));
+      b = sigma0_sq + sum(square(x1.row(i)*sigma));
+      c = sigma0_sq + sum(square(x2.row(j)*sigma));
       K(i,j) = magn2*(2.0/M_PI)*asin( 2*a/sqrt((1+2*b)*(1+2*c)) );
     }
   }
