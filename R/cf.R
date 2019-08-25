@@ -267,6 +267,9 @@ set_param.list <- function(object, param, ...) {
 }
 
 set_param.cf <- function(object, param, ...) {
+  if (is.null(names(param)))
+    stop(paste0('Caught unnamed vector of parameter values; please provide a named vector ',
+         '(similar to get_param(gp)).'))
   param_names <- rm_obj_name(object, names(param))
   param_names <- filter_fixed(object, param_names)
   for (j in seq_along(param_names))
