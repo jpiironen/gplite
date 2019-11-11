@@ -6,8 +6,8 @@
 \alias{gp_pred}
 \title{Make predictions with a GP model}
 \usage{
-gp_draw(gp, xnew, draws = NULL, transform = T, cfind = NULL,
-  jitter = NULL, seed = NULL)
+gp_draw(gp, xnew, draws = NULL, transform = T, target = F,
+  cfind = NULL, jitter = NULL, seed = NULL, ...)
 
 gp_pred(gp, xnew, var = F, cfind = NULL, jitter = NULL)
 }
@@ -23,6 +23,9 @@ latent values.}
 
 \item{transform}{Whether to transform the draws of latent values to the same scale
 as the target y.}
+
+\item{target}{If TRUE, draws values for the target variable \code{y} instead of the latent
+function values.}
 
 \item{cfind}{Indices of covariance functions to be used in the prediction. By default uses
 all covariance functions.}

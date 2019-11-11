@@ -279,7 +279,11 @@ get_response.lik_betabinom <- function(object, f, ...) {
 # generate_target functions
 
 generate_target.gp <- function(object, f, ...) {
-  generate_target(object$lik, f, ...)
+  if (NCOL(f) > 1)
+    out <- apply(f, 2, function(f_i) generate_target(object$lik, f_i, ...))
+  else
+    out <- generate_target(object$lik, f, ...)
+  return(out)
 }
 
 generate_target.lik_gaussian <- function(object, f, ...) {

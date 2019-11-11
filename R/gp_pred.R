@@ -16,6 +16,8 @@
 #' latent values. 
 #' @param transform Whether to transform the draws of latent values to the same scale
 #'  as the target y.
+#' @param target If TRUE, draws values for the target variable \code{y} instead of the latent
+#'  function values.
 #' @param cfind Indices of covariance functions to be used in the prediction. By default uses
 #' all covariance functions.
 #' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
