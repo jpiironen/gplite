@@ -14,53 +14,118 @@ gp_draw <- function(gp, xnew, draws=NULL, transform=T, target=F,
   set.seed(seed)
 
   if (is_fitted(gp, 'sampling')) {
-    #
     # model fitted using mcmc, so predict using the draws from the posterior
-    #
-    if (gp$method == 'full')
-      pred <- gp_draw_full_mcmc(gp, xnew, draws=draws, transform=transform, 
-                                target=target, cfind=cfind, jitter=jitter, ...)
-    else if (gp$method == 'rf')
-      pred <- gp_draw_linearized_mcmc(gp, xnew, draws=draws, transform=transform, 
-                                      target=target, cfind=cfind, ...)
-    else
-      stop('Unknown method: ', gp$method)
+    pred <- gp_draw_mcmc(gp, xnew, draws=draws, transform=transform,
+                         target=target, cfind=cfind, jitter=jitter, ...)
   } else {
-    #
     # model fitted using analytical gaussian approximation (or not fitted at all),
     # so predict based on that
-    #
     if (is.null(draws))
       draws <- 1
     if (is_fitted(gp, 'analytic')) {
       # draw from the analytical posterior approximation
-      if (gp$method == 'full')
-        pred <- gp_draw_full_analytic(gp, xnew, draws=draws, transform=transform,
-                                      target=target, cfind=cfind, jitter=jitter, ...)
-      else if (gp$method == 'rf')
-        pred <- gp_draw_linearized_analytic(gp, xnew, draws=draws, transform=transform,
-                                            target=target, cfind=cfind, ...)
-      else
-        stop('Unknown method: ', gp$method)
+      pred <- gp_draw_analytic(gp, xnew, draws=draws, transform=transform,
+                               target=target, cfind=cfind, jitter=jitter, ...)
     } else {
       # draw from the prior
-      if (gp$method == 'full')
-        pred <- gp_draw_full_prior(gp, xnew, draws=draws, transform=transform,
-                                   target=target, cfind=cfind, jitter=jitter, ...)
-      else if (gp$method == 'rf')
-        pred <- gp_draw_linearized_prior(gp, xnew, draws=draws, transform=transform,
-                                         target=target, cfind=cfind, ...)
-      else
-        stop('Unknown method: ', gp$method)
+      pred <- gp_draw_prior(gp, xnew, draws=draws, transform=transform,
+                            target=target, cfind=cfind, jitter=jitter, ...)
     }
   }
   return(pred)
 }
 
 
-gp_draw_full_mcmc <- function(gp, xt, draws=NULL, transform=T, target=T,
-                              cfind=NULL, jitter=NULL, ...) {
+gp_draw_prior <- function(object, ...) {
+  UseMethod('gp_draw_prior', object)
+}
 
+gp_draw_analytic <- function(object, ...) {
+  UseMethod('gp_draw_analytic', object)
+}
+
+gp_draw_mcmc <- function(object, ...) {
+  UseMethod('gp_draw_mcmc', object)
+}
+
+gp_draw_prior.gp <- function(object, ...) {
+  gp_draw_prior(object$approx, object, ...)
+}
+
+gp_draw_analytic.gp <- function(object, ...) {
+  gp_draw_analytic(object$approx, object, ...)
+}
+
+gp_draw_mcmc.gp <- function(object, ...) {
+  gp_draw_mcmc(object$approx, object, ...)
+}
+
+
+gp_draw_prior.approx_full <- function(object, gp, xt, draws=NULL, transform=T, target=F,
+                                      cfind=NULL, jitter=NULL, ...) {
+  
+  pred <- gp_pred_prior(object, gp, xt, cov=T, cfind=cfind, jitter=jitter)
+  sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
+  if (target)
+    sample <- generate_target(gp, sample, ...)
+  else if (transform)
+    sample <- get_response(gp, sample)
+  return(sample)
+}
+
+gp_draw_prior.approx_rf <- function(object, gp, xt, var=F, draws=NULL, transform=T, target=F,
+                                    cfind=NULL, ...) {
+  
+  # draw from the prior of w
+  num_inputs <- NCOL(xt)
+  featuremap <- get_featuremap(gp, num_inputs)
+  zt <- featuremap(xt, cfind)
+  num_feat <- NCOL(zt)
+  w <- matrix(stats::rnorm(num_feat*draws), nrow=num_feat) # draw from the prior (standard Gaussian)
+  sample <- zt %*% w
+  if (target)
+    sample <- generate_target(gp, sample, ...)
+  else if (transform)
+    sample <- get_response(gp, sample)
+  return(sample)
+}
+
+
+gp_draw_analytic.approx_full <- function(object, gp, xt, draws=NULL, transform=T, target=F,
+                                         cfind=NULL, jitter=NULL, ...) {
+  
+  pred <- gp_pred_post(object, gp, xt, cov=T, cfind=cfind, jitter=jitter)
+  sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
+  if (target)
+    sample <- generate_target(gp, sample, ...)
+  else if (transform)
+    sample <- get_response(gp, sample)
+  return(sample)
+}
+
+gp_draw_analytic.approx_rf <- function(object, gp, xt, draws=NULL, transform=T, target=F,
+                                       cfind=NULL, ...) {
+  
+  # draw from the posterior of w
+  num_inputs <- NCOL(xt)
+  featuremap <- get_featuremap(gp, num_inputs)
+  zt <- featuremap(xt, cfind)
+  wmean <- get_w_mean(gp, cfind)
+  wcov <- get_w_cov(gp, cfind)
+  w <- mvnrnd(draws, wmean, chol_cov = t(chol(wcov)))
+  sample <- zt %*% w
+  if (target)
+    sample <- generate_target(gp, sample, ...)
+  else if (transform)
+    sample <- get_response(gp, sample)
+  return(sample)
+}
+
+
+
+gp_draw_mcmc.approx_full <- function(object, gp, xt, draws=NULL, transform=T, target=T,
+                                     cfind=NULL, jitter=NULL, ...) {
+  
   fsample <- gp$fsample
   if (is.null(draws))
     draws <- NCOL(fsample)
@@ -86,32 +151,8 @@ gp_draw_full_mcmc <- function(gp, xt, draws=NULL, transform=T, target=T,
   return(sample)
 }
 
-gp_draw_full_analytic <- function(gp, xt, draws=NULL, transform=T, target=F,
-                                  cfind=NULL, jitter=NULL, ...) {
-  
-  pred <- gp_pred_full_post(gp, xt, cov=T, cfind=cfind, jitter=jitter)
-  sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
-  if (target)
-    sample <- generate_target(gp, sample, ...)
-  else if (transform)
-    sample <- get_response(gp, sample)
-  return(sample)
-}
-
-gp_draw_full_prior <- function(gp, xt, draws=NULL, transform=T, target=F,
-                               cfind=NULL, jitter=NULL, ...) {
-
-  pred <- gp_pred_full_prior(gp, xt, cov=T, cfind=cfind, jitter=jitter)
-  sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
-  if (target)
-    sample <- generate_target(gp, sample, ...)
-  else if (transform)
-    sample <- get_response(gp, sample)
-  return(sample)
-}
-
-
-gp_draw_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T, target=T, cfind=NULL, ...) {
+gp_draw_mcmc.approx_rf <- function(object, gp, xt, draws=NULL, transform=T, target=T, 
+                                   cfind=NULL, ...) {
   
   wsample <- get_w_sample(gp, cfind)
   if (is.null(draws))
@@ -133,40 +174,6 @@ gp_draw_linearized_mcmc <- function(gp, xt, draws=NULL, transform=T, target=T, c
   return(sample)
 }
 
-gp_draw_linearized_analytic <- function(gp, xt, draws=NULL, transform=T, target=F,
-                                        cfind=NULL, ...) {
-
-  # draw from the posterior of w
-  num_inputs <- NCOL(xt)
-  featuremap <- get_featuremap(gp, num_inputs)
-  zt <- featuremap(xt, cfind)
-  wmean <- get_w_mean(gp, cfind)
-  wcov <- get_w_cov(gp, cfind)
-  w <- mvnrnd(draws, wmean, chol_cov = t(chol(wcov)))
-  sample <- zt %*% w
-  if (target)
-    sample <- generate_target(gp, sample, ...)
-  else if (transform)
-    sample <- get_response(gp, sample)
-  return(sample)
-}
-
-gp_draw_linearized_prior <- function(gp, xt, var=F, draws=NULL, transform=T, target=F,
-                                     cfind=NULL, ...) {
-
-  # draw from the prior of w
-  num_inputs <- NCOL(xt)
-  featuremap <- get_featuremap(gp, num_inputs)
-  zt <- featuremap(xt, cfind)
-  num_feat <- NCOL(zt)
-  w <- matrix(stats::rnorm(num_feat*draws), nrow=num_feat) # draw from the prior (standard Gaussian)
-  sample <- zt %*% w
-  if (target)
-    sample <- generate_target(gp, sample, ...)
-  else if (transform)
-    sample <- get_response(gp, sample)
-  return(sample)
-}
 
 mvnrnd <- function(draws, mean, chol_cov=NULL, chol_prec=NULL) {
   # Draw from multivariate normal. Lower Cholesky factor of either

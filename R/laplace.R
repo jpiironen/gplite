@@ -1,9 +1,16 @@
 
 
+laplace_iter <- function(object, ...) {
+  UseMethod("laplace_iter")
+}
+
+laplace <- function(object, ...) {
+  UseMethod("laplace", object)
+}
 
 
 
-approx_laplace <- function(gp, K, y, fhat_old, ...) {
+laplace_iter.approx_full <- function(object, gp, K, y, fhat_old, ...) {
   
   # calculate first the new estimate for posterior mean for f
   pobs <- get_pseudodata(gp$lik, fhat_old, y, ...)
@@ -25,32 +32,11 @@ approx_laplace <- function(gp, K, y, fhat_old, ...) {
   list(fmean=fhat_new, K_chol=K_chol, C_chol=C_chol, log_evidence=log_evidence)
 }
 
-
-approx_laplace_iterated <- function(gp, K, y, maxiter=100, tol=1e-4, ...) {
-  
-  # this is the newton iteration, so iterate the second order approximation
-  # to the log likelihood by updating the mean until convergence
-  
-  n <- length(y)
-  fhat <- rep(0, n)
-  if ('lik_gaussian' %in% class(gp$lik))
-    maxiter <- 1
-  
-  for (iter in 1:maxiter) {
-    approx <- approx_laplace(gp, K, y, fhat, ...)
-    diff <- max(abs(fhat - approx$fmean))
-    fhat <- approx$fmean
-    if (diff < tol)
-      break
-  }
-  if (maxiter > 1 && iter == maxiter)
-    warning('Maximum number of iterations in Laplace reached, results can be unreliable.')
-  return(approx)
+laplace_iter.approx_fitc <- function(object, gp, K, y, fhat_old, ...) {
+  stop('Laplace for FITC not implemented yet.')
 }
 
-
-
-approx_laplace_linearized <- function(gp, Z, y, fhat_old, ...) {
+laplace_iter.approx_rf <- function(object, gp, Z, y, fhat_old, ...) {
   
   # calculate first the new estimate for posterior mean for f
   pobs <- get_pseudodata(gp$lik, fhat_old, y, ...)
@@ -74,7 +60,12 @@ approx_laplace_linearized <- function(gp, Z, y, fhat_old, ...) {
 }
 
 
-approx_laplace_linearized_iterated <- function(gp, Z, y, maxiter=100, tol=1e-4, ...) {
+
+
+
+
+
+laplace.approx_full <- function(object, gp, K, y, maxiter=100, tol=1e-4, ...) {
   
   # this is the newton iteration, so iterate the second order approximation
   # to the log likelihood by updating the mean until convergence
@@ -85,8 +76,35 @@ approx_laplace_linearized_iterated <- function(gp, Z, y, maxiter=100, tol=1e-4, 
     maxiter <- 1
   
   for (iter in 1:maxiter) {
-    approx <- approx_laplace_linearized(gp, Z, y, fhat, ...)
-    fhat_new <- Z %*% approx$wmean
+    fit <- laplace_iter(object, gp, K, y, fhat, ...)
+    diff <- max(abs(fhat - fit$fmean))
+    fhat <- fit$fmean
+    if (diff < tol)
+      break
+  }
+  if (maxiter > 1 && iter == maxiter)
+    warning('Maximum number of iterations in Laplace reached, results can be unreliable.')
+  return(fit)
+}
+
+laplace.approx_fitc <- function(object, gp, K, y, maxiter=100, tol=1e-4, ...) {
+  # the iteration loop for FITC is similar to the full gp
+  laplace.approx_full(object, gp, K, y, maxiter=maxiter, tol=tol, ...)
+}
+
+laplace.approx_rf <- function(object, gp, Z, y, maxiter=100, tol=1e-4, ...) {
+  
+  # this is the newton iteration, so iterate the second order approximation
+  # to the log likelihood by updating the mean until convergence
+  
+  n <- length(y)
+  fhat <- rep(0, n)
+  if ('lik_gaussian' %in% class(gp$lik))
+    maxiter <- 1
+  
+  for (iter in 1:maxiter) {
+    fit <- laplace_iter(object, gp, Z, y, fhat, ...)
+    fhat_new <- Z %*% fit$wmean
     diff <- max(abs(fhat - fhat_new))
     fhat <- fhat_new
     if (diff < tol)
@@ -94,7 +112,18 @@ approx_laplace_linearized_iterated <- function(gp, Z, y, maxiter=100, tol=1e-4, 
   }
   if (maxiter > 1 && iter == maxiter)
     warning('Maximum number of iterations in Laplace reached, results can be unreliable.')
-  return(approx)
+  return(fit)
 }
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -65,26 +65,65 @@ gp_pred <- function(gp, xnew, var=F, cfind=NULL, jitter=NULL) {
 
   if (!is_fitted(gp, 'analytic')) {
     # model not fitted, so predict based on the prior
-    if (gp$method == 'full')
-      pred <- gp_pred_full_prior(gp, xnew, var=var, cfind=cfind, jitter=jitter)
-    else if (gp$method == 'rf')
-      pred <- gp_pred_linearized_prior(gp, xnew, var=var, cfind=cfind, jitter=jitter)
-    else
-      stop('Unknown method: ', gp$method)
+    pred <- gp_pred_prior(gp, xnew, var=var, cfind=cfind, jitter=jitter)
   } else {
     # model fitted using analytical approximation
-    if (gp$method == 'full')
-      pred <- gp_pred_full_post(gp, xnew, var=var, cfind=cfind, jitter=jitter)
-    else if (gp$method == 'rf')
-      pred <- gp_pred_linearized_post(gp, xnew, var=var, cfind=cfind, jitter=jitter)
-    else
-      stop('Unknown method: ', gp$method)
+    pred <- gp_pred_post(gp, xnew, var=var, cfind=cfind, jitter=jitter)
   }
   return(pred)
 }
 
 
-gp_pred_full_post <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+gp_pred_prior <- function(object, ...) {
+  UseMethod('gp_pred_prior', object)
+}
+
+gp_pred_post <- function(object, ...) {
+  UseMethod('gp_pred_post', object)
+}
+
+gp_pred_prior.gp <- function(object, ...) {
+  gp_pred_prior(object$approx, object, ...)
+}
+
+gp_pred_post.gp <- function(object, ...) {
+  gp_pred_post(object$approx, object, ...)
+}
+
+
+gp_pred_prior.approx_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+  
+  nt <- NROW(xt)
+  pred_mean <- rep(0,nt)
+  
+  if (var || cov) {
+    jitter <- get_jitter(gp, jitter)
+    pred_cov <- eval_cf(gp$cfs, xt, xt, cfind)
+    if (cov)
+      return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
+    else
+      return(list(mean = pred_mean, var = diag(pred_cov)))
+  }
+  return(pred_mean)
+}
+
+gp_pred_prior.approx_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
+  
+  # mean is zero
+  nt <- NROW(xt)
+  pred_mean <- rep(0,nt)
+  
+  if (var == T) {
+    num_inputs <- NCOL(xt)
+    featuremap <- get_featuremap(gp, num_inputs)
+    zt <- featuremap(xt, cfind)
+    pred_cov <- zt %*% t(zt) 
+    return(list(mean=pred_mean, var=diag(pred_cov)))
+  }
+  return(pred_mean)
+}
+
+gp_pred_post.approx_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
   Kt <- eval_cf(gp$cfs, xt, gp$x, cfind)
@@ -109,26 +148,7 @@ gp_pred_full_post <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   return(pred_mean)
 }
 
-
-gp_pred_full_prior <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
-  
-  nt <- NROW(xt)
-  pred_mean <- rep(0,nt)
-  
-  if (var || cov) {
-    jitter <- get_jitter(gp, jitter)
-    pred_cov <- eval_cf(gp$cfs, xt, xt, cfind)
-    if (cov)
-      return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
-    else
-      return(list(mean = pred_mean, var = diag(pred_cov)))
-  }
-  return(pred_mean)
-}
-
-
-
-gp_pred_linearized_post <- function(gp, xt, var=F, cfind=NULL, jitter=NULL) {
+gp_pred_post.approx_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
   featuremap <- get_featuremap(gp, num_inputs = NCOL(xt))
@@ -146,21 +166,84 @@ gp_pred_linearized_post <- function(gp, xt, var=F, cfind=NULL, jitter=NULL) {
   return(pred_mean)
 }
 
-gp_pred_linearized_prior <- function(gp, xt, var=F, cfind=NULL, jitter=NULL) {
-  
-  # mean is zero
-  nt <- NROW(xt)
-  pred_mean <- rep(0,nt)
-  
-  if (var == T) {
-    num_inputs <- NCOL(xt)
-    featuremap <- get_featuremap(gp, num_inputs)
-    zt <- featuremap(xt, cfind)
-    pred_cov <- zt %*% t(zt) 
-    return(list(mean=pred_mean, var=diag(pred_cov)))
-  }
-  return(pred_mean)
-}
+
+# gp_pred_full_post <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+#   
+#   # compute the latent mean first
+#   Kt <- eval_cf(gp$cfs, xt, gp$x, cfind)
+#   Ktt <- eval_cf(gp$cfs, xt, xt, cfind)
+#   K_chol <- gp$fit$K_chol
+#   fmean <- gp$fit$fmean
+#   pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, fmean))
+#   pred_mean <- as.vector(pred_mean)
+#   
+#   if (var || cov) {
+#     # (co)variance of the latent function
+#     nt <- length(pred_mean)
+#     jitter <- get_jitter(gp,jitter)
+#     C_chol <- gp$fit$C_chol
+#     aux <- solve(C_chol, t(Kt))
+#     pred_cov <- Ktt - t(aux) %*% aux
+#     if (cov)
+#       return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
+#     else
+#       return(list(mean = pred_mean, var = diag(pred_cov)))
+#   }
+#   return(pred_mean)
+# }
+
+
+# gp_pred_full_prior <- function(gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+#   
+#   nt <- NROW(xt)
+#   pred_mean <- rep(0,nt)
+#   
+#   if (var || cov) {
+#     jitter <- get_jitter(gp, jitter)
+#     pred_cov <- eval_cf(gp$cfs, xt, xt, cfind)
+#     if (cov)
+#       return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
+#     else
+#       return(list(mean = pred_mean, var = diag(pred_cov)))
+#   }
+#   return(pred_mean)
+# }
+
+
+
+# gp_pred_linearized_post <- function(gp, xt, var=F, cfind=NULL, jitter=NULL) {
+#   
+#   # compute the latent mean first
+#   featuremap <- get_featuremap(gp, num_inputs = NCOL(xt))
+#   zt <- featuremap(xt, cfind)
+#   wmean <- get_w_mean(gp, cfind)
+#   pred_mean <- as.vector(zt %*% wmean)
+#   
+#   if (var == T) {
+#     # covariance of the latent function
+#     nt <- length(pred_mean)
+#     wcov <- get_w_cov(gp, cfind)
+#     pred_cov <- zt %*% (wcov %*% t(zt))
+#     return(list(mean=pred_mean, var=diag(pred_cov)))
+#   }
+#   return(pred_mean)
+# }
+
+# gp_pred_linearized_prior <- function(gp, xt, var=F, cfind=NULL, jitter=NULL) {
+#   
+#   # mean is zero
+#   nt <- NROW(xt)
+#   pred_mean <- rep(0,nt)
+#   
+#   if (var == T) {
+#     num_inputs <- NCOL(xt)
+#     featuremap <- get_featuremap(gp, num_inputs)
+#     zt <- featuremap(xt, cfind)
+#     pred_cov <- zt %*% t(zt) 
+#     return(list(mean=pred_mean, var=diag(pred_cov)))
+#   }
+#   return(pred_mean)
+# }
 
 
 

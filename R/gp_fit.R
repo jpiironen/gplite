@@ -46,36 +46,43 @@ NULL
 #' @rdname gp_fit
 #' @export
 gp_fit <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
-  if (gp$method == 'full') {
-    gp <- gp_laplace_full(gp, x, y, trials=trials, jitter=jitter, ...)
-  } else if (gp$method == 'rf') {
-    gp <- gp_laplace_linearized(gp, x, y, trials=trials, jitter=jitter, ...)
-  } else
-    stop('Unknown method: ', gp$method)
+  gp <- gp_laplace(gp, x, y, trials=trials, jitter=jitter, ...)
   gp$fitted <- TRUE
   return(gp)
 }
 
+gp_laplace <- function(object, ...) {
+  UseMethod("gp_laplace", object)
+}
 
-gp_laplace_full <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
+gp_laplace.gp <- function(object, ...) {
+  gp_laplace(object$approx, object, ...)
+}
+
+gp_laplace.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
   K <- eval_cf(gp$cfs, x, x) + jitter*diag(n)
   gp$x <- x
-  gp$fit <- approx_laplace_iterated(gp, K, y, trials=trials)
+  gp$fit <- laplace(object, gp, K, y, trials=trials)
   return(gp)
 }
 
-
-gp_laplace_linearized <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
+gp_laplace.approx_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)
   gp$num_basis <- check_num_basis(gp$cfs, gp$num_basis, NCOL(x))
   z <- featuremap(x)
-  gp$fit <- approx_laplace_linearized_iterated(gp, z, y, trials=trials)
+  gp$fit <- laplace(object, gp, z, y, trials=trials)
   return(gp)
 }
+
+
+
+
+
+
 
 
 
