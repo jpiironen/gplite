@@ -304,10 +304,4 @@ generate_target.lik_betabinom <- function(object, f, trials, ...) {
 }
 
 
-# function for determining the default amount of jitter on the covarince diagonal
-# for different likelihoods
-get_jitter <- function(gp, jitter) {
-  if (!is.null(jitter))
-    return(jitter)
-  return(1e-6)
-}
+

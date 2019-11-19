@@ -69,6 +69,28 @@ gp_laplace.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, .
   return(gp)
 }
 
+gp_laplace.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+  x <- as.matrix(x)
+  n <- length(y)
+  jitter <- get_jitter(gp,jitter)
+  set.seed(gp$approx$seed)
+  # inducing points via k-means
+  z <- get_inducing(gp, x)
+  Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$num_inducing)
+  Kxz <- eval_cf(gp$cfs, x, z)
+  Kz_chol <- t(chol(Kz))
+  D <- rep(0,n)
+  for (i in 1:n) {
+    # TODO: this is slow
+    D[i] <- eval_cf(gp$cfs, x[i,,drop=F], x[i,,drop=F])
+  }
+  D <- D - colSums(forwardsolve(Kz_chol, t(Kxz))^2)
+  gp$x <- x
+  gp$x_inducing <- z
+  gp$fit <- laplace(object, gp, Kz, Kz_chol, Kxz, D, y, trials=trials)
+  return(gp)
+}
+
 gp_laplace.approx_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)
@@ -79,7 +101,13 @@ gp_laplace.approx_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...
 }
 
 
-
+get_inducing <- function(gp, x) {
+  if (!is.null(gp$x_inducing))
+    return(gp$x_inducing)
+  cl <- kmeans(x, gp$num_inducing)
+  z <- cl$centers
+  return(z)
+}
 
 
 

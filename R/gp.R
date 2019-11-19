@@ -50,17 +50,22 @@
 
 #' @export
 gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=100,
-                    rf_seed=12345) {
+                    num_inducing=100, seed=12345) {
   gp <- list()
   if (!('list' %in% class(cfs)))
     cfs <- list(cfs)
   gp$cfs <- cfs
   gp$lik <- lik
-  gp$approx <- get_approx(method)
+  gp$approx <- get_approx(method, seed=seed)
   gp$fitted <- FALSE
+  
+  # TODO: this is somewhat stupid
+  rf_seed <- seed
   if (gp$approx$name == 'rf') {
     gp$num_basis <- check_num_basis(cfs, num_basis)
     gp$rf_seed <- rf_seed
+  } else if (gp$approx$name == 'fitc') {
+    gp$num_inducing <- num_inducing
   }
   class(gp) <- 'gp'
   gp
@@ -190,7 +195,13 @@ get_w_sample <- function(gp, cfind=NULL) {
 }
 
 
-
+# function for determining the default amount of jitter on the covarince diagonal
+# for different likelihoods
+get_jitter <- function(gp, jitter) {
+  if (!is.null(jitter))
+    return(jitter)
+  return(1e-6)
+}
 
 
 

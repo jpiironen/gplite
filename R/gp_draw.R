@@ -73,6 +73,18 @@ gp_draw_prior.approx_full <- function(object, gp, xt, draws=NULL, transform=T, t
   return(sample)
 }
 
+gp_draw_prior.approx_fitc <- function(object, gp, xt, draws=NULL, transform=T, target=F,
+                                      cfind=NULL, jitter=NULL, ...) {
+  
+  pred <- gp_pred_prior(object, gp, xt, cov=T, cfind=cfind, jitter=jitter)
+  sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
+  if (target)
+    sample <- generate_target(gp, sample, ...)
+  else if (transform)
+    sample <- get_response(gp, sample)
+  return(sample)
+}
+
 gp_draw_prior.approx_rf <- function(object, gp, xt, var=F, draws=NULL, transform=T, target=F,
                                     cfind=NULL, ...) {
   
@@ -103,6 +115,18 @@ gp_draw_analytic.approx_full <- function(object, gp, xt, draws=NULL, transform=T
   return(sample)
 }
 
+gp_draw_analytic.approx_fitc <- function(object, gp, xt, draws=NULL, transform=T, target=F,
+                                         cfind=NULL, jitter=NULL, ...) {
+  
+  pred <- gp_pred_post(object, gp, xt, cov=T, cfind=cfind, jitter=jitter)
+  sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
+  if (target)
+    sample <- generate_target(gp, sample, ...)
+  else if (transform)
+    sample <- get_response(gp, sample)
+  return(sample)
+}
+
 gp_draw_analytic.approx_rf <- function(object, gp, xt, draws=NULL, transform=T, target=F,
                                        cfind=NULL, ...) {
   
@@ -120,6 +144,7 @@ gp_draw_analytic.approx_rf <- function(object, gp, xt, draws=NULL, transform=T, 
     sample <- get_response(gp, sample)
   return(sample)
 }
+
 
 
 
