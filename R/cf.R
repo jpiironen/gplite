@@ -520,8 +520,10 @@ rf_featmap.cf_periodic <- function(object, num_feat, num_inputs, seed=NULL, ...)
     # override the number of inputs, because using only a subset of inputs
     num_inputs <- length(object$vars)
   
-  featuremap_base <- rf_featmap(object$base, num_feat, num_inputs=2*length(object$vars), seed=seed)
+  featuremap_base <- rf_featmap(object$base, num_feat, num_inputs=2*num_inputs, seed=seed)
   featuremap <- function(x) {
+    x <- as.matrix(x)
+    x <- x[,object$vars,drop=F]
     x_transf <- cbind(sin(2*pi/object$period*x), cos(2*pi/object$period*x))
     featuremap_base(x_transf)
   }
