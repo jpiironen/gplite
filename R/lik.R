@@ -170,6 +170,24 @@ get_loglik.lik <- function(object, f, y, ...) {
   loglik
 }
 
+get_loglik.lik_betabinom <- function(object, f, y, ...) {
+  
+  args <- list(...)
+  if (is.null(args$trials))
+    stop('trials must be provided for the binomial likelihood.')
+  
+  mu <- get_response(object, f)
+  a <- mu/object$phi
+  b <- (1-mu)/object$phi
+  successes <- y
+  trials <- args$trials
+  
+  term1 <- lgamma(trials+1) - lgamma(successes+1) - lgamma(trials-successes+1)
+  term2 <- lgamma(successes+a) + lgamma(trials-successes+b) - lgamma(trials+a+b)
+  term3 <- lgamma(a+b) - lgamma(a) - lgamma(b)
+  sum(term1 + term2 + term3)
+}
+
 get_loglik.lik_gaussian <- function(object, f, y, ...) {
   sum(stats::dnorm(y, mean=f, sd=object$sigma, log=T))
 }
