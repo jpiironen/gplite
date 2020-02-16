@@ -227,6 +227,9 @@ gp_pred_post.approx_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NUL
   return(pred_mean)
 }
 
+gp_pred_post.approx_rbf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
+  gp_pred_post.approx_rf(object, gp, xt, var=var, cfind=cfind, jitter=jitter)
+}
 
 
 

@@ -145,6 +145,12 @@ gp_draw_analytic.approx_rf <- function(object, gp, xt, draws=NULL, transform=T, 
   return(sample)
 }
 
+gp_draw_analytic.approx_rbf <- function(object, gp, xt, draws=NULL, transform=T, target=F,
+                                        cfind=NULL, ...) {
+  gp_draw_analytic.approx_rf(object, gp, xt, draws=draws, transform=transform, target=target,
+                             cfind=cfind, ...)
+}
+
 
 
 

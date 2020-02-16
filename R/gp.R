@@ -13,7 +13,7 @@
 #' or \code{'rf'}. See below for details.
 #' @param num_basis Number of basis functions in the covariance approximation for 'rf' and other
 #' basis function methods.
-#' @param rf_seed Seed for random features for reproducible results.
+#' @param seed Seed for reproducible results.
 #' 
 #' @return A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
 #' 
@@ -56,17 +56,16 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=
     cfs <- list(cfs)
   gp$cfs <- cfs
   gp$lik <- lik
-  gp$approx <- get_approx(method, seed=seed)
+  gp$approx <- get_approx(method, seed=seed, num_basis=check_num_basis(cfs, num_basis), 
+                          num_inducing=num_inducing)
   gp$fitted <- FALSE
   
-  # TODO: this is somewhat stupid
-  rf_seed <- seed
-  if (gp$approx$name == 'rf') {
-    gp$num_basis <- check_num_basis(cfs, num_basis)
-    gp$rf_seed <- rf_seed
-  } else if (gp$approx$name == 'fitc') {
-    gp$num_inducing <- num_inducing
-  }
+  # TODO: this check if this stuff could be put inside the approx-objects
+  #if (gp$approx$name == 'rf') {
+  #  gp$num_basis <- check_num_basis(cfs, num_basis)
+  #} else if (gp$approx$name == 'fitc') {
+  #  gp$num_inducing <- num_inducing
+  #}
   class(gp) <- 'gp'
   gp
 }
@@ -128,9 +127,18 @@ lpdf_prior.gp <- function(object, ...) {
 }
 
 get_featuremap.gp <- function(object, num_inputs, ...) {
-  if ('approx_rf' %in% class(gp$approx))
-    return(rf_featmap(object$cfs, object$num_basis, num_inputs=num_inputs, seed=object$rf_seed))
-  else
+  if ('approx_rf' %in% class(object$approx)) {
+    featmap <- rf_featmap(object$cfs, object$approx$num_basis, 
+                          num_inputs=num_inputs, seed=object$approx$seed)
+    return(featmap)
+  } else if ('approx_rbf' %in% class(object$approx)) {
+    x <- object$x
+    if (is.null(x))
+      stop('Cannot compute RBF feature map when the x matrix is not known.')
+    featmap <- rbf_featmap(object$cfs, object$approx$num_basis, 
+                           num_inputs=num_inputs, x=x, seed=object$approx$seed)
+    return(featmap)
+  } else
     stop('No feature map implementation for method: ', object$approx$name)
 }
 
@@ -149,6 +157,8 @@ is_fitted.gp <- function(object, type, ...) {
 # below are some functions for handling the linearized gp
 
 check_num_basis <- function(cfs, num_basis, num_inputs=NA) {
+  if (is.null(num_basis))
+    return(NULL)
   if (length(num_basis) == 1)
     num_basis <- rep(num_basis, length(cfs))
   if (length(num_basis) != length(cfs))
@@ -164,7 +174,7 @@ check_num_basis <- function(cfs, num_basis, num_inputs=NA) {
 get_weight_inds <- function(gp, cfind=NULL) {
   if (is.null(cfind))
     cfind <- seq_along(gp$cfs)
-  end_points <- c(0, cumsum(gp$num_basis))
+  end_points <- c(0, cumsum(gp$approx$num_basis))
   inds <- c()
   for (k in cfind)
     inds <- c(inds, (end_points[k]+1):end_points[k+1])
