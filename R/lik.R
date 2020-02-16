@@ -170,11 +170,23 @@ get_loglik.lik <- function(object, f, y, ...) {
   loglik
 }
 
-get_loglik.lik_betabinom <- function(object, f, y, ...) {
+get_loglik.lik_binomial <- function(object, f, y, ...) {
   
   args <- list(...)
   if (is.null(args$trials))
     stop('trials must be provided for the binomial likelihood.')
+  
+  mu <- get_response(object, f)
+  successes <- y
+  trials <- args$trials
+  sum(dbinom(y, trials, mu, log=T))
+}
+
+get_loglik.lik_betabinom <- function(object, f, y, ...) {
+  
+  args <- list(...)
+  if (is.null(args$trials))
+    stop('trials must be provided for the beta binomial likelihood.')
   
   mu <- get_response(object, f)
   a <- mu/object$phi
