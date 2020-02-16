@@ -6,8 +6,17 @@
 \alias{gp_pred}
 \title{Make predictions with a GP model}
 \usage{
-gp_draw(gp, xnew, draws = NULL, transform = T, target = F,
-  cfind = NULL, jitter = NULL, seed = NULL, ...)
+gp_draw(
+  gp,
+  xnew,
+  draws = NULL,
+  transform = T,
+  target = F,
+  cfind = NULL,
+  jitter = NULL,
+  seed = NULL,
+  ...
+)
 
 gp_pred(gp, xnew, var = F, cfind = NULL, jitter = NULL)
 }

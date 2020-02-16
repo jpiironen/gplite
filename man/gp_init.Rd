@@ -4,8 +4,14 @@
 \alias{gp_init}
 \title{Initialize a GP model}
 \usage{
-gp_init(cfs = cf_sexp(), lik = lik_gaussian(), method = "full",
-  num_basis = 100, rf_seed = 12345)
+gp_init(
+  cfs = cf_sexp(),
+  lik = lik_gaussian(),
+  method = "full",
+  num_basis = 100,
+  num_inducing = 100,
+  seed = 12345
+)
 }
 \arguments{
 \item{cfs}{The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.}
