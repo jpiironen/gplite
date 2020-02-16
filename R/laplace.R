@@ -1,16 +1,23 @@
 
 
+laplace_iter <- function(object, ...) {
+  UseMethod("laplace_iter")
+}
+
+laplace <- function(object, ...) {
+  UseMethod("laplace", object)
+}
 
 
 
-approx_laplace <- function(gp, K, y, fhat_old, ...) {
+laplace_iter.approx_full <- function(object, gp, K, y, fhat_old, ...) {
   
   # calculate first the new estimate for posterior mean for f
   pobs <- get_pseudodata(gp$lik, fhat_old, y, ...)
   z <- pobs$z
   V <- pobs$var
   n <- length(z)
-  K_chol <- t(chol(K)) # TODO: this might be numerically unstable, but perhaps it is not needed, since it cancels out when computing marginal likelihood?
+  K_chol <- t(chol(K)) # TODO: this could be computed only once, not at every iteration
   C_chol <- t(chol(K+diag(V)))
   fhat_new <- K %*% backsolve(t(C_chol), forwardsolve(C_chol, z)) 
   
@@ -25,32 +32,53 @@ approx_laplace <- function(gp, K, y, fhat_old, ...) {
   list(fmean=fhat_new, K_chol=K_chol, C_chol=C_chol, log_evidence=log_evidence)
 }
 
-
-approx_laplace_iterated <- function(gp, K, y, maxiter=100, tol=1e-4, ...) {
+laplace_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_old, ...) {
   
-  # this is the newton iteration, so iterate the second order approximation
-  # to the log likelihood by updating the mean until convergence
+  # calculate first the new estimate for posterior mean for f
+  pobs <- get_pseudodata(gp$lik, fhat_old, y, ...)
+  z <- pobs$z
+  V <- pobs$var
+  n <- length(z)
+  S <- D+V
+  out <- solve_inv_lemma(Kz, Kxz, S, z, log_det=T)
+  v <- out[[1]]
+  C_logdet <- out[[2]]
+  fhat_new <- Kxz %*% backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Kxz) %*% v)) 
+  # alternative way:
+  aux <- (1/sqrt(S))*Kxz
+  L <- t(chol(Kz + t(aux) %*% aux))
+  alpha <- backsolve(t(L), forwardsolve(L, t(Kxz) %*% (z/V)))
+  #fhat_new <- Kxz %*% alpha
   
-  n <- length(y)
-  fhat <- rep(0, n)
-  if ('lik_gaussian' %in% class(gp$lik))
-    maxiter <- 1
-  
-  for (iter in 1:maxiter) {
-    approx <- approx_laplace(gp, K, y, fhat, ...)
-    diff <- max(abs(fhat - approx$fmean))
-    fhat <- approx$fmean
-    if (diff < tol)
-      break
-  }
-  if (maxiter > 1 && iter == maxiter)
-    warning('Maximum number of iterations in Laplace reached, results can be unreliable.')
-  return(approx)
+  # compute the log marginal likelihood
+  K_logdet <- 0 # TODO: this is wrong, but it cancels out in the computation
+  V_logdet <- sum(log(V))
+  f_invK_f <- t(fhat_new) %*% solve_inv_lemma(Kz, Kxz, S, z)
+  log_prior <- -0.5*n*log(2*pi) - 0.5*K_logdet - 0.5*f_invK_f 
+  log_lik <- get_loglik(gp$lik, fhat_new, y, ...) 
+  log_evidence <- 0.5*n*log(2*pi) + 0.5*(K_logdet - C_logdet + V_logdet) + log_prior + log_lik
+  list(fmean=fhat_new, pseudovar=V, Kz=Kz, Kxz=Kxz, Kz_chol=Kz_chol, diag=D, 
+       alpha=alpha, log_evidence=log_evidence)
 }
 
 
+solve_inv_lemma <- function(K, U, D, b, log_det=F) {
+  # solves system (U * K^-1 * U^t + D)^-1 b using inversion lemma
+  # (D should be a vector giving only the diagonal)
+  aux <- (1/D)*U 
+  aux2 <- (1/sqrt(D))*U
+  L <- t(chol(K + t(aux2) %*% aux2))
+  v <- b/D - aux %*% backsolve(t(L), forwardsolve(L, t(aux) %*% b))
+  if (log_det) {
+    # compute also log determinant of the matrix that is to be inverted
+    logdet <- sum(log(D)) - 2*sum(log(diag(chol(K)))) + 2*sum(log(diag(L)))
+    return(list(v,logdet))
+  }
+  return(v)
+}
 
-approx_laplace_linearized <- function(gp, Z, y, fhat_old, ...) {
+
+laplace_iter.approx_rf <- function(object, gp, Z, y, fhat_old, ...) {
   
   # calculate first the new estimate for posterior mean for f
   pobs <- get_pseudodata(gp$lik, fhat_old, y, ...)
@@ -74,7 +102,12 @@ approx_laplace_linearized <- function(gp, Z, y, fhat_old, ...) {
 }
 
 
-approx_laplace_linearized_iterated <- function(gp, Z, y, maxiter=100, tol=1e-4, ...) {
+
+
+
+
+
+laplace.approx_full <- function(object, gp, K, y, maxiter=100, tol=1e-4, ...) {
   
   # this is the newton iteration, so iterate the second order approximation
   # to the log likelihood by updating the mean until convergence
@@ -85,8 +118,49 @@ approx_laplace_linearized_iterated <- function(gp, Z, y, maxiter=100, tol=1e-4, 
     maxiter <- 1
   
   for (iter in 1:maxiter) {
-    approx <- approx_laplace_linearized(gp, Z, y, fhat, ...)
-    fhat_new <- Z %*% approx$wmean
+    fit <- laplace_iter(object, gp, K, y, fhat, ...)
+    diff <- max(abs(fhat - fit$fmean))
+    fhat <- fit$fmean
+    if (diff < tol)
+      break
+  }
+  if (maxiter > 1 && iter == maxiter)
+    warning('Maximum number of iterations in Laplace reached, results can be unreliable.')
+  return(fit)
+}
+
+laplace.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, maxiter=100, tol=1e-4, ...) {
+  n <- length(y)
+  fhat <- rep(0, n)
+  if ('lik_gaussian' %in% class(gp$lik))
+    maxiter <- 1
+  
+  for (iter in 1:maxiter) {
+    #fit <- laplace_iter(object, gp, K, y, fhat, ...)
+    fit <- laplace_iter(object, gp, Kz, Kz_chol, Kxz, D, y, fhat, ...)
+    diff <- max(abs(fhat - fit$fmean))
+    fhat <- fit$fmean
+    if (diff < tol)
+      break
+  }
+  if (maxiter > 1 && iter == maxiter)
+    warning('Maximum number of iterations in Laplace reached, results can be unreliable.')
+  return(fit)
+}
+
+laplace.approx_rf <- function(object, gp, Z, y, maxiter=100, tol=1e-4, ...) {
+  
+  # this is the newton iteration, so iterate the second order approximation
+  # to the log likelihood by updating the mean until convergence
+  
+  n <- length(y)
+  fhat <- rep(0, n)
+  if ('lik_gaussian' %in% class(gp$lik))
+    maxiter <- 1
+  
+  for (iter in 1:maxiter) {
+    fit <- laplace_iter(object, gp, Z, y, fhat, ...)
+    fhat_new <- Z %*% fit$wmean
     diff <- max(abs(fhat - fhat_new))
     fhat <- fhat_new
     if (diff < tol)
@@ -94,7 +168,18 @@ approx_laplace_linearized_iterated <- function(gp, Z, y, maxiter=100, tol=1e-4, 
   }
   if (maxiter > 1 && iter == maxiter)
     warning('Maximum number of iterations in Laplace reached, results can be unreliable.')
-  return(approx)
+  return(fit)
 }
+
+
+
+
+
+
+
+
+
+
+
 
 

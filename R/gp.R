@@ -50,17 +50,22 @@
 
 #' @export
 gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=100,
-                    rf_seed=12345) {
+                    num_inducing=100, seed=12345) {
   gp <- list()
   if (!('list' %in% class(cfs)))
     cfs <- list(cfs)
   gp$cfs <- cfs
   gp$lik <- lik
-  gp$method <- method
+  gp$approx <- get_approx(method, seed=seed)
   gp$fitted <- FALSE
-  if (method == 'rf') {
+  
+  # TODO: this is somewhat stupid
+  rf_seed <- seed
+  if (gp$approx$name == 'rf') {
     gp$num_basis <- check_num_basis(cfs, num_basis)
     gp$rf_seed <- rf_seed
+  } else if (gp$approx$name == 'fitc') {
+    gp$num_inducing <- num_inducing
   }
   class(gp) <- 'gp'
   gp
@@ -123,10 +128,10 @@ lpdf_prior.gp <- function(object, ...) {
 }
 
 get_featuremap.gp <- function(object, num_inputs, ...) {
-  if (object$method == 'rf')
+  if ('approx_rf' %in% class(gp$approx))
     return(rf_featmap(object$cfs, object$num_basis, num_inputs=num_inputs, seed=object$rf_seed))
   else
-    stop('No feature map implementation for method: ', object$method)
+    stop('No feature map implementation for method: ', object$approx$name)
 }
 
 is_fitted.gp <- function(object, type, ...) {
@@ -190,7 +195,13 @@ get_w_sample <- function(gp, cfind=NULL) {
 }
 
 
-
+# function for determining the default amount of jitter on the covarince diagonal
+# for different likelihoods
+get_jitter <- function(gp, jitter) {
+  if (!is.null(jitter))
+    return(jitter)
+  return(1e-6)
+}
 
 
 
