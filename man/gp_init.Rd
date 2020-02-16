@@ -24,7 +24,7 @@ or \code{'rf'}. See below for details.}
 \item{num_basis}{Number of basis functions in the covariance approximation for 'rf' and other
 basis function methods.}
 
-\item{rf_seed}{Seed for random features for reproducible results.}
+\item{seed}{Seed for reproducible results.}
 }
 \value{
 A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.

@@ -101,6 +101,10 @@ laplace_iter.approx_rf <- function(object, gp, Z, y, fhat_old, ...) {
   list(wmean=what, wcov=wcov, log_evidence=log_evidence)
 }
 
+laplace_iter.approx_rbf <- function(object, gp, Z, y, fhat_old, ...) {
+  laplace_iter.approx_rf(object, gp, Z, y, fhat_old, ...)
+}
+
 
 
 
@@ -171,6 +175,9 @@ laplace.approx_rf <- function(object, gp, Z, y, maxiter=100, tol=1e-4, ...) {
   return(fit)
 }
 
+laplace.approx_rbf <- function(object, gp, Z, y, maxiter=100, tol=1e-4, ...) {
+  laplace.approx_rf(object, gp, Z, y, maxiter=maxiter, tol=tol, ...)
+}
 
 
 

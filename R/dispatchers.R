@@ -80,6 +80,10 @@ rf_featmap <- function (object, ...) {
   UseMethod("rf_featmap", object)
 }
 
+rbf_featmap <- function (object, ...) {
+  UseMethod("rbf_featmap", object)
+}
+
 is_fitted <- function(object, type, ...) {
   UseMethod("is_fitted", object)
 }

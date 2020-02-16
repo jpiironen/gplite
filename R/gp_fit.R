@@ -94,7 +94,17 @@ gp_laplace.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, .
 gp_laplace.approx_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)
-  gp$num_basis <- check_num_basis(gp$cfs, gp$num_basis, NCOL(x))
+  gp$approx$num_basis <- check_num_basis(gp$cfs, gp$approx$num_basis, NCOL(x))
+  z <- featuremap(x)
+  gp$fit <- laplace(object, gp, z, y, trials=trials)
+  return(gp)
+}
+
+gp_laplace.approx_rbf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+  gp$x <- x
+  num_inputs <- NCOL(x)
+  featuremap <- get_featuremap(gp, num_inputs)
+  gp$approx$num_basis <- check_num_basis(gp$cfs, gp$approx$num_basis, NCOL(x))
   z <- featuremap(x)
   gp$fit <- laplace(object, gp, z, y, trials=trials)
   return(gp)

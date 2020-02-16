@@ -554,5 +554,115 @@ rf_featmap.cf_prod <- function(object, num_feat, num_inputs, seed=NULL, ...) {
 
 
 
+rbf_featmap.list <- function(object, num_feat, ...) {
+  fmaps <- list()
+  for (k in seq_along(object))
+    fmaps[[k]] <- rbf_featmap(object[[k]], num_feat[k], ...)
+  
+  featuremap <- function(x, cfind=NULL) {
+    if (is.null(cfind))
+      cfind <- seq_along(fmaps)
+    z <- c()
+    for (k in cfind)
+      z <- cbind(z,fmaps[[k]](x))
+    return(z)
+  }
+  return(featuremap)
+}
+
+rbf_featmap.cf_const <- function(object, ...) {
+  featuremap <- function(x) {
+    n <- NROW(x)
+    object$magn*rep(1,n)
+  }
+  return(featuremap)
+}
+
+rbf_featmap.cf_lin <- function(object, ...) {
+  # for linear kernel, the linearization feature mapping is simply the identity
+  # (with the features scaled down by the magnitude)
+  featuremap <- function(x) {
+    object$magn*x
+  }
+  return(featuremap)
+}
+
+rbf_featmap.cf_sexp <- function(object, num_feat, num_inputs, x=NULL, seed=NULL, ...) {
+  
+  if (is.null(x))
+    stop('Cannot get RBF featuremap if inputs are not given.')
+  
+  # set random seed but ensure the old RNG state is restored on exit
+  rng_state_old <- .Random.seed
+  on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  set.seed(seed)
+  
+  if (is.null(object$vars))
+    object$vars <- c(1:num_inputs)
+  else
+    # override the number of inputs, because using only a subset of inputs
+    num_inputs <- length(object$vars)
+  
+  # center locations
+  x <- as.matrix(x)
+  x <- x[,object$vars,drop=F]
+  n <- NROW(x)
+  ind <- sample(n, num_feat)
+  centers <- x[ind,,drop=F] 
+  
+  featuremap <- function(x) {
+    x <- as.matrix(x)
+    x <- x[,object$vars,drop=F]
+    z <- matrix(nrow=NROW(x), ncol=num_feat)
+    for (j in 1:num_feat) {
+      z[,j] <- exp(-colSums((t(x) - centers[j,])^2) / object$lscale^2)
+    }
+    object$magn*sqrt(1/num_feat)*z
+  }
+  return(featuremap)
+}
+
+
+rbf_featmap.cf_periodic <- function(object, num_feat, num_inputs, x=NULL, seed=NULL, ...) {
+  
+  if (is.null(object$vars))
+    object$vars <- c(1:num_inputs)
+  else
+    # override the number of inputs, because using only a subset of inputs
+    num_inputs <- length(object$vars)
+  
+  x_transf <- cbind(sin(2*pi/object$period*x), cos(2*pi/object$period*x))
+  featuremap_base <- rbf_featmap(object$base, num_feat, num_inputs=2*num_inputs, x=x_transf, seed=seed)
+  
+  featuremap <- function(x) {
+    x <- as.matrix(x)
+    x <- x[,object$vars,drop=F]
+    x_transf <- cbind(sin(2*pi/object$period*x), cos(2*pi/object$period*x))
+    featuremap_base(x_transf)
+  }
+  return(featuremap)
+}
+
+
+rbf_featmap.cf_prod <- function(object, num_feat, num_inputs, seed=NULL, ...) {
+  cf_types <- sapply(object$cfs, class)
+  if ('cf_lin' %in% cf_types || 'cf_const' %in% cf_types)
+    stop('RBF features for product kernel containing constant or linear kernel not implemented yet.')
+  fmaps <- list()
+  for (k in seq_along(object$cfs))
+    fmaps[[k]] <- rbf_featmap(object$cfs[[k]], num_feat, num_inputs, seed, ...)
+  featuremap <- function(x) {
+    # the random features are obtained by taking the product of the random features 
+    # of the kernels in the product
+    z <- 1
+    for (k in seq_along(object$cfs))
+      z <- z*fmaps[[k]](x)
+    z
+  }
+  return(featuremap)
+}
+
+
+
 
 
