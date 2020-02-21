@@ -63,7 +63,7 @@ laplace_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
 
 
 solve_inv_lemma <- function(K, U, D, b, log_det=F) {
-  # solves system (U * K^-1 * U^t + D)^-1 b using inversion lemma
+  # solves system (D + U * K^-1 * U^t)^-1 b using inversion lemma
   # (D should be a vector giving only the diagonal)
   aux <- (1/D)*U 
   aux2 <- (1/sqrt(D))*U

@@ -184,7 +184,8 @@ gp_pred_post.approx_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
   # compute the latent mean first
   Ktz <- eval_cf(gp$cfs, xt, gp$x_inducing, cfind)
   Kxz <- gp$fit$Kxz
-  Kt <- t(forwardsolve(gp$fit$Kz_chol, t(Ktz))) %*% forwardsolve(gp$fit$Kz_chol, t(Kxz))
+  Kz_chol <- gp$fit$Kz_chol
+  Kt <- t(forwardsolve(Kz_chol, t(Ktz))) %*% forwardsolve(Kz_chol, t(Kxz))
   alpha <- gp$fit$alpha
   pred_mean <- Ktz %*% alpha
   pred_mean <- as.vector(pred_mean)

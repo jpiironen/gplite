@@ -59,13 +59,6 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=
   gp$approx <- get_approx(method, seed=seed, num_basis=check_num_basis(cfs, num_basis), 
                           num_inducing=num_inducing)
   gp$fitted <- FALSE
-  
-  # TODO: this check if this stuff could be put inside the approx-objects
-  #if (gp$approx$name == 'rf') {
-  #  gp$num_basis <- check_num_basis(cfs, num_basis)
-  #} else if (gp$approx$name == 'fitc') {
-  #  gp$num_inducing <- num_inducing
-  #}
   class(gp) <- 'gp'
   gp
 }
