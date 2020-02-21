@@ -118,7 +118,7 @@ gp_pred_prior.approx_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, 
     if (is.null(gp$x_inducing))
       stop('Inducing points not set yet.')
     z <- gp$x_inducing
-    Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$num_inducing)
+    Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$approx$num_inducing)
     Kxz <- eval_cf(gp$cfs, xt, z)
     Kz_chol <- t(chol(Kz))
     xt <- as.matrix(xt)

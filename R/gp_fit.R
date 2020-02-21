@@ -76,7 +76,7 @@ gp_laplace.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, .
   set.seed(gp$approx$seed)
   # inducing points via k-means
   z <- get_inducing(gp, x)
-  Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$num_inducing)
+  Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$approx$num_inducing)
   Kxz <- eval_cf(gp$cfs, x, z)
   Kz_chol <- t(chol(Kz))
   D <- rep(0,n)
@@ -114,7 +114,7 @@ gp_laplace.approx_rbf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ..
 get_inducing <- function(gp, x) {
   if (!is.null(gp$x_inducing))
     return(gp$x_inducing)
-  cl <- kmeans(x, gp$num_inducing)
+  cl <- kmeans(x, gp$approx$num_inducing)
   z <- cl$centers
   return(z)
 }
