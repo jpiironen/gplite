@@ -46,8 +46,8 @@ laplace_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
   fhat_new <- Kxz %*% backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Kxz) %*% v)) 
   # alternative way:
   aux <- (1/sqrt(S))*Kxz
-  L <- t(chol(Kz + t(aux) %*% aux))
-  alpha <- backsolve(t(L), forwardsolve(L, t(Kxz) %*% (z/V)))
+  Sigma_chol <- t(chol(Kz + t(aux) %*% aux))
+  alpha <- backsolve(t(Sigma_chol), forwardsolve(Sigma_chol, t(Kxz) %*% (z/S)))
   #fhat_new <- Kxz %*% alpha
   
   # compute the log marginal likelihood
