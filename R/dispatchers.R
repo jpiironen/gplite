@@ -64,6 +64,14 @@ get_loglik <- function(object, ...) {
   UseMethod("get_loglik", object)
 }
 
+get_loglik_d <- function(object, ...) {
+  UseMethod("get_loglik_d", object)
+}
+
+get_loglik_d2 <- function(object, ...) {
+  UseMethod("get_loglik_d2", object)
+}
+
 get_response <- function(object, ...) {
   UseMethod("get_response", object)
 }

@@ -154,6 +154,21 @@ get_pseudodata.lik_gaussian <- function(object, f, y, ...) {
   list(z = y, var = object$sigma^2*rep(1,n), loglik = loglik)
 }
 
+get_pseudodata.lik_binomial <- function(object, f, y, ...) {
+  f <- as.vector(f)
+  out <- get_loglik_d2(object, f, y, ...)
+  grad <- out$grad
+  grad2 <- out$grad2
+  list(z = f-grad/grad2, var = -1/grad2)
+}
+
+get_pseudodata.lik_betabinom <- function(object, f, y, ...) {
+  f <- as.vector(f)
+  out <- get_loglik_d2(object, f, y, ...)
+  grad <- out$grad
+  grad2 <- out$grad2
+  list(z = f-grad/grad2, var = -1/grad2)
+}
 
 
 
@@ -204,6 +219,67 @@ get_loglik.lik_gaussian <- function(object, f, y, ...) {
   sum(stats::dnorm(y, mean=f, sd=object$sigma, log=T))
 }
 
+
+
+# get_loglik_d functions
+
+get_loglik_d.lik_binomial <- function(object, f, y, ...) {
+  
+  args <- list(...)
+  if (is.null(args$trials))
+    stop('trials must be provided for the beta binomial likelihood.')
+  
+  mu <- get_response(object, f)
+  trials <- args$trials
+  
+  if (object$link == 'probit')
+    dmu <- stats::dnorm(f)
+  else if (object$link == 'logit')
+    dmu <- mu*(1-mu)
+  else
+    stop('Unknown link: ', object$link)
+  
+  y*log(mu) + (trials-y)*log(1-mu)
+  grad <- dmu * (y/mu - (trials-y)/(1-mu))
+  return(grad)
+}
+
+
+get_loglik_d.lik_betabinom <- function(object, f, y, ...) {
+  
+  args <- list(...)
+  if (is.null(args$trials))
+    stop('trials must be provided for the beta binomial likelihood.')
+  
+  mu <- get_response(object, f)
+  phi <- object$phi
+  a <- mu/phi
+  b <- (1-mu)/phi
+  successes <- y
+  trials <- args$trials
+  
+  if (object$link == 'probit')
+    dmu <- stats::dnorm(f)
+  else if (object$link == 'logit')
+    dmu <- mu*(1-mu)
+  else
+    stop('Unknown link: ', object$link)
+  
+  term2 <- (dmu/phi)*(digamma(successes+a) - digamma(trials-successes+b))
+  term3 <-  (dmu/phi)*(-digamma(a) + digamma(b))
+  return(term2 + term3)
+}
+
+
+
+# get_loglik_d2 functions
+
+get_loglik_d2.lik <- function(object, f, y, eps=1e-6, ...) {
+  grad <- get_loglik_d(object, f, y, ...)
+  grad_eps <- get_loglik_d(object, f+eps, y, ...)
+  grad2 <- (grad_eps-grad) / eps
+  list(grad=grad, grad2=grad2)
+}
 
 
 
