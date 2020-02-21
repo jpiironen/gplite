@@ -199,7 +199,7 @@ gp_pred_post.approx_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
     V <- gp$fit$pseudovar
     D <- gp$fit$diag
     xt <- as.matrix(xt)
-    Dt <- sapply(1:nt, function(i) eval_cf(gp$cfs, xt[i,,drop=F], xt[i,,drop=F])) 
+    Dt <- sapply(1:nt, function(i) eval_cf(gp$cfs, xt[i,,drop=F], xt[i,,drop=F], cfind)) 
     Dt <- Dt - colSums(forwardsolve(Kz_chol, t(Ktz))^2)
     pred_cov <- Ktz %*% solve(Kz, t(Ktz)) + diag(Dt) - Kt %*% solve_inv_lemma(Kz, Kxz, V+D, t(Kt))
     if (cov)
