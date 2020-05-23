@@ -87,7 +87,13 @@ gp_laplace.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, .
   D <- D - colSums(forwardsolve(Kz_chol, t(Kxz))^2)
   gp$x <- x
   gp$x_inducing <- z
-  gp$fit <- laplace(object, gp, Kz, Kz_chol, Kxz, D, y, trials=trials)
+  gp$fit <- tryCatch({
+    laplace(object, gp, Kz, Kz_chol, Kxz, D, y, trials=trials)
+  },
+  error = function(err) {
+    print(err)
+    list(log_evidence=-Inf)
+  })
   return(gp)
 }
 
