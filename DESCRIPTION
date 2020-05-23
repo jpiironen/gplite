@@ -1,6 +1,6 @@
 Package: gplite
 Title: Lightweight interface to the most common Gaussian process models
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(person("Juho", "Piironen", role = c("cre", "aut"), email = "juho.t.piironen@gmail.com"))
 Description: 
   Implements a lightweight interface to type-II maximum likelihood and Markov chain Monte Carlo 
