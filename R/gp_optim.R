@@ -42,10 +42,13 @@
 #' @export
 gp_optim <- function(gp, x, y, method='Nelder-Mead', tol=1e-4, 
                      maxiter=500, verbose=T, warnings=T, ...) {
+
+  iter <- 0
   energy <- function(param) {
     gp <- set_param(gp, param)
     gp <- gp_fit(gp,x,y, ...)
-    optim_iter_message(gp, verbose)
+    optim_iter_message(gp, iter, verbose)
+    iter <<- iter + 1
     gp_energy(gp)
   }
   
@@ -72,14 +75,14 @@ optim_start_message <- function(gp, verbose=T) {
   cat('\n\n')
   
   symbols <- sapply(seq_along(nam), function(i) sprintf('p%d',i))
-  row_items <- c(sprintf('%8s', symbols), sprintf('%10s\n','Energy'))
+  row_items <- c(sprintf('%8s', symbols), sprintf('%10s','Energy'), sprintf('%9s\n', 'Iteration'))
   cat(paste0(row_items, collapse=' '))
 }
 
-optim_iter_message <- function(gp, verbose=T) {
+optim_iter_message <- function(gp, iter, verbose=T) {
   if (!verbose)
     return()
-  row_items <- c(sprintf('%8.2f', get_param(gp)), sprintf('%10.2f', gp_energy(gp)))
+  row_items <- c(sprintf('%8.2f', get_param(gp)), sprintf('%10.2f', gp_energy(gp)), sprintf('%9d', iter))
   cat(paste0(row_items, collapse=' '), '\n')
 }
 
