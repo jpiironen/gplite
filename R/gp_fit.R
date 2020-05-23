@@ -120,8 +120,10 @@ gp_laplace.approx_rbf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ..
 get_inducing <- function(gp, x) {
   if (!is.null(gp$x_inducing))
     return(gp$x_inducing)
-  cl <- kmeans(x, gp$approx$num_inducing)
-  z <- cl$centers
+  xscaled <- scale(x)
+  cl <- kmeans(xscaled, gp$approx$num_inducing)
+  zscaled <- cl$centers
+  z <- t( t(zscaled)*attr(xscaled, 'scaled:scale') + attr(xscaled, 'scaled:center') )
   return(z)
 }
 
