@@ -74,7 +74,6 @@ gp_laplace.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, .
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
   set.seed(gp$approx$seed)
-  # inducing points via k-means
   z <- get_inducing(gp, x)
   Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$approx$num_inducing)
   Kxz <- eval_cf(gp$cfs, x, z)
