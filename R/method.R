@@ -122,3 +122,12 @@ method_rbf <- function(num_basis=400, seed=12345) {
   method
 }
 
+
+#' @export
+print.method <- function(object, quiet=F, ...) {
+  str <- class(object)[1]
+  if (!quiet)
+    cat(str)
+  invisible(str)
+}
+

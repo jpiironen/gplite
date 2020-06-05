@@ -70,6 +70,35 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method=method_full(),
 }
 
 
+#' @export
+print.gp <- function(object, ...) {
+  indent <- '  '
+  indent_str <- function(s) paste(indent, strsplit(s,'\n')[[1]], '\n', sep=' ', collapse='')
+  
+  # likelihood
+  str_lik <- indent_str(print(object$lik, quiet=T))
+  str <- paste0('Likelihood:\n', str_lik)
+  
+  # cfs
+  str <- paste0(str, 'Covariance functions:\n')
+  for (i in seq_along(object$cfs)) {
+    str_cf <- indent_str(print(object$cfs[[i]], quiet=T))
+    str <- paste0(str, str_cf)
+  }
+  
+  # method
+  str <- paste0(str, 'Method:\n')
+  str <- paste0(str, indent_str(print(object$method, quiet=T)))
+  
+  # approx
+  str <- paste0(str, 'Latent approximation:\n')
+  str <- paste0(str, indent_str(print(object$approx, quiet=T)))
+  
+  cat(str)
+  invisible(str)
+}
+
+
 #' Energy of a GP model
 #'
 #' Returns the energy (negative log marginal likelihood) of a fitted GP model with the

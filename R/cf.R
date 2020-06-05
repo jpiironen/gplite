@@ -213,6 +213,54 @@ cf_prod <- function(...) {
 }
 
 
+#' @export
+print.cf_prod <- function(object, quiet=F, ...) {
+  indent <- '  '
+  str <- paste0(get_name(object), ':\n')
+  for (i in seq_along(object$cfs))
+    str <- paste0(str, indent, 'cf', i, ': ', print(object$cfs[[i]], quiet=T))
+  if (!quiet)
+    cat(str)
+  invisible(str)
+}
+
+#' @export
+print.cf_periodic <- function(object, quiet=F, ...) {
+  str <- print.cf(object, quiet=T)
+  str <- strsplit(str, ')')[[1]][1] # remove ')' and newline in the end
+  
+  str_base <- print(object$base, quiet=T)
+  str_base <- strsplit(str_base, ')')[[1]][1] # remove ')' and newline in the end
+  
+  str <- paste(str, '; cf_base = ', str_base, '))\n', sep='')
+  
+  if (!quiet)
+    cat(str)
+  invisible(str)
+}
+
+#' @export
+print.cf <- function(object, quiet=F, ...) {
+  param_names <- get_param_names(object)
+  param <- unlist(object[param_names])
+  digits <- 3
+  description <- paste0(get_name(object), '(')
+  if (!is.null(object$vars))
+    description <- paste0(description, 'vars = ', paste0(object$vars, collapse=','), '; ')
+  for (i in seq_along(param_names)) {
+    description <- paste0(description, param_names[i], ' = ', round(param[i], digits))
+    if (i < length(param_names))
+      description <- paste0(description, '; ')
+  }
+  description <- paste0(description, ')\n')
+  if (!quiet)
+    cat(description)
+  invisible(description)
+}
+
+
+
+
 # for figuring out the name of the cf conveniently
 
 get_name.cf <- function(object, ...) {
@@ -249,6 +297,10 @@ get_param_names.cf_nn <- function(object) {
 
 get_param_names.cf_periodic <- function(object) {
   c('period')
+}
+
+get_param_names.cf_prod <- function(object) {
+  sapply(object$cfs, function(cf) get_param_names(cf))
 }
 
 

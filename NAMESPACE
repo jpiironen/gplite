@@ -2,6 +2,13 @@
 
 S3method("*",cf)
 S3method(get_param,gp)
+S3method(print,approx)
+S3method(print,cf)
+S3method(print,cf_periodic)
+S3method(print,cf_prod)
+S3method(print,gp)
+S3method(print,lik)
+S3method(print,method)
 S3method(set_param,gp)
 export(approx_ep)
 export(approx_laplace)

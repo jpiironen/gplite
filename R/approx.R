@@ -73,3 +73,11 @@ approx_ep <- function(damping=0.9, quad_order=11) {
   class(approx) <- c('approx_ep', 'approx')
   approx
 }
+
+#' @export
+print.approx <- function(object, quiet=F, ...) {
+  str <- class(object)[1]
+  if (!quiet)
+    cat(str)
+  invisible(str)
+}

@@ -82,6 +82,24 @@ lik_betabinom <- function(link='logit', phi=1.0, prior_phi=prior_logunif()) {
 }
 
 
+#' @export
+print.lik <- function(object, quiet=F, ...) {
+  param_names <- get_param_names(object)
+  param <- unlist(object[param_names])
+  digits <- 3
+  description <- paste0(get_name(object), '(')
+  for (i in seq_along(param_names)) {
+    description <- paste0(description, param_names[i], ' = ', round(param[i], digits))
+    if (i < length(param_names))
+      description <- paste0(description, '; ')
+  }
+  description <- paste0(description, ')\n')
+  if (!quiet)
+    cat(description)
+  invisible(description)
+}
+
+
 get_name.lik <- function(object, ...) {
   class(object)[1]
 }
