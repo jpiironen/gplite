@@ -47,11 +47,21 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 
 \examples{
 \donttest{
-# Analytic approximation
-cf <- cf_sexp(lscale=0.3, magn=0.5)
-lik <- lik_binomial()
-gp <- gp_init(cf, lik)
-gp <- gp_fit(gp, x, y)
+
+# Generate some toy data
+set.seed(32004)
+n <- 150
+sigma <- 0.1
+x <- rnorm(n)
+ycont <- sin(3*x)*exp(-abs(x)) +  rnorm(n)*sigma
+y <- rep(0,n)
+y[ycont > 0] <- 1
+trials <- rep(1,n)
+
+# Analytic approximation (Laplace)
+cf <- cf_sexp(lscale=0.3, magn=3)
+gp <- gp_init(cf, lik_binomial())
+gp <- gp_fit(gp, x, y, trials=trials)
 
 # MCMC solution
 gpmc <- gp_mcmc(gp, x, y, trials=trials, chains=2, iter=1000)

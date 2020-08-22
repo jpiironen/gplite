@@ -1,13 +1,15 @@
 Package: gplite
-Title: Lightweight interface to the most common Gaussian process models
+Title: Lightweight Implementation for the Most Common Gaussian Process Models
 Version: 0.1.1
 Authors@R: c(person("Juho", "Piironen", role = c("cre", "aut"), email = "juho.t.piironen@gmail.com"))
 Description: 
-  Implements a lightweight interface to type-II maximum likelihood and Markov chain Monte Carlo 
-  inference for Gaussian Process (GP) models using Stan. New observation models and covariance 
-  functions are easy to add.
+  Implements the most common Gaussian process (GP) models using Laplace approximation, 
+  maximum marginal likelihood inference for the hyperparameters, and sparse
+  approximations for larger datasets. In addition, provides also convenient 
+  interface to perform Markov chain Monte Carlo (MCMC) inference for the latent values with 
+  fixed hyperparameters using Stan probabilistic programming language. 
 Depends: 
-  R (>= 3.4.0)
+  R (>= 3.4.0),
 Imports: 
   methods,
   Rcpp (>= 0.12.0),
@@ -24,7 +26,7 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: TRUE
 Biarch: TRUE
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
 SystemRequirements: GNU make
 Suggests: 
     testthat,

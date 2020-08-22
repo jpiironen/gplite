@@ -9,48 +9,86 @@
 #' 
 #' @param cfs The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.
 #' @param lik Likelihood (observation model). See \code{\link{lik}}.
-#' @param method Method for approximating the covariance function, can be one of \code{'full'} 
-#' or \code{'rf'}. See below for details.
+#' @param method Method for approximating the covariance function, can be one of 
+#' \code{'full'} (full exact GP),
+#' \code{'rf'} (random features), or 
+#' \code{'fitc'} (fully independent training conditional, FITC). See below for details.
 #' @param num_basis Number of basis functions in the covariance approximation for 'rf' and other
 #' basis function methods.
+#' @param num_inducing Number of inducing points for FITC approximation.
 #' @param seed Seed for reproducible results.
 #' 
 #' @return A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
 #' 
 #' @details The argument \code{method} defines the method for approximating the covariance
-#' function calculation. \code{'full'} means that exact covariance function is used, meaning
+#' function calculation. The choices are:
+#' \itemize{
+#'  \item{\code{'full'}:} {
+#'  Full exact covariance function is used, meaning
 #' that the inference will be for the \code{n} latent
-#' function values (inference time scales cubicly in \code{n}). \code{'rf'} uses random features 
+#' function values (fitting time scales cubicly in \code{n}).
+#' }
+#'  \item{\code{'rf'}:} {
+#'  Uses random features 
 #' (or basis functions) for approximating the covariance function, which means the inference
-#' time scales cubicly in the number of approximating basis functions \code{num_basis}. For
-#' stationary covariance functions random Fourier features (Rahimi and Recht, 2007) is used,
+#' time scales cubicly in the number of approximating basis functions \code{num_basis}.
+#' For stationary covariance functions random Fourier features (Rahimi and Recht, 2007) is used,
 #' and for non-stationary kernels using case specific method when possible (for example, drawing
-#' the hidden layer parameters randomly for \code{cf_nn}). 
+#' the hidden layer parameters randomly for \code{cf_nn}).
+#' }
+#'  \item{\code{'fitc'}:} {
+#'  Uses the fully independent training conditional, FITC, approximation 
+#'  (see Quiñonero-Candela and Rasmussen, 2005; Snelson and Ghahramani, 2006). 
+#'  The fitting time scales O(n*m^2), where n is the number of data points and 
+#'  m the number of inducing points \code{num_inducing}.
+#'  The inducing point locations are chosen using the k-means algorithm.
+#'  }
+#'  }
+#' 
 #' 
 #' @section References:
 #' 
-#' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
+#' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. 
+#' MIT Press.
 #' 
-#' Rahimi, A. and Recht, B. (2008). Random features for large-scale kernel machines. Advances in Neural Information Processing Systems 20.
+#' Rahimi, A. and Recht, B. (2008). Random features for large-scale kernel machines. 
+#' In Advances in Neural Information Processing Systems 20.
+#' 
+#' Quiñonero-Candela, J. and Rasmussen, C. E (2005). A unifying view of sparse approximate 
+#' Gaussian process regression. Journal of Machine Learning Research 6:1939-1959.
+#' 
+#' Snelson, E. and Ghahramani, Z. (2006). Sparse Gaussian processes using pseudo-inputs. 
+#' In Advances in Neural Information Processing Systems 18.
 #'
 #' @examples
 #' \donttest{
-#' # Basic usage (single covariance function)
-#' cf <- cf_sexp()
-#' lik <- lik_binomial()
-#' gp <- gp_init(cf, lik)
-#' gp <- gp_optim(gp, x ,y, trials)
+#' 
+#' # Generate some toy data
+#' set.seed(1242)
+#' n <- 500
+#' x <- matrix(rnorm(n*3), nrow=n)
+#' f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
+#' y <- f + 0.5*rnorm(n)
+#' x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
+#' 
+#' # Full GP
+#' gp <- gp_init(cf_sexp())
+#' gp <- gp_optim(gp, x, y)
 #' 
 #' # Approximate solution using random features
-#' gpa <- gp_init(cf_sexp(), method='rf', num_basis=200)
-#' gpa <- gp_optim(gpa, x, y)
+#' gp <- gp_init(cf_sexp(), method='rf', num_basis=300)
+#' gp <- gp_optim(gp, x, y)
+#' 
+#' # Approximate solution using FITC
+#' gp <- gp_init(cf_sexp(), method='fitc', num_inducing=100)
+#' gp <- gp_optim(gp, x, y)
 #' 
 #' }
 #'
 
 #' @export
-gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=100,
-                    num_inducing=100, seed=12345) {
+gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', 
+                    num_basis=100, num_inducing=100, seed=12345) {
   gp <- list()
   if (!('list' %in% class(cfs)))
     cfs <- list(cfs)
@@ -69,6 +107,8 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=
 #' Returns the energy (negative log marginal likelihood) of a fitted GP model with the current hyperparameters. The result is exact for the Gaussian likelihood and based on Laplace approximation for other cases.
 #' 
 #' @param gp The fitted GP model.
+#' @param include_prior Whether to add log density of the prior to the result (in which case
+#' the result is -(log marginal likelihood + log prior))
 #' 
 #' @return The energy value (negative log marginal likelihood).
 #' 
@@ -78,10 +118,18 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', num_basis=
 #'
 #' @examples
 #' \donttest{
-#' # Basic usage (single covariance function)
-#' cf <- cf_sexp()
-#' lik <- lik_binomial()
-#' gp <- gp_init(cf, lik)
+#' 
+#' # Generate some toy data
+#' set.seed(1242)
+#' n <- 500
+#' x <- matrix(rnorm(n*3), nrow=n)
+#' f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
+#' y <- f + 0.5*rnorm(n)
+#' x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
+#' 
+#' # Basic usage
+#' gp <- gp_init(cf_sexp(), lik_gaussian())
+#' gp <- gp_fit(gp, x, y)
 #' e <- gp_energy(gp)
 #' 
 #' }

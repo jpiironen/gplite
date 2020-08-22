@@ -44,6 +44,9 @@ Default is 1e-6.}
 
 \item{seed}{Random seed for draws.}
 
+\item{...}{Additional parameters that might be needed. For example keyword \code{trials}
+for binomial and beta-binomial likelihoods.}
+
 \item{var}{Whether to compute the predictive variances along with predictive mean.}
 }
 \value{
@@ -67,21 +70,41 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 
 \examples{
 \donttest{
-# fit GP
-gp <- gp_init()
-gp <- gp_optim(gp, x, y, trials=trials)
 
-# analytic prediction
-pred <- gp_pred(gp, xnew, var=T)
-pred$mean 
-pred$var 
+# Generate some toy data
+set.seed(1242)
+n <- 500
+x <- matrix(rnorm(n*3), nrow=n)
+f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
+y <- f + 0.5*rnorm(n)
+x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
 
-# draw from the predictive distribution based on the analytic posterior approximation
-draws <- gp_pred(gp, xnew, draws=1000) 
+# More than one covariance function; one for x1 and x2, and another one for x3
+cf1 <- cf_nn(c('x1','x2'), prior_sigma0 = prior_half_t(df=4, scale=2))
+cf2 <- cf_sexp('x3')
+cfs <- list(cf1, cf2)
+lik <- lik_gaussian()
+gp <- gp_init(cfs, lik)
+gp <- gp_optim(gp, x, y, maxiter = 500)
 
-# fit using mcmc and draw from the predictive distribution
-gpmc <- gp_mcmc(gp, x, y, trials=trials, iter=1000, chains=2)
-draws <- gp_draw(gpmc, xnew)
+# plot the predictions w.r.t x1, when x2 = x3 = 0
+xt <- cbind(x1=seq(-3,3,len=50), x2=0, x3=0)
+pred <- gp_pred(gp, xt, var=TRUE)
+plot(xt[,'x1'], pred$mean, type='l')
+
+# draw from the predictive distribution
+xt <- cbind(x1=seq(-3,3,len=50), x2=0, x3=0)
+draws <- gp_draw(gp, xt, draws=100)
+plot(xt[,'x1'], draws[,1], type='l')
+for (i in 2:50) {
+  lines(xt[,'x1'], draws[,i])
+}
+
+# plot effect w.r.t x3 only
+xt <- cbind('x3'=seq(-3,3,len=50))
+pred <- gp_pred(gp, xt, cfind=2, var=TRUE)
+plot(xt, pred$mean, type='line') 
+
 }
 
 }

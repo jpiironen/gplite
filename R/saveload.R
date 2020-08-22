@@ -11,8 +11,18 @@
 #'  
 #' @examples
 #' \donttest{
+#' 
+#' # init the model
+#' gp <- gp_init()
+#' 
+#' # fit the model (skipped here)
+#' 
+#' # save the model
 #' gp_save(gp, 'gp.rda')
+#' 
+#' # load the model and remove the file
 #' gp <- gp_load('gp.rda')
+#' file.remove('gp.rda')
 #' 
 #' }
 #'
@@ -27,6 +37,6 @@ gp_save <- function(gp, filename) {
 #' @rdname gp_saveload
 #' @export
 gp_load <- function(filename) {
-  load(filename)
-  gp
+  model <- load(filename)
+  get(model)
 }

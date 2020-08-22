@@ -93,6 +93,10 @@ in periodic covariance function.}
 \item{prior_period}{Prior for hyperparameter \code{period}. See \code{\link{priors}}.}
 
 \item{...}{Meaning depends on context. For \code{cf_prod} pass in the covariance functions in the product.}
+
+\item{cf1}{Instance of a covariance function.}
+
+\item{cf2}{Instance of a covariance function.}
 }
 \value{
 The covariance function object.
@@ -124,20 +128,31 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 
 \examples{
 \donttest{
+ 
+# Generate some toy data
+set.seed(1242)
+n <- 300
+x <- matrix(rnorm(n*3), nrow=n)
+f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
+y <- f + 0.5*rnorm(n)
+x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
+
 # Basic usage (single covariance function)
 cf <- cf_sexp()
-lik <- lik_binomial()
+lik <- lik_gaussian()
 gp <- gp_init(cf, lik)
-gp <- gp_optim(gp, x ,y, trials)
+gp <- gp_optim(gp, x, y)
+plot(gp_pred(gp, x), y)
 
-
-# More than one covariance function, and the function is additive 
-# in the first input, but has an interaction between inputs 2 and 3
-# (the functional form is f(x) = f(x_1) + f(x_2,x_3))
-cfs <- list(cf_const(), cf_sexp(1), cf_sexp(c(2,3)))
+# More than one covariance function; one for x1 and x2, and another one for x3
+cf1 <- cf_nn(c('x1','x2'), prior_sigma0 = prior_half_t(df=4, scale=2))
+cf2 <- cf_sexp('x3')
+cfs <- list(cf1, cf2)
 lik <- lik_gaussian()
 gp <- gp_init(cfs, lik)
-gp <- gp_optim(gp, x, y)
+gp <- gp_optim(gp, x, y, maxiter = 500)
+plot(gp_pred(gp, x), y)
+plot(x[,3], gp_pred(gp, x, cfind=2)) # plot effect w.r.t x3 only
 
 }
 

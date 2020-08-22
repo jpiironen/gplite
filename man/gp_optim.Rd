@@ -57,11 +57,20 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 
 \examples{
 \donttest{
-# Basic usage (single covariance function)
+
+# Generate some toy data
+set.seed(1242)
+n <- 500
+x <- matrix(rnorm(n*3), nrow=n)
+f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
+y <- f + 0.5*rnorm(n)
+x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
+
+# Basic usage 
 cf <- cf_sexp()
-lik <- lik_binomial()
+lik <- lik_gaussian()
 gp <- gp_init(cf, lik)
-gp <- gp_optim(gp, x, y, trials=trials)
+gp <- gp_optim(gp, x, y)
 
 }
 

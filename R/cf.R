@@ -23,7 +23,6 @@
 #'  \item{\code{cf_prod}}{ Product of two or more covariance functions. }
 #' }
 #' 
-#'
 #' @name cf
 #'
 #' @param vars Indices of the inputs which are taken into account when calculating this
@@ -44,6 +43,8 @@
 #' @param prior_sigma Prior for hyperparameter \code{sigma}. See \code{\link{priors}}.
 #' @param prior_period Prior for hyperparameter \code{period}. See \code{\link{priors}}.
 #' @param ... Meaning depends on context. For \code{cf_prod} pass in the covariance functions in the product. 
+#' @param cf1 Instance of a covariance function.
+#' @param cf2 Instance of a covariance function.
 #'
 #' @return The covariance function object.
 #' 
@@ -53,20 +54,31 @@
 #' 
 #' @examples
 #' \donttest{
+#'
+#' # Generate some toy data
+#' set.seed(1242)
+#' n <- 300
+#' x <- matrix(rnorm(n*3), nrow=n)
+#' f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
+#' y <- f + 0.5*rnorm(n)
+#' x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
+#'
 #' # Basic usage (single covariance function)
 #' cf <- cf_sexp()
-#' lik <- lik_binomial()
+#' lik <- lik_gaussian()
 #' gp <- gp_init(cf, lik)
-#' gp <- gp_optim(gp, x ,y, trials)
+#' gp <- gp_optim(gp, x, y)
+#' plot(gp_pred(gp, x), y)
 #' 
-#' 
-#' # More than one covariance function, and the function is additive 
-#' # in the first input, but has an interaction between inputs 2 and 3
-#' # (the functional form is f(x) = f(x_1) + f(x_2,x_3))
-#' cfs <- list(cf_const(), cf_sexp(1), cf_sexp(c(2,3)))
+#' # More than one covariance function; one for x1 and x2, and another one for x3
+#' cf1 <- cf_nn(c('x1','x2'), prior_sigma0 = prior_half_t(df=4, scale=2))
+#' cf2 <- cf_sexp('x3')
+#' cfs <- list(cf1, cf2)
 #' lik <- lik_gaussian()
 #' gp <- gp_init(cfs, lik)
-#' gp <- gp_optim(gp, x, y)
+#' gp <- gp_optim(gp, x, y, maxiter = 500)
+#' plot(gp_pred(gp, x), y)
+#' plot(x[,3], gp_pred(gp, x, cfind=2)) # plot effect w.r.t x3 only
 #' 
 #' }
 #'
@@ -173,7 +185,18 @@ cf_prod <- function(...) {
 #' @rdname cf
 #' @export
 '*.cf' <- function(cf1, cf2) {
-  cf_prod(cf1,cf2)
+  if ('cf_prod' %in% class(cf1)) {
+    if ('cf_prod' %in% class(cf2)) {
+      cf1$cfs <- c(cf1$cfs, cf2$cfs)
+    } else {
+      cf1$cfs <- c(cf1$cfs, list(cf2))
+    }
+    return(cf1)
+  }
+  if ('cf_prod' %in% class(cf2)) {
+    return(cf2 * cf1)
+  }
+  return(cf_prod(cf1,cf2))
 }
 
 

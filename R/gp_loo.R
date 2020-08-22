@@ -32,7 +32,30 @@
 #'
 #' @examples
 #' \donttest{
-#' # TODO: fill this in
+#'
+#' # Generate some toy data
+#' set.seed(32004)
+#' n <- 150
+#' sigma <- 0.1
+#' x <- rnorm(n)
+#' ycont <- sin(3*x)*exp(-abs(x)) +  rnorm(n)*sigma
+#' y <- rep(0,n)
+#' y[ycont > 0] <- 1
+#' trials <- rep(1,n)
+#' 
+#' # Set up two models
+#' gp1 <- gp_init(cf_sexp(), lik_binomial())
+#' gp2 <- gp_init(cf_matern32(), lik_binomial())
+#' 
+#' # Optimize
+#' gp1 <- gp_optim(gp1, x, y, trials=trials)
+#' gp2 <- gp_optim(gp2, x, y, trials=trials)
+#' 
+#' # Compare
+#' loo1 <- gp_loo(gp1, x, y, trials=trials)
+#' loo2 <- gp_loo(gp2, x, y, trials=trials)
+#' gp_compare(loo1, loo2)
+#' 
 #' }
 #'
 NULL
@@ -48,7 +71,7 @@ gp_loo <- function(gp, x, y, trials=NULL, draws=4000, jitter=NULL, seed=NULL) {
   z <- pobs$z
   V <- pobs$var
   grad <- (z - fhat)/V
-  pred_var <- gp_pred(gp, x, var=T)$var
+  pred_var <- gp_pred(gp, x, var=TRUE)$var
   
   # mean and variance of LOO posteriors
   loo_var <- 1/(1/pred_var - 1/V)

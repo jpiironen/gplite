@@ -29,11 +29,11 @@
 #' 
 #' @examples
 #' \donttest{
+#' 
 #' # Basic usage 
 #' cf <- cf_sexp()
 #' lik <- lik_binomial()
 #' gp <- gp_init(cf, lik)
-#' gp <- gp_optim(gp, x ,y, trials)
 #' 
 #' }
 #'
@@ -194,7 +194,7 @@ get_loglik.lik_binomial <- function(object, f, y, sum=TRUE, ...) {
   mu <- get_response(object, f)
   successes <- y
   trials <- args$trials
-  loglik <- dbinom(y, trials, mu, log=T)
+  loglik <- stats::dbinom(y, trials, mu, log=T)
 
   if (sum)
     return(sum(loglik))
@@ -238,7 +238,7 @@ get_loglik_d.lik_binomial <- function(object, f, y, ...) {
   
   args <- list(...)
   if (is.null(args$trials))
-    stop('trials must be provided for the beta binomial likelihood.')
+    stop('trials must be provided for the binomial likelihood.')
   
   mu <- get_response(object, f)
   trials <- args$trials

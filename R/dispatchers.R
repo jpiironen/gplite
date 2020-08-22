@@ -1,7 +1,11 @@
 
 #' Get or set GP model parameters
 #'
-#' \code{get_param} returns the current hyperparameters of the GP model in a vector. \code{set_param} can be used to set the parameters.
+#' \code{get_param} returns the current hyperparameters of the GP model in a vector.
+#' \code{set_param} can be used to set the parameters. Note that these functions
+#' are intended mainly for internal usage, and there is typically
+#' no need to use these functions directly but instead create a new GP model using
+#' \code{gp_init}.
 #' 
 #' @name param
 #' 
@@ -14,12 +18,23 @@
 #'
 #' @examples
 #' \donttest{
-#' # Basic usage 
+#'
+#' # Set up some model
 #' gp <- gp_init(cf=cf_sexp(), lik=lik_gaussian())
-#' print(get_param(gp)) # print out to see the parameter ordering
-#' gp <- set_param(gp, log(c(0.1,0.8,0.3))) # set some new values
-#' print(get_param(gp)) # check the result
 #' 
+#' # print out to see the parameter ordering
+#' param <- get_param(gp)
+#' print(param)
+#'
+#' # set some new values
+#' param_new <- log(c(0.1,0.8,0.3))
+#' names(param_new) <- names(param)
+#' gp <- set_param(gp, param_new)
+#'
+#' # check the result
+#' print(get_param(gp))
+#'
+#'
 #' }
 #'
 NULL

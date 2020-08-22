@@ -5,7 +5,7 @@
 \alias{gp_compare}
 \title{Model assessment and comparison}
 \usage{
-gp_loo(gp, x, y, trials = NULL, draws = 4000, jitter = NULL, seed = NULL, ...)
+gp_loo(gp, x, y, trials = NULL, draws = 4000, jitter = NULL, seed = NULL)
 
 gp_compare(...)
 }
@@ -27,7 +27,7 @@ Default is 1e-6.}
 
 \item{seed}{Random seed.}
 
-\item{...}{Currently ignored.}
+\item{...}{LOO statistics for the models to compare.}
 }
 \value{
 \code{gp_loo} returns a list with LOO statistics. 
@@ -46,12 +46,34 @@ predictive accuracy of two or more GP models given their LOO statistics.
 Vehtari A., Mononen T., Tolvanen V., Sivula T. and Winther O (2016). 
 Bayesian Leave-One-Out Cross-Validation Approximations for Gaussian Latent
 Variable Models. Journal of Machine Learning Research 17(103):1-38.
-TODO: add references here
 }
 
 \examples{
 \donttest{
-# TODO: fill this in
+
+# Generate some toy data
+set.seed(32004)
+n <- 150
+sigma <- 0.1
+x <- rnorm(n)
+ycont <- sin(3*x)*exp(-abs(x)) +  rnorm(n)*sigma
+y <- rep(0,n)
+y[ycont > 0] <- 1
+trials <- rep(1,n)
+
+# Set up two models
+gp1 <- gp_init(cf_sexp(), lik_binomial())
+gp2 <- gp_init(cf_matern32(), lik_binomial())
+
+# Optimize
+gp1 <- gp_optim(gp1, x, y, trials=trials)
+gp2 <- gp_optim(gp2, x, y, trials=trials)
+
+# Compare
+loo1 <- gp_loo(gp1, x, y, trials=trials)
+loo2 <- gp_loo(gp2, x, y, trials=trials)
+gp_compare(loo1, loo2)
+
 }
 
 }

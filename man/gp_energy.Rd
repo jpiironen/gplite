@@ -8,6 +8,9 @@ gp_energy(gp, include_prior = T)
 }
 \arguments{
 \item{gp}{The fitted GP model.}
+
+\item{include_prior}{Whether to add log density of the prior to the result (in which case
+the result is -(log marginal likelihood + log prior))}
 }
 \value{
 The energy value (negative log marginal likelihood).
@@ -23,10 +26,18 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 
 \examples{
 \donttest{
-# Basic usage (single covariance function)
-cf <- cf_sexp()
-lik <- lik_binomial()
-gp <- gp_init(cf, lik)
+
+# Generate some toy data
+set.seed(1242)
+n <- 500
+x <- matrix(rnorm(n*3), nrow=n)
+f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
+y <- f + 0.5*rnorm(n)
+x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
+
+# Basic usage
+gp <- gp_init(cf_sexp(), lik_gaussian())
+gp <- gp_fit(gp, x, y)
 e <- gp_energy(gp)
 
 }
