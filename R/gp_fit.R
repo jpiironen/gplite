@@ -14,7 +14,7 @@
 #' @param x n-by-d matrix of input values (n is the number of observations and d the input dimension). 
 #' Can also be a vector of length n if the model has only a single input.
 #' @param y Vector of n output (target) values.
-#' @param trials Vecton of length n giving the number of trials for each observation in binomial 
+#' @param trials Vector of length n giving the number of trials for each observation in binomial 
 #' (and beta binomial) model.
 #' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
 #'  Default is 1e-6.

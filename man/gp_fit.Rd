@@ -17,7 +17,7 @@ Can also be a vector of length n if the model has only a single input.}
 
 \item{y}{Vector of n output (target) values.}
 
-\item{trials}{Vecton of length n giving the number of trials for each observation in binomial 
+\item{trials}{Vector of length n giving the number of trials for each observation in binomial 
 (and beta binomial) model.}
 
 \item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability.
