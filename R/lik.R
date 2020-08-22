@@ -185,7 +185,7 @@ get_loglik.lik <- function(object, f, y, ...) {
   loglik
 }
 
-get_loglik.lik_binomial <- function(object, f, y, ...) {
+get_loglik.lik_binomial <- function(object, f, y, sum=TRUE, ...) {
   
   args <- list(...)
   if (is.null(args$trials))
@@ -194,10 +194,14 @@ get_loglik.lik_binomial <- function(object, f, y, ...) {
   mu <- get_response(object, f)
   successes <- y
   trials <- args$trials
-  sum(dbinom(y, trials, mu, log=T))
+  loglik <- dbinom(y, trials, mu, log=T)
+
+  if (sum)
+    return(sum(loglik))
+  return(loglik)
 }
 
-get_loglik.lik_betabinom <- function(object, f, y, ...) {
+get_loglik.lik_betabinom <- function(object, f, y, sum=TRUE, ...) {
   
   args <- list(...)
   if (is.null(args$trials))
@@ -212,11 +216,18 @@ get_loglik.lik_betabinom <- function(object, f, y, ...) {
   term1 <- lgamma(trials+1) - lgamma(successes+1) - lgamma(trials-successes+1)
   term2 <- lgamma(successes+a) + lgamma(trials-successes+b) - lgamma(trials+a+b)
   term3 <- lgamma(a+b) - lgamma(a) - lgamma(b)
-  sum(term1 + term2 + term3)
+  loglik <- term1 + term2 + term3
+
+  if (sum)
+    return(sum(loglik))
+  return(loglik)
 }
 
-get_loglik.lik_gaussian <- function(object, f, y, ...) {
-  sum(stats::dnorm(y, mean=f, sd=object$sigma, log=T))
+get_loglik.lik_gaussian <- function(object, f, y, sum=TRUE, ...) {
+  loglik <- stats::dnorm(y, mean=f, sd=object$sigma, log=T)
+  if (sum)
+    return(sum(loglik))
+  return(loglik)
 }
 
 
