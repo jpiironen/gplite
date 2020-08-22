@@ -201,11 +201,17 @@ gp_pred_post.approx_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
     xt <- as.matrix(xt)
     Dt <- sapply(1:nt, function(i) eval_cf(gp$cfs, xt[i,,drop=F], xt[i,,drop=F], cfind)) 
     Dt <- Dt - colSums(forwardsolve(Kz_chol, t(Ktz))^2)
-    pred_cov <- Ktz %*% solve(Kz, t(Ktz)) + diag(Dt) - Kt %*% solve_inv_lemma(Kz, Kxz, V+D, t(Kt))
-    if (cov)
+    Lambda <- V+D
+
+    if (cov) {
+      pred_cov <- Ktz %*% solve(Kz, t(Ktz)) + diag(Dt) - Kt %*% solve_inv_lemma(Kz, Kxz, Lambda, t(Kt))
       return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
-    else
-      return(list(mean = pred_mean, var = diag(pred_cov)))
+    } else {
+      prior_var <- rowSums(Ktz * t(solve(Kz, t(Ktz)))) + Dt
+      var_reduction <- rowSums(Kt * t(solve_inv_lemma(Kz, Kxz, Lambda, t(Kt))))
+      pred_var <- prior_var - var_reduction
+      return(list(mean = pred_mean, var = pred_var))
+    }
   }
   return(pred_mean)
 }
