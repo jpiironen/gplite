@@ -56,12 +56,12 @@ gp_loo <- function(gp, x, y, trials=NULL, draws=4000, jitter=NULL, seed=NULL) {
   
   # sample from LOO posteriors and evaluate predictive distribution in using Monte Carlo
   n <- length(y)
-  fsample <- matrix(rnorm(n*draws, mean = loo_mean, sd = sqrt(loo_var)), nrow=n) 
+  fsample <- matrix(stats::rnorm(n*draws, mean = loo_mean, sd = sqrt(loo_var)), nrow=n) 
   loglik <- get_loglik(gp$lik, fsample, y, trials=trials, sum=FALSE)
   
   loos <- apply(loglik, 1, logsumexp) - log(draws)
   
-  res <- list(loo=sum(loos), sd=sd(loos), loos=loos)
+  res <- list(loo=sum(loos), sd=stats::sd(loos), loos=loos)
   class(res) <- 'loo'
   return(res)
   
@@ -95,7 +95,7 @@ gp_compare <- function(...) {
   for (i in seq_along(loos)) {
     d <- loos[[i]] - loos[[imax]]
     res[i,1] <- sum(d)
-    res[i,2] <- sd(d)
+    res[i,2] <- stats::sd(d)
   }
   rownames(res) <- sapply(1:length(loos), function(i) sprintf('model%i', i))
   colnames(res) <- c('loo-diff', 'se')
