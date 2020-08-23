@@ -11,18 +11,17 @@
 #' 
 #' @description 
 #' 
-#' \pkg{gplite} provides a convenient interface for fitting some of the most common Gaussian 
-#' process (GP) models with Stan. In particular, the package offers tools for integrating out
+#' \pkg{gplite} provides a convenient interface for fitting some of the most common 
+#' Gaussian process (GP) models. The package offers tools for integrating out
 #' the latent values analytically using Laplace approximation and then estimating the 
-#' hyperparameters based on maximizing the (approximate) marginal likelihood. It is then possible
-#' to run MCMC for the latent values conditioned on the estimated values for the hyperparameters.
-#' This is often much faster than running MCMC jointly for the latent values and hyperparameters,
-#' and thereby facilitates faster exploratory analysis.
-#' 
+#' hyperparameters based on maximizing the (approximate) marginal likelihood. 
+#' It is also possible to run MCMC for the latent values conditioned on the estimated 
+#' values for the hyperparameters using Stan. The package also implements some common
+#' sparse approximations for larger datasets.
 #' 
 #' 
 #'
 #' @references
-#' Stan Development Team (2018). RStan: the R interface to Stan. R package version 2.18.2. https://mc-stan.org
+#' Stan Development Team. RStan: the R interface to Stan. \url{https://mc-stan.org}
 #'
 NULL

@@ -35,7 +35,7 @@ gp <- gp_init(cf=cf_sexp(), lik=lik_gaussian())
 
 # print out to see the parameter ordering
 param <- get_param(gp)
-print(param) 
+print(param)
 
 # set some new values
 param_new <- log(c(0.1,0.8,0.3))

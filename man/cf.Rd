@@ -128,7 +128,7 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 
 \examples{
 \donttest{
- 
+
 # Generate some toy data
 set.seed(1242)
 n <- 300
