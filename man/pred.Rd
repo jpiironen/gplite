@@ -12,6 +12,7 @@ gp_draw(
   draws = NULL,
   transform = T,
   target = F,
+  marginal = F,
   cfind = NULL,
   jitter = NULL,
   seed = NULL,
@@ -35,6 +36,12 @@ as the target y.}
 
 \item{target}{If TRUE, draws values for the target variable \code{y} instead of the latent
 function values.}
+
+\item{marginal}{If TRUE, then draws for each test point are only marginally correct, but the
+covariance structure between test points is not retained. However, this will make the sampling
+considerably faster in some cases, and can be useful if one is interested only in looking 
+at the marginal predictive distributions for a large number of test locations 
+(for example, in posterior predictive checking).}
 
 \item{cfind}{Indices of covariance functions to be used in the prediction. By default uses
 all covariance functions.}

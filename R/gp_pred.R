@@ -18,6 +18,11 @@
 #'  as the target y.
 #' @param target If TRUE, draws values for the target variable \code{y} instead of the latent
 #'  function values.
+#' @param marginal If TRUE, then draws for each test point are only marginally correct, but the
+#'  covariance structure between test points is not retained. However, this will make the sampling
+#'  considerably faster in some cases, and can be useful if one is interested only in looking 
+#'  at the marginal predictive distributions for a large number of test locations 
+#'  (for example, in posterior predictive checking).
 #' @param cfind Indices of covariance functions to be used in the prediction. By default uses
 #' all covariance functions.
 #' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.

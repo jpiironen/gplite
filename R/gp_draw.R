@@ -5,7 +5,7 @@
 
 #' @rdname pred
 #' @export
-gp_draw <- function(gp, xnew, draws=NULL, transform=T, target=F,
+gp_draw <- function(gp, xnew, draws=NULL, transform=T, target=F, marginal=F,
                     cfind=NULL, jitter=NULL, seed=NULL, ...) {
   
   # set random seed but ensure the old RNG state is restored on exit
@@ -16,7 +16,8 @@ gp_draw <- function(gp, xnew, draws=NULL, transform=T, target=F,
   if (is_fitted(gp, 'sampling')) {
     # model fitted using mcmc, so predict using the draws from the posterior
     pred <- gp_draw_mcmc(gp, xnew, draws=draws, transform=transform,
-                         target=target, cfind=cfind, jitter=jitter, ...)
+                         target=target, marginal=marginal, cfind=cfind, 
+                         jitter=jitter, ...)
   } else {
     # model fitted using analytical gaussian approximation (or not fitted at all),
     # so predict based on that
@@ -25,7 +26,8 @@ gp_draw <- function(gp, xnew, draws=NULL, transform=T, target=F,
     if (is_fitted(gp, 'analytic')) {
       # draw from the analytical posterior approximation
       pred <- gp_draw_analytic(gp, xnew, draws=draws, transform=transform,
-                               target=target, cfind=cfind, jitter=jitter, ...)
+                               target=target, marginal=marginal, cfind=cfind, 
+                               jitter=jitter, ...)
     } else {
       # draw from the prior
       pred <- gp_draw_prior(gp, xnew, draws=draws, transform=transform,
@@ -104,10 +106,14 @@ gp_draw_prior.approx_rf <- function(object, gp, xt, var=F, draws=NULL, transform
 
 
 gp_draw_analytic.approx_full <- function(object, gp, xt, draws=NULL, transform=T, target=F,
-                                         cfind=NULL, jitter=NULL, ...) {
-  
-  pred <- gp_pred_post(object, gp, xt, cov=T, cfind=cfind, jitter=jitter)
-  sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
+                                         marginal=F, cfind=NULL, jitter=NULL, ...) {
+  if (marginal) {
+    pred <- gp_pred_post(object, gp, xt, cov=F, var=T, cfind=cfind, jitter=jitter)
+    sample <- mvnrnd(draws, pred$mean, chol_cov = sqrt(pred$var))
+  } else {
+    pred <- gp_pred_post(object, gp, xt, cov=T, cfind=cfind, jitter=jitter)
+    sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
+  }
   if (target)
     sample <- generate_target(gp, sample, ...)
   else if (transform)
@@ -116,10 +122,14 @@ gp_draw_analytic.approx_full <- function(object, gp, xt, draws=NULL, transform=T
 }
 
 gp_draw_analytic.approx_fitc <- function(object, gp, xt, draws=NULL, transform=T, target=F,
-                                         cfind=NULL, jitter=NULL, ...) {
-  
-  pred <- gp_pred_post(object, gp, xt, cov=T, cfind=cfind, jitter=jitter)
-  sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
+                                         marginal=F, cfind=NULL, jitter=NULL, ...) {
+  if (marginal) {
+    pred <- gp_pred_post(object, gp, xt, cov=F, var=T, cfind=cfind, jitter=jitter)
+    sample <- mvnrnd(draws, pred$mean, chol_cov = sqrt(pred$var))
+  } else {
+    pred <- gp_pred_post(object, gp, xt, cov=T, cfind=cfind, jitter=jitter)
+    sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
+  }
   if (target)
     sample <- generate_target(gp, sample, ...)
   else if (transform)
@@ -155,7 +165,7 @@ gp_draw_analytic.approx_rbf <- function(object, gp, xt, draws=NULL, transform=T,
 
 
 gp_draw_mcmc.approx_full <- function(object, gp, xt, draws=NULL, transform=T, target=T,
-                                     cfind=NULL, jitter=NULL, ...) {
+                                     marginal=F, cfind=NULL, jitter=NULL, ...) {
   
   fsample <- gp$fsample
   if (is.null(draws))
@@ -174,7 +184,10 @@ gp_draw_mcmc.approx_full <- function(object, gp, xt, draws=NULL, transform=T, ta
   aux <- solve(K_chol, t(Kt))
   pred_cov <- Ktt - t(aux) %*% aux + jitter*diag(nt)
   pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, fsample))
-  sample <- mvnrnd(draws, pred_mean[,1:draws], chol_cov = t(chol(pred_cov)))
+  if (marginal)
+    sample <- mvnrnd(draws, pred_mean[,1:draws], chol_cov = sqrt(diag(pred_cov)))
+  else
+    sample <- mvnrnd(draws, pred_mean[,1:draws], chol_cov = t(chol(pred_cov)))
   if (target)
     sample <- generate_target(gp, sample, ...)
   else if (transform)
@@ -210,11 +223,24 @@ mvnrnd <- function(draws, mean, chol_cov=NULL, chol_prec=NULL) {
   # Draw from multivariate normal. Lower Cholesky factor of either
   # covariance or precision must be provided.
   d <- NROW(mean)
-  if (!is.null(chol_cov))
-    r <- mean + chol_cov %*% matrix(stats::rnorm(d*draws), nrow=d)
-  else if (!is.null(chol_prec))
-    r <- mean + solve(t(chol_prec), matrix(stats::rnorm(d*draws), nrow=d))
-  else
+  if (!is.null(chol_cov)) {
+    if (is.vector(chol_cov)) {
+      # diagonal covariance matrix
+      r <- mean + chol_cov * matrix(stats::rnorm(d*draws), nrow=d)
+    } else {
+      # non-diagonal covariance matrix
+      r <- mean + chol_cov %*% matrix(stats::rnorm(d*draws), nrow=d)
+    }
+  } else if (!is.null(chol_prec)) {
+    if (is.vector(chol_prec)) {
+      # diagonal precision
+      chol_cov <- 1/chol_prec
+      r <- mean + chol_cov * matrix(stats::rnorm(d*draws), nrow=d)
+    } else {
+      # non-diagonal covariance matrix
+      r <- mean + solve(t(chol_prec), matrix(stats::rnorm(d*draws), nrow=d))
+    }
+  } else
     stop('Both cov_chol and prec_chol can\'t be NULL.')
   return(r)
 }
