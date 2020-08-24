@@ -85,7 +85,7 @@ gp_loo <- function(gp, x, y, trials=NULL, draws=4000, jitter=NULL, seed=NULL) {
   loos <- apply(loglik, 1, logsumexp) - log(draws)
   
   res <- list(loo=sum(loos), sd=stats::sd(loos), loos=loos)
-  class(res) <- 'loo'
+  class(res) <- 'loores'
   return(res)
   
 }
@@ -104,8 +104,8 @@ gp_compare <- function(...) {
   loo <- c()
   loos <- list()
   for (i in seq_along(args)) {
-    if (!('loo' %in% class(args[[i]]))) {
-      stop('Expected objects of type \'loo\', but found an object with type \'', class(args[[i]]), '\'')
+    if (!('loores' %in% class(args[[i]]))) {
+      stop('Expected objects of type \'loores\', but found an object with type \'', class(args[[i]]), '\'')
     }
     
     loo[i] <- args[[i]]$loo
