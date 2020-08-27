@@ -14,17 +14,23 @@ trials <- sample(10, n, replace = T)
 
 
 # 
-cfs <- list(cf_const(), 
-            cf_lin(), 
-            cf_sexp(),
-            cf_matern32(), 
-            cf_matern52(), 
-            cf_nn(),
-            cf_periodic())
+cfs <- list(
+  cf_const(), 
+  cf_lin(), 
+  cf_sexp(),
+  cf_matern32(), 
+  cf_matern52(), 
+  cf_nn(),
+  cf_periodic()
+)
 
-liks <- list(lik_gaussian(), 
-             lik_binomial('logit'), lik_binomial('probit'),
-             lik_betabinom('logit'), lik_betabinom('probit'))
+liks <- list(
+  lik_gaussian(), 
+  lik_binomial('logit'), 
+  lik_binomial('probit'),
+  lik_betabinom('logit'),
+  lik_betabinom('probit')
+)
 
 
 # create some gps 
@@ -46,6 +52,15 @@ for (j in seq_along(liks)) {
   cf_comb <- combn(cfs,2)
   for (i in 1:NCOL(cf_comb)) {
     gps[[k]] <- gp_init(cfs=cf_comb[,i], lik=liks[[j]])
+    yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
+    k <- k+1
+  }
+  
+  # add products of kernels
+  cf_comb <- combn(cfs,3)
+  for (i in 1:NCOL(cf_comb)) {
+    cf <- cf_comb[[1,i]] * cf_comb[[2,i]] * cf_comb[[3,i]]
+    gps[[k]] <- gp_init(cfs=cf, lik=liks[[j]])
     yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
     k <- k+1
   }
@@ -107,7 +122,7 @@ test_that("gp_pred: analytic prediction gives the same result as the sampling
     pred <- gp_pred(gp,xt, var=T)
     
     # sampling based prediction
-    draws <- gp_draw(gp,xt,draws=1e5, transform=F)
+    draws <- gp_draw(gp,xt,draws=5e5, transform=F)
     
     expect_equal(rowMeans(draws), pred$mean, tol=1e-2)
     expect_equal(apply(draws, 1, sd),  sqrt(pred$var), tol=1e-2)

@@ -12,13 +12,15 @@ y <- x^2 + 0.2*rnorm(n)
 
 
 #
-cfs <- list(cf_const(),
-            cf_lin(),
-            cf_sexp(),
-            cf_matern32(),
-            cf_matern52(),
-            cf_nn(),
-            cf_periodic())
+cfs <- list(
+  cf_const(),
+  cf_lin(),
+  cf_sexp(),
+  cf_matern32(),
+  cf_matern52(),
+  cf_nn(),
+  cf_periodic()
+)
 lik <- lik_gaussian()
 
 
@@ -36,7 +38,16 @@ for (i in seq_along(cfs)) {
 # all pairs of covariance functions
 cf_comb <- combn(cfs,2)
 for (i in 1:NCOL(cf_comb)) {
-  gpsgp <- gp_init(cfs=cf_comb[,i], lik=lik)
+  gp <- gp_init(cfs=cf_comb[,i], lik=lik)
+  gps[[k]] <- gp_fit(gp,x,y)
+  k <- k+1
+}
+
+# add products of kernels
+cf_comb <- combn(cfs,3)
+for (i in 1:NCOL(cf_comb)) {
+  cf <- cf_comb[[1,i]] * cf_comb[[2,i]] * cf_comb[[3,i]]
+  gp <- gp_init(cfs=cf, lik=lik)
   gps[[k]] <- gp_fit(gp,x,y)
   k <- k+1
 }

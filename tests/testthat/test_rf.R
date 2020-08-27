@@ -14,15 +14,21 @@ trials <- sample(10, n, replace = T)
 
 
 # 
-cfs <- list(cf_const(), 
-            cf_lin(), 
-            cf_sexp(),
-            cf_nn(),
-            cf_periodic()) 
+cfs <- list(
+  cf_const(), 
+  cf_lin(), 
+  cf_sexp(),
+  cf_nn(),
+  cf_periodic()
+) 
 
-liks <- list(lik_gaussian(), 
-             lik_binomial('logit'), lik_binomial('probit'),
-             lik_betabinom('logit'), lik_betabinom('probit'))
+liks <- list(
+  lik_gaussian(), 
+  lik_binomial('logit'),
+  lik_binomial('probit'),
+  lik_betabinom('logit'),
+  lik_betabinom('probit')
+)
 
 method <- 'rf'
 
@@ -45,6 +51,15 @@ for (j in seq_along(liks)) {
   cf_comb <- combn(cfs,2)
   for (i in 1:NCOL(cf_comb)) {
     gps[[k]] <- gp_init(cfs=cf_comb[,i], lik=liks[[j]], method=method)
+    yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
+    k <- k+1
+  }
+  
+  # add products of kernels
+  cf_comb <- combn(cfs,3)
+  for (i in 1:NCOL(cf_comb)) {
+    cf <- cf_comb[[1,i]] * cf_comb[[2,i]] * cf_comb[[3,i]]
+    gps[[k]] <- gp_init(cfs=cf, lik=liks[[j]], method=method)
     yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
     k <- k+1
   }
