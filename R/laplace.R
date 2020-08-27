@@ -44,11 +44,12 @@ laplace_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
   v <- out[[1]]
   C_logdet <- out[[2]]
   fhat_new <- Kxz %*% backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Kxz) %*% v)) 
-  # alternative way:
+
   aux <- (1/sqrt(S))*Kxz
   Sigma_chol <- t(chol(Kz + t(aux) %*% aux))
   alpha <- backsolve(t(Sigma_chol), forwardsolve(Sigma_chol, t(Kxz) %*% (z/S)))
-  #fhat_new <- Kxz %*% alpha
+  # alternative way of getting fhat:
+  # fhat_new <- Kxz %*% alpha
   
   # compute the log marginal likelihood
   K_logdet <- 0 # TODO: this is wrong, but it cancels out in the computation
@@ -140,7 +141,6 @@ laplace.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, maxiter=100,
     maxiter <- 1
   
   for (iter in 1:maxiter) {
-    #fit <- laplace_iter(object, gp, K, y, fhat, ...)
     fit <- laplace_iter(object, gp, Kz, Kz_chol, Kxz, D, y, fhat, ...)
     diff <- max(abs(fhat - fit$fmean))
     fhat <- fit$fmean
