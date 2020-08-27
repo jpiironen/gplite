@@ -129,11 +129,11 @@ laplace.approx_full <- function(object, gp, K, y, maxiter=100, tol=1e-4, ...) {
       break
   }
   if (maxiter > 1 && iter == maxiter)
-    warning('Maximum number of iterations in Laplace reached, results can be unreliable.')
+    warning('Maximum number of iterations in Laplace reached, max delta f = ', diff)
   return(fit)
 }
 
-laplace.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, maxiter=100, tol=1e-4, ...) {
+laplace.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, maxiter=100, tol=1e-3, ...) {
   n <- length(y)
   fhat <- rep(0, n)
   if ('lik_gaussian' %in% class(gp$lik))
@@ -148,7 +148,7 @@ laplace.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, maxiter=100,
       break
   }
   if (maxiter > 1 && iter == maxiter)
-    warning('Maximum number of iterations in Laplace reached, results can be unreliable.')
+    warning('Maximum number of iterations in Laplace reached, max delta f = ', diff)
   return(fit)
 }
 
@@ -171,7 +171,7 @@ laplace.approx_rf <- function(object, gp, Z, y, maxiter=100, tol=1e-4, ...) {
       break
   }
   if (maxiter > 1 && iter == maxiter)
-    warning('Maximum number of iterations in Laplace reached, results can be unreliable.')
+    warning('Maximum number of iterations in Laplace reached, max delta f = ', diff)
   return(fit)
 }
 
