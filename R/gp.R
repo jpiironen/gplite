@@ -207,8 +207,12 @@ check_num_basis <- function(cfs, num_basis, num_inputs=NA) {
   for (k in seq_along(cfs))
     if (get_name(cfs[[k]]) == 'cf_const')
       num_basis[k] <- 1
-    else if (get_name(cfs[[k]]) == 'cf_lin')
-      num_basis[k] <- num_inputs
+    else if (get_name(cfs[[k]]) == 'cf_lin') {
+      if (!is.null(cfs[[k]]$vars))
+        num_basis[k] <- length(cfs[[k]]$vars)
+      else
+        num_basis[k] <- num_inputs
+    }
   return(num_basis)
 }
 

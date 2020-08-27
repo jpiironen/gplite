@@ -5,19 +5,17 @@
 
 
 
-prepare_inputmat <- function(x, vars=NULL) {
+prepare_inputmat <- function(cf, x) {
   # ensure x is a matrix, and pick the correct columns
+  vars <- cf$vars
   if (is.null(vars))
-    return(as.matrix(x))
+    x <- as.matrix(x)
   else
-    return(as.matrix(x)[,vars,drop=F])
+    x <- as.matrix(x)[,vars,drop=F]
+  if (!is.null(cf$normalize) && cf$normalize)
+    x <- t((t(x) - cf$means) / cf$scales)
+  return(x)
 }
-
-
-
-
-
-
 
 is_fixed <- function(object, param_names) {
   # identify fixed hyperparameter(s) of a given object (cf or lik)

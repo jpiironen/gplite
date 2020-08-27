@@ -115,4 +115,7 @@ lpdf_prior <- function(object, ...) {
   UseMethod("lpdf_prior", object)
 }
 
+learn_scales <- function(object, ...) {
+  UseMethod("learn_scales", object)
+}
 

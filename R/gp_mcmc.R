@@ -3,6 +3,7 @@
 #' @rdname gp_fit
 #' @export
 gp_mcmc <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
+  gp <- learn_scales(gp, x)
   gp <- fit_mcmc(gp, x, y, trials=trials, jitter=jitter, ...)
   gp$fitted <- TRUE
   return(gp)

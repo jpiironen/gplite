@@ -28,6 +28,8 @@
 #' @param vars Indices of the inputs which are taken into account when calculating this
 #'  covariance. If the input matrix has named columns, can also be a vector of column names.
 #'  Default is all the inputs.
+#' @param normalize Whether to automatically scale and center the inputs for the given 
+#' covariance function. Can be useful for inputs with mean and variance far from 0 and 1, respectively.
 #' @param lscale Initial value for the length-scale hyperparameter.
 #' @param magn Initial value for the magnitude hyperparameter (depicts the magnitude of 
 #' the variation captured by the given covariance function).
@@ -99,11 +101,12 @@ cf_const <- function(magn=1.0, prior_magn=prior_logunif()) {
 
 #' @rdname cf
 #' @export
-cf_lin <- function(vars=NULL, magn=1.0, prior_magn=prior_logunif()) {
+cf_lin <- function(vars=NULL, magn=1.0, prior_magn=prior_logunif(), normalize=F) {
   cf <- list()
   cf$vars <- vars
   cf$magn <- magn
   cf$priors <- list(magn=prior_magn)
+  cf$normalize <- normalize
   class(cf) <- c('cf_lin', 'cf')
   cf
 }
@@ -111,12 +114,14 @@ cf_lin <- function(vars=NULL, magn=1.0, prior_magn=prior_logunif()) {
 #' @rdname cf
 #' @export
 cf_sexp <- function(vars=NULL, lscale=0.3, magn=1.0,
-                    prior_lscale=prior_logunif(), prior_magn=prior_logunif()) {
+                    prior_lscale=prior_logunif(), prior_magn=prior_logunif(),
+                    normalize=F) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
   cf$magn <- magn
   cf$priors <- list(lscale=prior_lscale, magn=prior_magn)
+  cf$normalize <- normalize
   class(cf) <- c('cf_sexp', 'cf')
   cf
 }
@@ -124,12 +129,14 @@ cf_sexp <- function(vars=NULL, lscale=0.3, magn=1.0,
 #' @rdname cf
 #' @export
 cf_matern32 <- function(vars=NULL, lscale=0.3, magn=1.0,
-                        prior_lscale=prior_logunif(), prior_magn=prior_logunif()) {
+                        prior_lscale=prior_logunif(), prior_magn=prior_logunif(),
+                        normalize=F) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
   cf$magn <- magn
   cf$priors <- list(lscale=prior_lscale, magn=prior_magn)
+  cf$normalize <- normalize
   class(cf) <- c('cf_matern32', 'cf')
   cf
 }
@@ -137,12 +144,14 @@ cf_matern32 <- function(vars=NULL, lscale=0.3, magn=1.0,
 #' @rdname cf
 #' @export
 cf_matern52 <- function(vars=NULL, lscale=0.3, magn=1.0,
-                        prior_lscale=prior_logunif(), prior_magn=prior_logunif()) {
+                        prior_lscale=prior_logunif(), prior_magn=prior_logunif(),
+                        normalize=F) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
   cf$magn <- magn
   cf$priors <- list(lscale=prior_lscale, magn=prior_magn)
+  cf$normalize <- normalize
   class(cf) <- c('cf_matern52', 'cf')
   cf
 }
@@ -150,13 +159,15 @@ cf_matern52 <- function(vars=NULL, lscale=0.3, magn=1.0,
 #' @rdname cf
 #' @export
 cf_nn <- function(vars=NULL, sigma0=1.0, sigma=1.0, magn=1.0,
-                  prior_sigma0=prior_logunif(), prior_sigma=prior_logunif(), prior_magn=prior_logunif()) {
+                  prior_sigma0=prior_logunif(), prior_sigma=prior_logunif(), 
+                  prior_magn=prior_logunif(), normalize=F) {
   cf <- list()
   cf$vars <- vars
   cf$sigma0 <- sigma0
   cf$sigma <- sigma
   cf$magn <- magn
   cf$priors <- list(sigma0=prior_sigma0, sigma=prior_sigma, magn=prior_magn)
+  cf$normalize <- normalize
   class(cf) <- c('cf_nn', 'cf')
   cf
 }
@@ -168,6 +179,7 @@ cf_periodic <- function(vars=NULL, period=1, cf_base=cf_sexp(), prior_period=pri
   cf$vars <- vars
   cf$period <- period
   cf$base <- cf_base
+  cf$base$normalize <- FALSE # ensure no normalization for the base kernel
   cf$priors <- list(period=prior_period)
   class(cf) <- c('cf_periodic', 'cf')
   cf
@@ -328,8 +340,8 @@ eval_cf.list <- function(object, x1, x2, cfind=NULL, ...) {
 }
 
 eval_cf.cf_const <- function(object, x1, x2, ...) {
-  x1 <- prepare_inputmat(x1)
-  x2 <- prepare_inputmat(x2)
+  x1 <- prepare_inputmat(object, x1)
+  x2 <- prepare_inputmat(object, x2)
   n1 <- NROW(x1)
   n2 <- NROW(x2)
   K <- matrix(object$magn^2, nrow=n1,ncol=n2)
@@ -337,44 +349,44 @@ eval_cf.cf_const <- function(object, x1, x2, ...) {
 }
 
 eval_cf.cf_lin <- function(object, x1, x2, ...) {
-  x1 <- prepare_inputmat(x1, object$vars)
-  x2 <- prepare_inputmat(x2, object$vars)
+  x1 <- prepare_inputmat(object, x1)
+  x2 <- prepare_inputmat(object, x2)
   K <- object$magn^2* x1 %*% t(x2)
   return(K)
 }
 
 eval_cf.cf_sexp <- function(object, x1, x2, ...) {
-  x1 <- prepare_inputmat(x1, object$vars)
-  x2 <- prepare_inputmat(x2, object$vars)
+  x1 <- prepare_inputmat(object, x1)
+  x2 <- prepare_inputmat(object, x2)
   K <- cf_sexp_c(x1, x2, object$lscale, object$magn)
   return(K)
 }
 
 eval_cf.cf_matern32 <- function(object, x1, x2, ...) {
-  x1 <- prepare_inputmat(x1, object$vars)
-  x2 <- prepare_inputmat(x2, object$vars)
+  x1 <- prepare_inputmat(object, x1)
+  x2 <- prepare_inputmat(object, x2)
   K <- cf_matern32_c(x1, x2, object$lscale, object$magn)
   return(K)
 }
 
 eval_cf.cf_matern52 <- function(object, x1, x2, ...) {
-  x1 <- prepare_inputmat(x1, object$vars)
-  x2 <- prepare_inputmat(x2, object$vars)
+  x1 <- prepare_inputmat(object, x1)
+  x2 <- prepare_inputmat(object, x2)
   K <- cf_matern52_c(x1, x2, object$lscale, object$magn)
   return(K)
 }
 
 eval_cf.cf_nn <- function(object, x1, x2, ...) {
   d <- NCOL(x1)
-  x1 <- prepare_inputmat(x1, object$vars)
-  x2 <- prepare_inputmat(x2, object$vars)
+  x1 <- prepare_inputmat(object, x1)
+  x2 <- prepare_inputmat(object, x2)
   K <- cf_nn_c(x1, x2, object$sigma0, object$sigma, object$magn)
   return(K)
 }
 
 eval_cf.cf_periodic <- function(object, x1, x2, ...) {
-  x1 <- prepare_inputmat(x1, object$vars)
-  x2 <- prepare_inputmat(x2, object$vars)
+  x1 <- prepare_inputmat(object, x1)
+  x2 <- prepare_inputmat(object, x2)
   period <- object$period
   x1_transf <- cbind(sin(2*pi/period*x1), cos(2*pi/period*x1))
   x2_transf <- cbind(sin(2*pi/period*x2), cos(2*pi/period*x2))
@@ -448,8 +460,9 @@ rf_featmap.cf_const <- function(object, ...) {
 
 rf_featmap.cf_lin <- function(object, ...) {
   # for linear kernel, the linearization feature mapping is simply the identity
-  # (with the features scaled down by the magnitude)
+  # (with the features scaled by the magnitude)
   featuremap <- function(x) {
+    x <- prepare_inputmat(object, x)
     object$magn*x
   }
   return(featuremap)
@@ -478,15 +491,15 @@ rf_featmap.cf_sexp <- function(object, num_feat, num_inputs, seed=NULL, ...) {
   m <- num_feat/2
   
   # this is the tricky part; the equations commented out should be correct, but the 
-  # lenght-scale and magnitude do not match to the full GP. the simpler equations 
+  # length-scale and magnitude do not match to the full GP. the simpler equations 
   # just seem to work correctly instead..
   scale <- 1/object$lscale # 1/(2*pi*object$lscale) # scale of the spectral density
   C <- 1 # (2*pi)^((num_inputs-1)/2) * object$lscale^(num_inputs-1) # normalization constant
   w <- matrix(stats::rnorm(m*num_inputs), nrow=num_inputs, ncol=m)*scale # frequences
   
   featuremap <- function(x) {
-    x <- as.matrix(x)
-    h <- x[,object$vars,drop=F] %*% w
+    x <- prepare_inputmat(object, x)
+    h <- x %*% w
     object$magn*sqrt(C/m)*cbind(cos(h),sin(h))
   }
   return(featuremap)
@@ -528,7 +541,8 @@ rf_featmap.cf_nn <- function(object, num_feat, num_inputs, seed=NULL, ...) {
   erf <- function(t) stats::pnorm(t, sd=sqrt(0.5)) - stats::pnorm(-t, sd=sqrt(0.5))
   
   featuremap <- function(x) {
-    x_aug <- cbind(1, as.matrix(x)[,object$vars,drop=F])
+    x <- prepare_inputmat(object, x)
+    x_aug <- cbind(1, x)
     h <- erf(x_aug %*% w_aug) # hidden layer activations
     object$magn/sqrt(m)*h
   }
@@ -545,8 +559,7 @@ rf_featmap.cf_periodic <- function(object, num_feat, num_inputs, seed=NULL, ...)
   
   featuremap_base <- rf_featmap(object$base, num_feat, num_inputs=2*num_inputs, seed=seed)
   featuremap <- function(x) {
-    x <- as.matrix(x)
-    x <- x[,object$vars,drop=F]
+    x <- prepare_inputmat(object, x)
     x_transf <- cbind(sin(2*pi/object$period*x), cos(2*pi/object$period*x))
     featuremap_base(x_transf)
   }
@@ -603,8 +616,9 @@ rbf_featmap.cf_const <- function(object, ...) {
 
 rbf_featmap.cf_lin <- function(object, ...) {
   # for linear kernel, the linearization feature mapping is simply the identity
-  # (with the features scaled down by the magnitude)
+  # (with the features scaled by the magnitude)
   featuremap <- function(x) {
+    x <- prepare_inputmat(object, x)
     object$magn*x
   }
   return(featuremap)
@@ -634,8 +648,7 @@ rbf_featmap.cf_sexp <- function(object, num_feat, num_inputs, x=NULL, seed=NULL,
   centers <- x[ind,,drop=F] 
   
   featuremap <- function(x) {
-    x <- as.matrix(x)
-    x <- x[,object$vars,drop=F]
+    x <- prepare_inputmat(object, x)
     z <- matrix(nrow=NROW(x), ncol=num_feat)
     for (j in 1:num_feat) {
       z[,j] <- exp(-colSums((t(x) - centers[j,])^2) / object$lscale^2)
@@ -658,8 +671,7 @@ rbf_featmap.cf_periodic <- function(object, num_feat, num_inputs, x=NULL, seed=N
   featuremap_base <- rbf_featmap(object$base, num_feat, num_inputs=2*num_inputs, x=x_transf, seed=seed)
   
   featuremap <- function(x) {
-    x <- as.matrix(x)
-    x <- x[,object$vars,drop=F]
+    x <- prepare_inputmat(object, x)
     x_transf <- cbind(sin(2*pi/object$period*x), cos(2*pi/object$period*x))
     featuremap_base(x_transf)
   }
@@ -685,6 +697,42 @@ rbf_featmap.cf_prod <- function(object, num_feat, num_inputs, seed=NULL, ...) {
   return(featuremap)
 }
 
+
+
+
+# learn_scales functions
+
+learn_scales.list <- function(object, x, ...) {
+  for (k in seq_along(object)) {
+    object[[k]] <- learn_scales(object[[k]], x, ...)
+  }
+  object
+}
+
+learn_scales.gp <- function(object, x, ...) {
+  object$cfs <- learn_scales(object$cfs, x, ...)
+  object
+}
+
+learn_scales.cf <- function(object, x, ...) {
+  if (is.null(object$vars))
+    x <- as.matrix(x)
+  else
+    x <- as.matrix(x)[,object$vars,drop=F]
+  object$means <- colMeans(x)
+  object$scales <- apply(x, 2, sd)
+  object
+}
+
+learn_scales.cf_prod <- function(object, x, ...) {
+  object$cfs <- learn_scales(object$cfs, x, ...)
+  object
+}
+
+learn_scales.cf_periodic <- function(object, x, ...) {
+  # periodic cf does not implement normalization on purpose
+  object
+}
 
 
 

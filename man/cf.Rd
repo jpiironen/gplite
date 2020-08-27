@@ -15,14 +15,15 @@
 \usage{
 cf_const(magn = 1, prior_magn = prior_logunif())
 
-cf_lin(vars = NULL, magn = 1, prior_magn = prior_logunif())
+cf_lin(vars = NULL, magn = 1, prior_magn = prior_logunif(), normalize = F)
 
 cf_sexp(
   vars = NULL,
   lscale = 0.3,
   magn = 1,
   prior_lscale = prior_logunif(),
-  prior_magn = prior_logunif()
+  prior_magn = prior_logunif(),
+  normalize = F
 )
 
 cf_matern32(
@@ -30,7 +31,8 @@ cf_matern32(
   lscale = 0.3,
   magn = 1,
   prior_lscale = prior_logunif(),
-  prior_magn = prior_logunif()
+  prior_magn = prior_logunif(),
+  normalize = F
 )
 
 cf_matern52(
@@ -38,7 +40,8 @@ cf_matern52(
   lscale = 0.3,
   magn = 1,
   prior_lscale = prior_logunif(),
-  prior_magn = prior_logunif()
+  prior_magn = prior_logunif(),
+  normalize = F
 )
 
 cf_nn(
@@ -48,7 +51,8 @@ cf_nn(
   magn = 1,
   prior_sigma0 = prior_logunif(),
   prior_sigma = prior_logunif(),
-  prior_magn = prior_logunif()
+  prior_magn = prior_logunif(),
+  normalize = F
 )
 
 cf_periodic(
@@ -71,6 +75,9 @@ the variation captured by the given covariance function).}
 \item{vars}{Indices of the inputs which are taken into account when calculating this
 covariance. If the input matrix has named columns, can also be a vector of column names.
 Default is all the inputs.}
+
+\item{normalize}{Whether to automatically scale and center the inputs for the given 
+covariance function. Can be useful for inputs with mean and variance far from 0 and 1, respectively.}
 
 \item{lscale}{Initial value for the length-scale hyperparameter.}
 
