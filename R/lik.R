@@ -176,7 +176,10 @@ get_pseudodata.lik_betabinom <- function(object, f, y, ...) {
 
 get_loglik.lik <- function(object, f, y, ...) {
   model <- get_stanmodel(object, lik_only=T)
-  data <- c(list(n=length(y), y=as.array(y)), get_standata(object, ...))
+  data <- c(
+    list(n=length(y), y=as.array(y)), 
+    get_standata(object, ...)
+  )
   utils::capture.output(
     # get the stanfit-object corresponding to the likelihood
     fit <- sampling(model, data=data, chains=1, iter=1, algorithm='Fixed_param')
@@ -232,7 +235,7 @@ get_loglik.lik_gaussian <- function(object, f, y, sum=TRUE, ...) {
 
 
 
-# get_loglik_d functions
+# get_loglik_d functions (derivative of the log likelihood w.r.t f_i)
 
 get_loglik_d.lik_binomial <- function(object, f, y, ...) {
   
@@ -283,7 +286,7 @@ get_loglik_d.lik_betabinom <- function(object, f, y, ...) {
 
 
 
-# get_loglik_d2 functions
+# get_loglik_d2 functions (second derivative of the log likelihood w.r.t f_i)
 
 get_loglik_d2.lik <- function(object, f, y, eps=1e-6, ...) {
   grad <- get_loglik_d(object, f, y, ...)
