@@ -3,11 +3,14 @@
 \name{lik}
 \alias{lik}
 \alias{lik_gaussian}
+\alias{lik_bernoulli}
 \alias{lik_binomial}
 \alias{lik_betabinom}
 \title{Initialize likelihood}
 \usage{
 lik_gaussian(sigma = 0.5, prior_sigma = prior_logunif())
+
+lik_bernoulli(link = "logit")
 
 lik_binomial(link = "logit")
 
@@ -35,6 +38,7 @@ Functions for initializing the likelihood (observation model) which can then be 
 The supported likelihoods are:
 \describe{
  \item{\code{lik_gaussian}}{Gaussian likelihood. Has no links (uses identity link).}
+ \item{\code{lik_bernoulli}}{Bernoulli likelihood. Possible links: 'logit' or 'probit'.}
  \item{\code{lik_binomial}}{Binomial likelihood. Possible links: 'logit' or 'probit'.}
  \item{\code{lik_betabinom}}{Beta binomial likelihood. Possible links: 'logit' or 'probit'.}
 }

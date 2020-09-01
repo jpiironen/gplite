@@ -102,8 +102,8 @@ ggplot() +
 
 Set up the model and optimize the hyperparameters. Notice that due to non-Gaussian likelihood, the posterior is not analytically available, so this will use Laplace approximation
 ```{r, results = 'hide'}
-gp <- gp_init(cfs = cf_sexp(), lik = lik_binomial())
-gp <- gp_optim(gp, x, y, trials = rep(1,n))
+gp <- gp_init(cfs = cf_sexp(), lik = lik_bernoulli())
+gp <- gp_optim(gp, x, y)
 ```
 
 Let us visualize the predictive fit. For a non-Gaussian likelihood, this is most conveniently done by drawing from the predictive distribution using ```gp_draw```, and then computing the intervals from the obtained draws.
@@ -128,7 +128,7 @@ The fit looks reasonable, but one could expect that the predictive probabilities
 
 For more accurate inference, we can run MCMC for the latent values with the optimized hyperparameters.
 ```{r, results='hide'}
-gpmc <- gp_mcmc(gp, x, y, trials=rep(1,n), iter=1000, chains=2)
+gpmc <- gp_mcmc(gp, x, y, iter=1000, chains=2)
 ```
 
 Let's visualize the fit again

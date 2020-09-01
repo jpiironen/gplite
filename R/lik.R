@@ -10,6 +10,7 @@
 #' The supported likelihoods are:
 #' \describe{
 #'  \item{\code{lik_gaussian}}{Gaussian likelihood. Has no links (uses identity link).}
+#'  \item{\code{lik_bernoulli}}{Bernoulli likelihood. Possible links: 'logit' or 'probit'.}
 #'  \item{\code{lik_binomial}}{Binomial likelihood. Possible links: 'logit' or 'probit'.}
 #'  \item{\code{lik_betabinom}}{Beta binomial likelihood. Possible links: 'logit' or 'probit'.}
 #' }
@@ -53,6 +54,15 @@ lik_gaussian <- function(sigma=0.5, prior_sigma=prior_logunif()) {
 
 #' @rdname lik
 #' @export
+lik_bernoulli <- function(link='logit') {
+  lik <- list()
+  lik$link <- link
+  class(lik) <- c('lik_bernoulli', 'lik')
+  lik
+}
+
+#' @rdname lik
+#' @export
 lik_binomial <- function(link='logit') {
   lik <- list()
   lik$link <- link
@@ -81,6 +91,10 @@ get_name.lik <- function(object, ...) {
 
 get_param_names.lik_gaussian <- function(object) {
   c('sigma')
+}
+
+get_param_names.lik_bernoulli <- function(object) {
+  c()
 }
 
 get_param_names.lik_binomial <- function(object) {
@@ -154,6 +168,14 @@ get_pseudodata.lik_gaussian <- function(object, f, y, ...) {
   list(z = y, var = object$sigma^2*rep(1,n), loglik = loglik)
 }
 
+get_pseudodata.lik_bernoulli <- function(object, f, y, ...) {
+  f <- as.vector(f)
+  out <- get_loglik_d2(object, f, y, ...)
+  grad <- out$grad
+  grad2 <- out$grad2
+  list(z = f-grad/grad2, var = -1/grad2)
+}
+
 get_pseudodata.lik_binomial <- function(object, f, y, ...) {
   f <- as.vector(f)
   out <- get_loglik_d2(object, f, y, ...)
@@ -186,6 +208,10 @@ get_loglik.lik <- function(object, f, y, ...) {
   )
   loglik <- rstan::log_prob(fit, f)
   loglik
+}
+
+get_loglik.lik_bernoulli <- function(object, f, y, sum=TRUE, ...) {
+  get_loglik.lik_binomial(object, f, y, sum=sum, trials=rep(1,length(y)), ...)
 }
 
 get_loglik.lik_binomial <- function(object, f, y, sum=TRUE, ...) {
@@ -237,6 +263,10 @@ get_loglik.lik_gaussian <- function(object, f, y, sum=TRUE, ...) {
 
 # get_loglik_d functions (derivative of the log likelihood w.r.t f_i)
 
+get_loglik_d.lik_bernoulli <- function(object, f, y, ...) {
+  get_loglik_d.lik_binomial(object, f, y, trials=rep(1,length(y)), ...)
+}
+
 get_loglik_d.lik_binomial <- function(object, f, y, ...) {
   
   args <- list(...)
@@ -253,7 +283,7 @@ get_loglik_d.lik_binomial <- function(object, f, y, ...) {
   else
     stop('Unknown link: ', object$link)
   
-  y*log(mu) + (trials-y)*log(1-mu)
+  # loglik = y*log(mu) + (trials-y)*log(1-mu)
   grad <- dmu * (y/mu - (trials-y)/(1-mu))
   return(grad)
 }
@@ -308,6 +338,10 @@ get_stanmodel.lik_gaussian <- function(object, method = 'full', lik_only = FALSE
     stop('Got an unknown method: ', method)
 }
 
+get_stanmodel.lik_bernoulli <- function(object, method = 'full', lik_only = FALSE, ...) {
+  get_stanmodel.lik_binomial(object, method=method, lik_only=lik_only, ...)
+}
+
 get_stanmodel.lik_binomial <- function(object, method = 'full', lik_only = FALSE, ...) {
   if (method == 'full') {
     if (lik_only)
@@ -340,6 +374,12 @@ get_stanmodel.lik_betabinom <- function(object, method = 'full', lik_only = FALS
 
 get_standata.lik_gaussian <- function(object, ...) {
   list(sigma=object$sigma)
+}
+
+get_standata.lik_bernoulli <- function(object, ...) {
+  args <- list(...)
+  n <- args$n
+  get_standata.lik_binomial(object, trials=rep(1,n))
 }
 
 get_standata.lik_binomial <- function(object, ...) {
@@ -377,6 +417,10 @@ get_response.lik_gaussian <- function(object, f, ...) {
   f
 }
 
+get_response.lik_bernoulli <- function(object, f, ...) {
+  get_response.lik_binomial(object, f, ...)
+}
+
 get_response.lik_binomial <- function(object, f, ...) {
   if (object$link == 'probit')
     return(stats::pnorm(f))
@@ -408,6 +452,10 @@ generate_target.gp <- function(object, f, ...) {
 
 generate_target.lik_gaussian <- function(object, f, ...) {
   stats::rnorm(length(f))*object$sigma + f
+}
+
+generate_target.lik_bernoulli <- function(object, f, ...) {
+  generate_target.lik_binomial(object, f, trials=rep(1, length(f)), ...)
 }
 
 generate_target.lik_binomial <- function(object, f, trials, ...) {
