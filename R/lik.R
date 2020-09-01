@@ -455,7 +455,7 @@ generate_target.lik_gaussian <- function(object, f, ...) {
 }
 
 generate_target.lik_bernoulli <- function(object, f, ...) {
-  generate_target.lik_binomial(object, f, trials=rep(1, length(f)), ...)
+  generate_target.lik_binomial(object, f, trials=rep(1, length(f)))
 }
 
 generate_target.lik_binomial <- function(object, f, trials, ...) {

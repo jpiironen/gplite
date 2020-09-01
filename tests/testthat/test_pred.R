@@ -25,8 +25,10 @@ cfs <- list(
 )
 
 liks <- list(
-  lik_gaussian(), 
-  lik_binomial('logit'), 
+  lik_gaussian(),
+  lik_bernoulli('logit'),
+  lik_bernoulli('probit'),
+  lik_binomial('logit'),
   lik_binomial('probit'),
   lik_betabinom('logit'),
   lik_betabinom('probit')
