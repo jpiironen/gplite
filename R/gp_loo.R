@@ -115,10 +115,11 @@ gp_compare <- function(...) {
   imax <- which.max(loo)
   
   res <- matrix(nrow=length(loos), ncol=2)
+  n <- length(loos[[1]])
   for (i in seq_along(loos)) {
     d <- loos[[i]] - loos[[imax]]
-    res[i,1] <- sum(d)
-    res[i,2] <- stats::sd(d)
+    res[i,1] <- n * mean(d)
+    res[i,2] <- n * (stats::sd(d) / sqrt(n))
   }
   rownames(res) <- sapply(1:length(loos), function(i) sprintf('model%i', i))
   colnames(res) <- c('loo-diff', 'se')
