@@ -59,6 +59,9 @@ for (j in seq_along(liks)) {
   cf_comb <- combn(cfs,3)
   for (i in 1:NCOL(cf_comb)) {
     cf <- cf_comb[[1,i]] * cf_comb[[2,i]] * cf_comb[[3,i]]
+    if ('cf_const' %in% sapply(cf$cfs, class) ||
+        'cf_lin' %in% sapply(cf$cfs, class) )
+      next
     gps[[k]] <- gp_init(cfs=cf, lik=liks[[j]], method=method)
     yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
     k <- k+1
