@@ -1,7 +1,16 @@
 ---
 title: "gplite Quickstart"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+bibliography: ../references.bib
+link-citations: yes
+linkcolor: blue
+output: 
+  rmarkdown::html_document:
+    toc: TRUE
+    toc_depth: 3
+    number_sections: TRUE
+    toc_float:
+      smooth_scroll: TRUE
 vignette: >
   %\VignetteIndexEntry{quickstart}
   %\VignetteEngine{knitr::rmarkdown}
@@ -11,19 +20,20 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   #collapse = TRUE,
-  fig.width = 7,
+  fig.width = 6,
+  fig.height = 4,
   fig.retina = 8
 #  #comment = "#>"
 )
 ```
 
-This vignette shows how to use the basic functionalities of the ```gplite``` package. We'll start with a simple regression example, and then illustrate the usage with non-Gaussian likelihoods. This vignette assumes that you're mostly familiar with the basic GP methodology, and so we shall not focus on the mathematical details. For more study material on GPs, see Rasmussen and Williams (2006).
+This vignette shows how to use the basic functionalities of the ```gplite``` package. We'll start with a simple regression example, and then illustrate the usage with non-Gaussian likelihoods. This vignette assumes that you're already familiar Gaussian processes (GPs), and so we shall not focus on the mathematical details. To read more about GPs, see @rasmussen2006book.
 
 
-## Toy example
+# Regression
 
 
-```{r, results='hide'}
+```{r, results='hide', message=F}
 library(gplite)
 library(ggplot2)
 theme_set(theme_classic())
@@ -39,7 +49,7 @@ x <- rnorm(n)
 y <- sin(3*x)*exp(-abs(x)) +  rnorm(n)*sigma 
 ggplot() + 
   geom_point(aes(x=x,y=y), size=0.5) + 
-  xlab('x') + ylab('y') + xlim(-4.5,4.5)
+  xlab('x') + ylab('y') + xlim(-4,4)
 ```
 
 
@@ -67,7 +77,7 @@ exp(get_param(gp))
 We can easily make predictions with the fitted model using function ```gp_pred```.  So let's predict and visualize the results
 ```{r}
 # compute the predictive mean and variance in a grid of points
-xt <- seq(-4.5,4.5,len=300)
+xt <- seq(-4,4,len=300)
 pred <- gp_pred(gp, xt, var=T)
 
 # visualize
@@ -82,7 +92,7 @@ ggplot() +
 ```
 
 
-## Toy example, binary classifiaction
+# Binary classification
 
 
 ```{r}
@@ -94,7 +104,7 @@ x <- rnorm(n)
 ycont <- sin(3*x)*exp(-abs(x)) +  rnorm(n)*sigma
 y <- rep(0,n)
 y[ycont > 0] <- 1
-trials <- rep(1,n)
+
 ggplot() + 
   geom_point(aes(x=x,y=y), size=0.5) + 
   xlab('x') + ylab('y')
@@ -109,7 +119,7 @@ gp <- gp_optim(gp, x, y)
 Let us visualize the predictive fit. For a non-Gaussian likelihood, this is most conveniently done by drawing from the predictive distribution using ```gp_draw```, and then computing the intervals from the obtained draws.
 ```{r}
 # predict in a grid of points
-xt <- seq(-5,5,len=200)
+xt <- seq(-4,4,len=200)
 pred <- gp_draw(gp, xt, draws=1000)
 pred_mean <- rowMeans(pred)
 qt <- apply(pred, 1, quantile, c(0.05, 0.95))
@@ -124,7 +134,7 @@ ggplot() +
 
 ```
 
-The fit looks reasonable, but one could expect that the predictive probabilities would be even closer to zero and one around the origin, given the data we see. Indeed, it is well known that the Laplace approximation tends to be too conservative and underestimate the extreme probabilities in this sort of cases (see, for example, Kuss and Rasmussen, 2005). 
+The fit looks reasonable, but one could expect that the predictive probabilities would be even closer to zero and one around the origin, given the data we see. Indeed, it is well known that the Laplace approximation tends to be too conservative and underestimate the extreme probabilities in this sort of cases [see, for example, @kuss2005]. 
 
 For more accurate inference, we can run MCMC for the latent values with the optimized hyperparameters.
 ```{r, results='hide'}
@@ -134,7 +144,7 @@ gpmc <- gp_mcmc(gp, x, y, iter=1000, chains=2)
 Let's visualize the fit again
 ```{r}
 # predict in a grid of points
-xt <- seq(-5,5,len=200)
+xt <- seq(-4,4,len=200)
 pred <- gp_draw(gpmc, xt)
 pred_mean <- rowMeans(pred)
 qt <- apply(pred, 1, quantile, c(0.05, 0.95))
@@ -148,16 +158,15 @@ ggplot() +
   xlab('x') + ylab('y')
 ```
 
-As we see, the fit is substantially different in those cases where the predictive probability is close to zero or one. It is worthwhile to note that even though the Laplace approximation is not very accurate in the extreme cases, it gives reasonable estimates for the hyperparameters. Running the MCMC for the latent values given the hyperparameters gives then accurate estimates for the latent function values but is much more efficient than sampling the hyperparameters and the latent values jointly. In this case the MCMC takes only a few seconds.
+As we see, the fit is substantially different in those cases where the predictive probability is close to zero or one. It is worthwhile to note that even though the Laplace approximation is not very accurate in the extreme cases, it gives reasonable estimates for the hyperparameters. Running then MCMC for the latent values given the hyperparameters gives more accurate estimates for the latent function values. 
 
 
 
 
-## References
+# References {-}
 
-Rasmussen, C. E. and Williams, C. K. I. (2006). _Gaussian processes for machine learning_. MIT Press.
 
-Kuss, M., C. E. Rasmussen (2005). Assessing approximate inference for binary Gaussian process classification. _The Journal of Machine Learning Research_ 6, 1679--1704
+
 
 
 

@@ -8,3 +8,5 @@ src/*.o
 src/*.so
 src/stanExports*
 inst/doc
+doc
+Meta
