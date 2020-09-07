@@ -6,11 +6,24 @@
 /** Evaluates the squared exponential covariance function between given input matrices.
 */
   // [[Rcpp::export]]
-arma::mat cf_sexp_c(arma::mat x1, // input matrix 1
-                    arma::mat x2, // input matrix 2
-                    double lscale, // length-scale
-                    double magn)  // magnitude
+arma::mat cf_sexp_c(
+  arma::mat x1, // input matrix 1
+  arma::mat x2, // input matrix 2
+  double lscale, // length-scale
+  double magn, // magnitude
+  bool diag_only=false // whether to evaluate the diagonal only
+) 
 {
+  if (diag_only) {
+    size_t n = std::min(x1.n_rows, x2.n_rows);
+    arma::mat K(n,1);
+    size_t i;
+    for (i=0; i<n; i++) {
+      K.row(i) = cf_sexp_c(x1.row(i), x2.row(i), lscale, magn, false);
+    }
+    return(K);
+  }
+  
   size_t n1 = x1.n_rows;
   size_t n2 = x2.n_rows;
   arma::mat K(n1,n2);
@@ -32,11 +45,24 @@ arma::mat cf_sexp_c(arma::mat x1, // input matrix 1
 /** Evaluates the Matern nu=3/2 covariance function between given input matrices.
  */
 // [[Rcpp::export]]
-arma::mat cf_matern32_c(arma::mat x1, // input matrix 1
-                        arma::mat x2, // input matrix 2
-                        double lscale, // length-scale
-                        double magn)  // magnitude
+arma::mat cf_matern32_c(
+  arma::mat x1, // input matrix 1
+  arma::mat x2, // input matrix 2
+  double lscale, // length-scale
+  double magn, // magnitude
+  bool diag_only=false // whether to evaluate the diagonal only
+)
 {
+  if (diag_only) {
+    size_t n = std::min(x1.n_rows, x2.n_rows);
+    arma::mat K(n,1);
+    size_t i;
+    for (i=0; i<n; i++) {
+      K.row(i) = cf_matern32_c(x1.row(i), x2.row(i), lscale, magn, false);
+    }
+    return(K);
+  }
+  
   size_t n1 = x1.n_rows;
   size_t n2 = x2.n_rows;
   arma::mat K(n1,n2);
@@ -57,11 +83,24 @@ arma::mat cf_matern32_c(arma::mat x1, // input matrix 1
 /** Evaluates the Matern nu=5/2 covariance function between given input matrices.
  */
 // [[Rcpp::export]]
-arma::mat cf_matern52_c(arma::mat x1, // input matrix 1
-                        arma::mat x2, // input matrix 2
-                        double lscale, // length-scale
-                        double magn)  // magnitude
+arma::mat cf_matern52_c(
+  arma::mat x1, // input matrix 1
+  arma::mat x2, // input matrix 2
+  double lscale, // length-scale
+  double magn, // magnitude
+  bool diag_only=false // whether to evaluate the diagonal only
+)
 {
+  if (diag_only) {
+    size_t n = std::min(x1.n_rows, x2.n_rows);
+    arma::mat K(n,1);
+    size_t i;
+    for (i=0; i<n; i++) {
+      K.row(i) = cf_matern52_c(x1.row(i), x2.row(i), lscale, magn, false);
+    }
+    return(K);
+  }
+  
   size_t n1 = x1.n_rows;
   size_t n2 = x2.n_rows;
   arma::mat K(n1,n2);
@@ -83,12 +122,26 @@ arma::mat cf_matern52_c(arma::mat x1, // input matrix 1
 /** Evaluates the neural network covariance function between given input matrices.
  */
 // [[Rcpp::export]]
-arma::mat cf_nn_c(arma::mat x1, // input matrix 1
-                  arma::mat x2, // input matrix 2
-                  double sigma0, // bias std
-                  double sigma, // weight std
-                  double magn)  // magnitude
+arma::mat cf_nn_c(
+    arma::mat x1, // input matrix 1
+    arma::mat x2, // input matrix 2
+    double sigma0, // bias std
+    double sigma, // weight std
+    double magn, // magnitude
+    bool diag_only = false // whether to evaluate diagonal only
+)  
 {
+  
+  if (diag_only) {
+    size_t n = std::min(x1.n_rows, x2.n_rows);
+    arma::mat K(n,1);
+    size_t i;
+    for (i=0; i<n; i++) {
+      K.row(i) = cf_nn_c(x1.row(i), x2.row(i), sigma0, sigma, magn, false);
+    }
+    return(K);
+  }
+  
   size_t n1 = x1.n_rows;
   size_t n2 = x2.n_rows;
   arma::mat K(n1,n2);

@@ -149,11 +149,7 @@ gp_pred_prior.approx_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, 
     Kxz <- eval_cf(gp$cfs, xt, z)
     Kz_chol <- t(chol(Kz))
     xt <- as.matrix(xt)
-    D <- rep(0,nt)
-    for (i in 1:nt) {
-      # TODO: this is slow
-      D[i] <- eval_cf(gp$cfs, xt[i,,drop=F], xt[i,,drop=F])
-    }
+    D <- as.vector(eval_cf(gp$cfs, xt, xt, diag_only=T))
     D <- D - colSums(forwardsolve(Kz_chol, t(Kxz))^2)
     aux <- forwardsolve(Kz_chol, t(Kxz))
     pred_cov <- t(aux) %*% aux + diag(D)

@@ -329,75 +329,81 @@ set_param.cf_prod <- function(object, param, ...) {
 
 # eval_cf functions
 
-eval_cf.list <- function(object, x1, x2, cfind=NULL, ...) {
+eval_cf.list <- function(object, x1, x2, cfind=NULL, diag_only=F, ...) {
   if (is.null(cfind))
     cfind <- seq_along(object)
   K <- 0
   for (k in cfind) {
-    K <- K + eval_cf(object[[k]], x1, x2, ...)
+    K <- K + eval_cf(object[[k]], x1, x2, diag_only=diag_only, ...)
   }
   K
 }
 
-eval_cf.cf_const <- function(object, x1, x2, ...) {
+eval_cf.cf_const <- function(object, x1, x2, diag_only=F, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   n1 <- NROW(x1)
   n2 <- NROW(x2)
-  K <- matrix(object$magn^2, nrow=n1,ncol=n2)
+  if (diag_only)
+    K <- matrix(object$magn^2, nrow=min(n1,n2), ncol=1)
+  else
+    K <- matrix(object$magn^2, nrow=n1, ncol=n2)
   return(K)
 }
 
-eval_cf.cf_lin <- function(object, x1, x2, ...) {
+eval_cf.cf_lin <- function(object, x1, x2, diag_only=F, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   K <- object$magn^2* x1 %*% t(x2)
+  if (diag_only)
+    # TODO: this not the most efficient thing to do
+    K <- as.matrix(diag(K))
   return(K)
 }
 
-eval_cf.cf_sexp <- function(object, x1, x2, ...) {
+eval_cf.cf_sexp <- function(object, x1, x2, diag_only=F, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
-  K <- cf_sexp_c(x1, x2, object$lscale, object$magn)
+  K <- cf_sexp_c(x1, x2, object$lscale, object$magn, diag_only=diag_only)
   return(K)
 }
 
-eval_cf.cf_matern32 <- function(object, x1, x2, ...) {
+eval_cf.cf_matern32 <- function(object, x1, x2, diag_only=F, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
-  K <- cf_matern32_c(x1, x2, object$lscale, object$magn)
+  K <- cf_matern32_c(x1, x2, object$lscale, object$magn, diag_only=diag_only)
   return(K)
 }
 
-eval_cf.cf_matern52 <- function(object, x1, x2, ...) {
+eval_cf.cf_matern52 <- function(object, x1, x2, diag_only=F, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
-  K <- cf_matern52_c(x1, x2, object$lscale, object$magn)
+  K <- cf_matern52_c(x1, x2, object$lscale, object$magn, diag_only=diag_only)
   return(K)
 }
 
-eval_cf.cf_nn <- function(object, x1, x2, ...) {
+eval_cf.cf_nn <- function(object, x1, x2, diag_only=F, ...) {
   d <- NCOL(x1)
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
-  K <- cf_nn_c(x1, x2, object$sigma0, object$sigma, object$magn)
+  K <- cf_nn_c(x1, x2, object$sigma0, object$sigma, object$magn, diag_only=diag_only)
   return(K)
 }
 
-eval_cf.cf_periodic <- function(object, x1, x2, ...) {
+eval_cf.cf_periodic <- function(object, x1, x2, diag_only=F, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   period <- object$period
   x1_transf <- cbind(sin(2*pi/period*x1), cos(2*pi/period*x1))
   x2_transf <- cbind(sin(2*pi/period*x2), cos(2*pi/period*x2))
-  K <- eval_cf(object$base, x1_transf, x2_transf)
+  K <- eval_cf(object$base, x1_transf, x2_transf, diag_only=diag_only)
   return(K)
 }
 
-eval_cf.cf_prod <- function(object, x1, x2, ...) {
+eval_cf.cf_prod <- function(object, x1, x2, diag_only=F, ...) {
   K <- 1
   for (k in seq_along(object$cfs))
-    K <- K*eval_cf(object$cfs[[k]], x1, x2, ...)
+    K <- K*eval_cf(object$cfs[[k]], x1, x2, diag_only=diag_only, ...)
   K
 }
 
