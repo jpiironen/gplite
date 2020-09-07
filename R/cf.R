@@ -158,7 +158,7 @@ cf_matern52 <- function(vars=NULL, lscale=0.3, magn=1.0,
 
 #' @rdname cf
 #' @export
-cf_nn <- function(vars=NULL, sigma0=1.0, sigma=1.0, magn=1.0,
+cf_nn <- function(vars=NULL, sigma0=1.0, sigma=5.0, magn=1.0,
                   prior_sigma0=prior_logunif(), prior_sigma=prior_logunif(), 
                   prior_magn=prior_logunif(), normalize=F) {
   cf <- list()
