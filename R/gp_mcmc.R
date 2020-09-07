@@ -17,6 +17,10 @@ fit_mcmc.gp <- function(object, ...) {
   fit_mcmc(object$approx, object, ...)
 }
 
+fit_mcmc.approx <- function(object, ...) {
+  stop("MCMC for ", class(object)[1], " not implemented yet.")
+}
+
 fit_mcmc.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
@@ -49,6 +53,7 @@ fit_mcmc.approx_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) 
   gp$wsample <- t(rstan::extract(gp$fit)$w)
   return(gp)
 }
+
 
 
 
