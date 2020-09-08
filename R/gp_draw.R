@@ -181,9 +181,9 @@ gp_draw_mcmc.approx_full <- function(object, gp, xt, draws=NULL, transform=T, ta
   Kt <- eval_cf(gp$cfs, xt, gp$x, cfind)
   Ktt <- eval_cf(gp$cfs, xt, xt, cfind)
   K_chol <- gp$K_chol
-  aux <- solve(K_chol, t(Kt))
+  aux <- forwardsolve(K_chol, t(Kt))
   pred_cov <- Ktt - t(aux) %*% aux + jitter*diag(nt)
-  pred_mean <- Kt %*% solve(t(K_chol), solve(K_chol, fsample))
+  pred_mean <- Kt %*% backsolve(t(K_chol), forwardsolve(K_chol, fsample))
   if (marginal)
     sample <- mvnrnd(draws, pred_mean[,1:draws], chol_cov = sqrt(diag(pred_cov)))
   else

@@ -17,19 +17,19 @@ laplace_iter.approx_full <- function(object, gp, K, y, fhat_old, ...) {
   z <- pobs$z
   V <- pobs$var
   n <- length(z)
-  K_chol <- t(chol(K)) # TODO: this could be computed only once, not at every iteration
   C_chol <- t(chol(K+diag(V)))
-  fhat_new <- K %*% backsolve(t(C_chol), forwardsolve(C_chol, z)) 
+  alpha <- backsolve(t(C_chol), forwardsolve(C_chol, z))
+  fhat_new <- K %*% alpha
   
   # compute the log marginal likelihood
-  K_logdet <- 2*sum(log(diag(K_chol)))
   C_logdet <- 2*sum(log(diag(C_chol)))
   V_logdet <- sum(log(V))
-  aux <- forwardsolve(K_chol, fhat_new)
-  log_prior <- -0.5*n*log(2*pi) - 0.5*K_logdet - 0.5*sum(aux^2)
+  f_invK_f <- t(fhat_new) %*% alpha
   log_lik <- get_loglik(gp$lik, fhat_new, y, ...) 
-  log_evidence <- 0.5*n*log(2*pi) + 0.5*(K_logdet - C_logdet + V_logdet) + log_prior + log_lik
-  list(fmean=fhat_new, K_chol=K_chol, C_chol=C_chol, log_evidence=log_evidence)
+  log_evidence <- log_lik - 0.5*f_invK_f - 0.5*(C_logdet - V_logdet) 
+  log_evidence <- as.numeric(log_evidence)
+  
+  list(fmean=fhat_new, C_chol=C_chol, alpha=alpha, log_evidence=log_evidence)
 }
 
 laplace_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_old, ...) {
