@@ -210,30 +210,33 @@ gp_pred_post.approx_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
   Kz_chol <- gp$fit$Kz_chol
   Kt <- t(forwardsolve(Kz_chol, t(Ktz))) %*% forwardsolve(Kz_chol, t(Kxz))
   alpha <- gp$fit$alpha
-  pred_mean <- Ktz %*% alpha
-  pred_mean <- as.vector(pred_mean)
+  pred_mean <- as.vector(Kt %*% alpha)
   
   if (var || cov) {
     # (co)variance of the latent function
     nt <- length(pred_mean)
     jitter <- get_jitter(gp,jitter)
     Kz <- gp$fit$Kz
-    Kz_chol <- gp$fit$Kz_chol
     V <- gp$fit$pseudovar
     D <- gp$fit$diag
     xt <- as.matrix(xt)
-    Dt <- sapply(1:nt, function(i) eval_cf(gp$cfs, xt[i,,drop=F], xt[i,,drop=F], cfind)) 
+    Dt <- eval_cf(gp$cfs, xt, xt, cfind, diag_only=T)
     Dt <- Dt - colSums(forwardsolve(Kz_chol, t(Ktz))^2)
-    Lambda <- V+D
+    S <- V+D
 
     if (cov) {
-      pred_cov <- Ktz %*% solve(Kz, t(Ktz)) + diag(Dt) - Kt %*% solve_inv_lemma(Kz, Kxz, Lambda, t(Kt))
+      C_inv <- gp$fit$C_inv
+      Linv_Ktz <- forwardsolve(Kz_chol, t(Ktz))
+      prior_cov <- t(Linv_Ktz) %*% Linv_Ktz + diag(Dt)
+      pred_cov <- prior_cov - Kt %*% solve_inv_lemma(Kz, Kxz, S, t(Kt), inv_obj=C_inv)$solution
       return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
     } else {
-      prior_var <- rowSums(Ktz * t(solve(Kz, t(Ktz)))) + Dt
-      var_reduction <- rowSums(Kt * t(solve_inv_lemma(Kz, Kxz, Lambda, t(Kt))))
+      C_inv <- gp$fit$C_inv
+      Kz_inv_Ktz <- backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Ktz)))
+      prior_var <- rowSums(Ktz * t(Kz_inv_Ktz)) + Dt
+      var_reduction <- rowSums(Kt * t(solve_inv_lemma(Kz, Kxz, S, t(Kt), inv_obj=C_inv)$solution))
       pred_var <- prior_var - var_reduction
-      return(list(mean = pred_mean, var = pred_var))
+      return(list(mean = pred_mean, var = as.vector(pred_var)))
     }
   }
   return(pred_mean)

@@ -40,42 +40,46 @@ laplace_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
   V <- pobs$var
   n <- length(z)
   S <- D+V
-  out <- solve_inv_lemma(Kz, Kxz, S, z, log_det=T)
-  v <- out[[1]]
-  C_logdet <- out[[2]]
-  fhat_new <- Kxz %*% backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Kxz) %*% v)) 
-
-  aux <- (1/sqrt(S))*Kxz
-  Sigma_chol <- t(chol(Kz + t(aux) %*% aux))
-  alpha <- backsolve(t(Sigma_chol), forwardsolve(Sigma_chol, t(Kxz) %*% (z/S)))
-  # alternative way of getting fhat:
-  # fhat_new <- Kxz %*% alpha
+  C_inv <- solve_inv_lemma(Kz, Kxz, S, z)
+  alpha <- C_inv$solution
+  fhat_new <- Kxz %*% backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Kxz) %*% alpha)) + D*alpha
   
   # compute the log marginal likelihood
-  K_logdet <- 0 # TODO: this is wrong, but it cancels out in the computation
+  C_logdet <- C_inv$logdet
   V_logdet <- sum(log(V))
-  f_invK_f <- t(fhat_new) %*% solve_inv_lemma(Kz, Kxz, S, z)
-  log_prior <- -0.5*n*log(2*pi) - 0.5*K_logdet - 0.5*f_invK_f 
+  f_invK_f <- t(fhat_new) %*% alpha
   log_lik <- get_loglik(gp$lik, fhat_new, y, ...) 
-  log_evidence <- 0.5*n*log(2*pi) + 0.5*(K_logdet - C_logdet + V_logdet) + log_prior + log_lik
-  list(fmean=fhat_new, pseudovar=V, Kz=Kz, Kxz=Kxz, Kz_chol=Kz_chol, diag=D, 
-       alpha=alpha, log_evidence=log_evidence)
+  log_evidence <- log_lik - 0.5*f_invK_f - 0.5*(C_logdet - V_logdet)
+  log_evidence <- as.numeric(log_evidence)
+  
+  list(fmean=fhat_new, pseudovar=V, Kz=Kz, Kxz=Kxz, Kz_chol=Kz_chol, C_inv=C_inv,
+       diag=D, alpha=alpha, log_evidence=log_evidence)
 }
 
-
-solve_inv_lemma <- function(K, U, D, b, log_det=F) {
-  # solves system (D + U * K^-1 * U^t)^-1 b using inversion lemma
+solve_inv_lemma <- function(K, U, D, b, inv_obj=NULL) {
+  # solves system (U * K^-1 * U^t + D)^-1 b using inversion lemma
   # (D should be a vector giving only the diagonal)
+  # optional argument inv_obj can be provided giving result of a previous
+  # call to this function, which will speed up computation (note that K, U and D
+  # must be the same matrices in both calls, otherwise it gives wrong result)
+  D <- as.vector(D)
   aux <- (1/D)*U 
-  aux2 <- (1/sqrt(D))*U
-  L <- t(chol(K + t(aux2) %*% aux2))
-  v <- b/D - aux %*% backsolve(t(L), forwardsolve(L, t(aux) %*% b))
-  if (log_det) {
-    # compute also log determinant of the matrix that is to be inverted
-    logdet <- sum(log(D)) - 2*sum(log(diag(chol(K)))) + 2*sum(log(diag(L)))
-    return(list(v,logdet))
+  if (!is.null(inv_obj)) {
+    L <- inv_obj$chol
+  } else {
+    aux2 <- (1/sqrt(D))*U
+    L <- t(chol(K + t(aux2) %*% aux2))
   }
-  return(v)
+  v <- b/D - aux %*% backsolve(t(L), forwardsolve(L, t(aux) %*% b))
+  
+  # log determinant of the matrix that is to be inverted
+  logdet <- sum(log(D)) - 2*sum(log(diag(chol(K)))) + 2*sum(log(diag(L)))
+  
+  return(list(
+    solution = v,
+    chol = L,
+    logdet = logdet
+  ))
 }
 
 
