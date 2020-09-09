@@ -89,7 +89,7 @@ gp_laplace.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, .
   Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$approx$num_inducing)
   Kxz <- eval_cf(gp$cfs, x, z)
   Kz_chol <- t(chol(Kz))
-  D <- as.vector(eval_cf(gp$cfs, x, x, diag_only=T))
+  D <- eval_cf(gp$cfs, x, x, diag_only=T) + jitter
   D <- D - colSums(forwardsolve(Kz_chol, t(Kxz))^2)
   gp$x <- x
   gp$x_inducing <- z

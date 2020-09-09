@@ -345,7 +345,7 @@ eval_cf.cf_const <- function(object, x1, x2, diag_only=F, ...) {
   n1 <- NROW(x1)
   n2 <- NROW(x2)
   if (diag_only)
-    K <- matrix(object$magn^2, nrow=min(n1,n2), ncol=1)
+    K <- rep(object$magn^2, min(n1,n2))
   else
     K <- matrix(object$magn^2, nrow=n1, ncol=n2)
   return(K)
@@ -357,7 +357,7 @@ eval_cf.cf_lin <- function(object, x1, x2, diag_only=F, ...) {
   K <- object$magn^2* x1 %*% t(x2)
   if (diag_only)
     # TODO: this not the most efficient thing to do
-    K <- as.matrix(diag(K))
+    K <- as.vector(diag(K))
   return(K)
 }
 
@@ -365,6 +365,8 @@ eval_cf.cf_sexp <- function(object, x1, x2, diag_only=F, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   K <- cf_sexp_c(x1, x2, object$lscale, object$magn, diag_only=diag_only)
+  if (diag_only)
+    K <- as.vector(K)
   return(K)
 }
 
@@ -372,6 +374,8 @@ eval_cf.cf_matern32 <- function(object, x1, x2, diag_only=F, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   K <- cf_matern32_c(x1, x2, object$lscale, object$magn, diag_only=diag_only)
+  if (diag_only)
+    K <- as.vector(K)
   return(K)
 }
 
@@ -379,6 +383,8 @@ eval_cf.cf_matern52 <- function(object, x1, x2, diag_only=F, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   K <- cf_matern52_c(x1, x2, object$lscale, object$magn, diag_only=diag_only)
+  if (diag_only)
+    K <- as.vector(K)
   return(K)
 }
 
@@ -387,6 +393,8 @@ eval_cf.cf_nn <- function(object, x1, x2, diag_only=F, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   K <- cf_nn_c(x1, x2, object$sigma0, object$sigma, object$magn, diag_only=diag_only)
+  if (diag_only)
+    K <- as.vector(K)
   return(K)
 }
 
@@ -397,6 +405,8 @@ eval_cf.cf_periodic <- function(object, x1, x2, diag_only=F, ...) {
   x1_transf <- cbind(sin(2*pi/period*x1), cos(2*pi/period*x1))
   x2_transf <- cbind(sin(2*pi/period*x2), cos(2*pi/period*x2))
   K <- eval_cf(object$base, x1_transf, x2_transf, diag_only=diag_only)
+  if (diag_only)
+    K <- as.vector(K)
   return(K)
 }
 
