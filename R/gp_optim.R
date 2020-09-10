@@ -50,7 +50,7 @@
 #' 
 #' @export
 gp_optim <- function(gp, x, y, method='Nelder-Mead', tol=1e-4, 
-                     maxiter=200, verbose=T, warnings=T, ...) {
+                     maxiter=500, verbose=T, warnings=T, ...) {
 
   iter <- 0
   energy <- function(param) {
