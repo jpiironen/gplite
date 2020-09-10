@@ -46,17 +46,22 @@ that the inference will be for the \code{n} latent
 function values (fitting time scales cubicly in \code{n}).
 }
  \item{\code{'rf'}:} {
- Uses random features 
-(or basis functions) for approximating the covariance function, which means the inference
+ Uses random features (or basis functions) for approximating the covariance function,
+ which means the inference
 time scales cubicly in the number of approximating basis functions \code{num_basis}.
-For stationary covariance functions random Fourier features (Rahimi and Recht, 2007) is used,
-and for non-stationary kernels using case specific method when possible (for example, drawing
-the hidden layer parameters randomly for \code{cf_nn}).
+For stationary covariance functions random Fourier features (Rahimi and Recht, 2007)
+is used, and for non-stationary kernels using case specific method when possible 
+(for example, drawing the hidden layer parameters randomly for \code{cf_nn}). For
+\code{cf_const} and \code{cf_lin} this means using standard linear model, and the
+inference is performed on the weight space (not in the function space). Thus if
+the model is linear (only \code{cf_const} and \code{cf_lin} are used), this will give
+a potentially huge speed-up if the number of features is considerably smaller than
+the number of data points.
 }
  \item{\code{'fitc'}:} {
  Uses the fully independent training conditional, FITC, approximation 
  (see Quiñonero-Candela and Rasmussen, 2005; Snelson and Ghahramani, 2006). 
- The fitting time scales O(n*m^2), where n is the number of data points and 
+ The fitting time scales \code{O(n*m^2)}, where n is the number of data points and 
  m the number of inducing points \code{num_inducing}.
  The inducing point locations are chosen using the k-means algorithm.
  }

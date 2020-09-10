@@ -10,7 +10,7 @@ gp_optim(
   y,
   method = "Nelder-Mead",
   tol = 1e-04,
-  maxiter = 200,
+  maxiter = 500,
   verbose = T,
   warnings = T,
   ...
