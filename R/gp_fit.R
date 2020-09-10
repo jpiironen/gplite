@@ -58,6 +58,7 @@ NULL
 gp_fit <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   gp <- learn_scales(gp, x)
   gp <- gp_laplace(gp, x, y, trials=trials, jitter=jitter, ...)
+  gp$fit$type <- 'analytic'
   gp$fitted <- TRUE
   return(gp)
 }

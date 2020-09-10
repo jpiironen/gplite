@@ -184,10 +184,15 @@ get_featuremap.gp <- function(object, num_inputs, ...) {
 }
 
 is_fitted.gp <- function(object, type, ...) {
-  if (type=='analytic')
-    fit_found <- is.list(object$fit)
-  else if (type=='sampling')
-    fit_found <- ifelse(is.null(object$fsample) && is.null(object$wsample), F, T)
+  if (is.list(object$fit)) {
+    if (type=='analytic')
+      fit_found <- object$fit$type == 'analytic'
+    else if (type=='sampling')
+      fit_found <- object$fit$type == 'mcmc'
+      #fit_found <- ifelse(is.null(object$fsample) && is.null(object$wsample), F, T)
+  } else {
+    fit_found <- FALSE
+  }
   if (fit_found && object$fitted==FALSE)
     stop('The GP object seems to contain a posterior fit, but is not refitted after setting new hyperparameter values. Please refit using gp_fit or gp_mcmc after calling set_param.')
   return(fit_found)
@@ -246,7 +251,7 @@ get_w_sample <- function(gp, cfind=NULL) {
   if (is.null(cfind))
     cfind <- seq_along(gp$cfs)
   inds <- get_weight_inds(gp, cfind)
-  return(gp$wsample[inds,,drop=F])
+  return(gp$fit$wsample[inds,,drop=F])
 }
 
 

@@ -167,7 +167,7 @@ gp_draw_analytic.approx_rbf <- function(object, gp, xt, draws=NULL, transform=T,
 gp_draw_mcmc.approx_full <- function(object, gp, xt, draws=NULL, transform=T, target=T,
                                      marginal=F, cfind=NULL, jitter=NULL, ...) {
   
-  fsample <- gp$fsample
+  fsample <- gp$fit$fsample
   if (is.null(draws))
     draws <- NCOL(fsample)
   else if (draws > NCOL(fsample))
@@ -188,6 +188,37 @@ gp_draw_mcmc.approx_full <- function(object, gp, xt, draws=NULL, transform=T, ta
     sample <- mvnrnd(draws, pred_mean[,1:draws], chol_cov = sqrt(diag(pred_cov)))
   else
     sample <- mvnrnd(draws, pred_mean[,1:draws], chol_cov = t(chol(pred_cov)))
+  if (target)
+    sample <- generate_target(gp, sample, ...)
+  else if (transform)
+    sample <- get_response(gp, sample)
+  return(sample)
+}
+
+gp_draw_mcmc.approx_fitc <- function(object, gp, xt, draws=NULL, transform=T, target=T,
+                                     marginal=F, cfind=NULL, jitter=NULL, ...) {
+  
+  usample <- gp$fit$usample
+  if (is.null(draws))
+    draws <- NCOL(usample)
+  else if (draws > NCOL(usample))
+    stop('Can\'t draw more than the provided GP has posterior draws.')
+  # permute the posterior draws and pick right number of draws
+  usample <- usample[,sample(1:NCOL(usample))]
+  usample <- usample[,1:draws]
+  
+  nt <- NROW(xt)
+  jitter <- get_jitter(gp,jitter)
+  z <- gp$x_inducing
+  Ktz <- eval_cf(gp$cfs, xt, z, cfind)
+  Kz_chol <- gp$fit$Kz_chol
+  Dt <- eval_cf(gp$cfs, xt, xt, cfind, diag_only=T)
+  Dt <- Dt - colSums(forwardsolve(Kz_chol, t(Ktz))^2)
+  
+  a <- backsolve(t(Kz_chol), forwardsolve(Kz_chol, usample))
+  pred_mean <- Ktz %*% a
+  pred_var <- Dt
+  sample <- mvnrnd(draws, pred_mean[,1:draws], chol_cov = sqrt(pred_var))
   if (target)
     sample <- generate_target(gp, sample, ...)
   else if (transform)

@@ -335,7 +335,7 @@ get_stanmodel.lik_gaussian <- function(object, method = 'full', lik_only = FALSE
   else if (method == 'rf') 
     return(stanmodels$gpa_gaussian)
   else
-    stop('Got an unknown method: ', method)
+    stop('No stan-model for method: ', method)
 }
 
 get_stanmodel.lik_bernoulli <- function(object, method = 'full', lik_only = FALSE, ...) {
@@ -343,29 +343,29 @@ get_stanmodel.lik_bernoulli <- function(object, method = 'full', lik_only = FALS
 }
 
 get_stanmodel.lik_binomial <- function(object, method = 'full', lik_only = FALSE, ...) {
+  if (lik_only)
+    return(stanmodels$lik_binomial)
   if (method == 'full') {
-    if (lik_only)
-      return(stanmodels$lik_binomial)
     return(stanmodels$gp_binomial)
   } else if (method == 'rf') {
-    if (lik_only)
-      return(stanmodels$lik_binomial)
     return(stanmodels$gpa_binomial)
+  } else if (method == 'fitc') {
+    return(stanmodels$gp_fitc_binomial)
   } else
-    stop('Got an unknown method: ', method)
+    stop('No stan-model for method: ', method)
 }
 
 get_stanmodel.lik_betabinom <- function(object, method = 'full', lik_only = FALSE, ...) {
+  if (lik_only)
+    return(stanmodels$lik_betabinom)
   if (method == 'full') {
-    if (lik_only)
-      return(stanmodels$lik_betabinom)
     return(stanmodels$gp_betabinom)
   } else if (method == 'rf') {
-    if (lik_only)
-      return(stanmodels$lik_betabinom)
     return(stanmodels$gpa_betabinom)
+  } else if (method == 'fitc') {
+    return(stanmodels$gp_fitc_betabinom)
   } else
-    stop('Got an unknown method: ', method)
+    stop('No stan-model for method: ', method)
 }
 
 
