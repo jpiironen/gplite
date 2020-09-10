@@ -136,9 +136,10 @@ ggplot() +
 
 The fit looks reasonable, but one could expect that the predictive probabilities would be even closer to zero and one around the origin, given the data we see. Indeed, it is well known that the Laplace approximation tends to be too conservative and underestimate the extreme probabilities in this sort of cases [see, for example, @kuss2005]. 
 
-For more accurate inference, we can run MCMC for the latent values with the optimized hyperparameters.
+For more accurate inference, we can run MCMC for the latent values with the optimized hyperparameters. To use more than one core for the computation, uncomment the first line.
 ```{r, results='hide'}
-gpmc <- gp_mcmc(gp, x, y, iter=1000, chains=2)
+#options(mc.cores = parallel::detectCores())
+gpmc <- gp_mcmc(gp, x, y, chains=2, iter=1000)
 ```
 
 Let's visualize the fit again
@@ -158,7 +159,102 @@ ggplot() +
   xlab('x') + ylab('y')
 ```
 
-As we see, the fit is substantially different in those cases where the predictive probability is close to zero or one. It is worthwhile to note that even though the Laplace approximation is not very accurate in the extreme cases, it gives reasonable estimates for the hyperparameters. Running then MCMC for the latent values given the hyperparameters gives more accurate estimates for the latent function values. 
+As we see, the fit is substantially different in those cases where the predictive probability is close to zero or one. It is worthwhile to note that even though the Laplace approximation is not very accurate in the extreme cases, it gives reasonable estimates for the hyperparameters. Running then MCMC for the latent values (given the hyperparameters) gives more accurate estimates for the latent function values. 
+
+
+
+
+
+# Sparse approximations
+
+The package provides a few methods for handling bigger datasets for which the full GP inference is infeasible. This section illustrates with a synthetic toy example.
+
+```{r}
+# 2d data, version 2
+set.seed(2)
+n_per_cluster <- 2000
+d <- 2
+drel <- 2
+x <- 0.5*cbind( matrix(rnorm(n_per_cluster*drel), nrow=drel) + 3*rep(1,drel), 
+                matrix(rnorm(n_per_cluster*drel), nrow=drel) - 0*rep(1,drel),
+                matrix(rnorm(n_per_cluster*drel), nrow=drel) + c(-3,3))
+x <- t(x)
+y <- c(rep(0,n_per_cluster), rep(1,n_per_cluster), rep(0,n_per_cluster))
+n <- length(y) 
+
+# plot 
+ggplot() +
+  geom_point(data=data.frame(x=x[,1],y=x[,2]), aes(x=x,y=y), color=y+2, size=1)
+```
+
+
+## FITC
+
+The package implements a generic sparse approximation which is known as the fully independent training conditional, or FITC [@quinonero-candela2005; @snelson2006].
+The accuracy of the approximation is determined by the number of inducing points.
+Notice that we use here only a relatively small number of inducing points to make this vignette build fast. In this toy example it does not affect the accuracy that much, but in more complicated example many more inducing points might be needed to get reasonable accuracy.
+
+```{r, results='hide'}
+
+# fit the model
+gp <- gp_init(lik=lik_bernoulli(), cfs=cf_sexp(), method = 'fitc', num_inducing=50)
+gp <- gp_optim(gp,x,y)
+```
+
+Let's visualize the predictions.
+```{r}
+# predict
+ng <- 20
+x1g <- seq(-4,4,len=ng)
+x2g <- seq(-2,4,len=ng)
+
+xnew <- cbind( rep(x1g,each=ng), rep(x2g,ng) )
+pred <- gp_draw(gp, xnew, draws=500)
+pr <- rowMeans(pred)
+
+# visualize
+ggplot() + 
+  geom_contour(data=data.frame(x=xnew[,1], y=xnew[,2], pr=pr),
+                aes(x=x, y=y, z=pr, colour=..level..) ) +
+  scale_colour_gradient(low = "red", high = "green", guide='none') +
+  geom_point(data=data.frame(x=x[,1],y=x[,2]), aes(x=x,y=y), color=y+2, size=1)
+
+```
+
+The fit seems reasonably good even with only a small number of inducing points.
+
+
+## Random features
+
+The package also implements the method of random features [@rahimi2008]. The accuracy of the approximation is determined by the number of random features (also called basis functions). Again, we use a relatively small number of features, which works fine here, but in more complicated problems many more might be needed for reasonable accuracy.
+```{r, results='hide'}
+# fit the model
+gp <- gp_init(cfs=cf_sexp(), lik=lik_bernoulli(), method = 'rf', num_basis=100)
+gp <- gp_optim(gp,x,y)
+```
+
+Let's again visualize the predictions.
+```{r}
+# predict
+ng <- 20
+x1g <- seq(-4,4,len=ng)
+x2g <- seq(-2,4,len=ng)
+
+xnew <- cbind( rep(x1g,each=ng), rep(x2g,ng) )
+pred <- gp_draw(gp, xnew, draws=500)
+pr <- rowMeans(pred)
+
+# visualize
+ggplot() + 
+  geom_contour(data=data.frame(x=xnew[,1], y=xnew[,2], pr=pr),
+                aes(x=x, y=y, z=pr, colour=..level..) ) +
+  scale_colour_gradient(low = "red", high = "green", guide='none') +
+  geom_point(data=data.frame(x=x[,1],y=x[,2]), aes(x=x,y=y), color=y+2, size=1)
+
+```
+
+The fit seems more or less reasonable, albeit less accurate than the one with FITC. As a rule of thumb, the random features approach usually requires more basis functions than the FITC requires inducing inputs for comparable accuracy.
+
 
 
 
