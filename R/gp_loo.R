@@ -63,7 +63,7 @@ NULL
 
 #' @rdname gp_loo
 #' @export
-gp_loo <- function(gp, x, y, trials=NULL, draws=4000, jitter=NULL, seed=NULL) {
+gp_loo <- function(gp, x, y, trials=NULL, draws=4000, order=7, quadrature=T, jitter=NULL, seed=NULL) {
   
   
   fhat <- as.vector(gp$fit$fmean)
@@ -77,12 +77,21 @@ gp_loo <- function(gp, x, y, trials=NULL, draws=4000, jitter=NULL, seed=NULL) {
   loo_var <- 1/(1/pred_var - 1/V)
   loo_mean <- fhat - loo_var*grad
   
-  # sample from LOO posteriors and evaluate predictive distribution in using Monte Carlo
-  n <- length(y)
-  fsample <- matrix(stats::rnorm(n*draws, mean = loo_mean, sd = sqrt(loo_var)), nrow=n) 
-  loglik <- get_loglik(gp$lik, fsample, y, trials=trials, sum=FALSE)
+  if (quadrature) {
+    # use Gauss-Hermite quadrature to evaluate predictive distribution
+    quadrature <- gauss_hermite_points_scaled(loo_mean, sqrt(loo_var), order=order)
+    fgrid <- quadrature$x
+    weights <- quadrature$weights
+    loglik <- get_loglik(gp$lik, fgrid, y, trials=trials, sum=FALSE)
+    loos <- apply(loglik, 1, logsumexp, weights=weights)
+  } else {
+    # sample from LOO posteriors and evaluate predictive distribution using Monte Carlo
+    n <- length(y)
+    fsample <- matrix(stats::rnorm(n*draws, mean = loo_mean, sd = sqrt(loo_var)), nrow=n) 
+    loglik <- get_loglik(gp$lik, fsample, y, trials=trials, sum=FALSE)
+    loos <- apply(loglik, 1, logsumexp) - log(draws)
+  }
   
-  loos <- apply(loglik, 1, logsumexp) - log(draws)
   
   res <- list(loo=sum(loos), sd=stats::sd(loos), loos=loos)
   class(res) <- 'loores'
@@ -91,9 +100,13 @@ gp_loo <- function(gp, x, y, trials=NULL, draws=4000, jitter=NULL, seed=NULL) {
 }
 
 
-logsumexp <- function(x) {
+logsumexp <- function(x, weights=NULL) {
+  # numerically stable computation of log(sum_i(w_i*exp(x_i))),
+  # where w_i are optional weights (will be ones if not given)
   c <- max(x)
-  c + log(sum(exp(x - c)))
+  if (is.null(weights))
+    weights <- rep(1, length(x))
+  c + log(sum(weights*exp(x - c)))
 }
 
 
