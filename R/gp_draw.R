@@ -9,8 +9,10 @@ gp_draw <- function(gp, xnew, draws=NULL, transform=T, target=F, marginal=F,
                     cfind=NULL, jitter=NULL, seed=NULL, ...) {
   
   # set random seed but ensure the old RNG state is restored on exit
-  rng_state_old <- .Random.seed
-  on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  if (exists('.Random.seed')) {
+    rng_state_old <- .Random.seed
+    on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  }
   set.seed(seed)
 
   if (is_fitted(gp, 'sampling')) {

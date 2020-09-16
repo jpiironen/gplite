@@ -106,7 +106,6 @@ fit_laplace.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, 
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
-  set.seed(gp$approx$seed)
   z <- get_inducing(gp, x)
   Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$approx$num_inducing)
   Kxz <- eval_cf(gp$cfs, x, z)
@@ -165,7 +164,6 @@ fit_ep.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) 
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
-  set.seed(gp$approx$seed)
   z <- get_inducing(gp, x)
   Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$approx$num_inducing)
   Kxz <- eval_cf(gp$cfs, x, z)
@@ -187,6 +185,13 @@ fit_ep.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) 
 
 
 get_inducing <- function(gp, x) {
+  # set random seed but ensure the old RNG state is restored on exit
+  if (exists('.Random.seed')) {
+    rng_state_old <- .Random.seed
+    on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  }
+  set.seed(gp$approx$seed)
+  
   if (!is.null(gp$x_inducing))
     return(gp$x_inducing)
   xscaled <- scale(x)

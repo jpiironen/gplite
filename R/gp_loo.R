@@ -63,8 +63,14 @@ NULL
 
 #' @rdname gp_loo
 #' @export
-gp_loo <- function(gp, x, y, trials=NULL, draws=4000, order=7, quadrature=T, jitter=NULL, seed=NULL) {
-  
+gp_loo <- function(gp, x, y, trials=NULL, draws=4000, order=7, quadrature=T, 
+                   jitter=NULL, seed=NULL) {
+  # set random seed but ensure the old RNG state is restored on exit
+  if (exists('.Random.seed')) {
+    rng_state_old <- .Random.seed
+    on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  }
+  set.seed(seed)
   
   fhat <- as.vector(gp$fit$fmean)
   pobs <- get_pseudodata(gp$lik, fhat, y, trials=trials)
@@ -91,7 +97,6 @@ gp_loo <- function(gp, x, y, trials=NULL, draws=4000, order=7, quadrature=T, jit
     loglik <- get_loglik(gp$lik, fsample, y, trials=trials, sum=FALSE)
     loos <- apply(loglik, 1, logsumexp) - log(draws)
   }
-  
   
   res <- list(loo=sum(loos), sd=stats::sd(loos), loos=loos)
   class(res) <- 'loores'

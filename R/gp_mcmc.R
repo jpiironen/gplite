@@ -44,7 +44,6 @@ fit_mcmc.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...
 fit_mcmc.approx_fitc <- function(object, gp, x,y, trials=NULL, jitter, ...) {
   x <- as.matrix(x)
   n <- length(y)
-  set.seed(gp$approx$seed)
   z <- get_inducing(gp, x)
   jitter <- get_jitter(gp,jitter)
   Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$approx$num_inducing)

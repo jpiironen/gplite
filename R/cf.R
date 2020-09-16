@@ -492,8 +492,10 @@ rf_featmap.cf_sexp <- function(object, num_feat, num_inputs, seed=NULL, ...) {
   #
   
   # set random seed but ensure the old RNG state is restored on exit
-  rng_state_old <- .Random.seed
-  on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  if (exists('.Random.seed')) {
+    rng_state_old <- .Random.seed
+    on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  }
   set.seed(seed)
   
   if (is.null(object$vars))
@@ -539,8 +541,10 @@ rf_featmap.cf_nn <- function(object, num_feat, num_inputs, seed=NULL, ...) {
   #
   
   # set random seed but ensure the old RNG state is restored on exit
-  rng_state_old <- .Random.seed
-  on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  if (exists('.Random.seed')) {
+    rng_state_old <- .Random.seed
+    on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  }
   set.seed(seed)
   
   if (is.null(object$vars))
@@ -646,8 +650,10 @@ rbf_featmap.cf_sexp <- function(object, num_feat, num_inputs, x=NULL, seed=NULL,
     stop('Cannot get RBF featuremap if inputs are not given.')
   
   # set random seed but ensure the old RNG state is restored on exit
-  rng_state_old <- .Random.seed
-  on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  if (exists('.Random.seed')) {
+    rng_state_old <- .Random.seed
+    on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
+  }
   set.seed(seed)
   
   if (is.null(object$vars))
