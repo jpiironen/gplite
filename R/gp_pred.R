@@ -191,9 +191,15 @@ gp_pred_post.approx_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
     # (co)variance of the latent function
     nt <- length(pred_mean)
     jitter <- get_jitter(gp,jitter)
-    C_chol <- gp$fit$C_chol
-    aux <- forwardsolve(C_chol, t(Kt))
-    pred_cov <- Ktt - t(aux) %*% aux
+    if (!is.null(gp$fit$C_chol)) {
+      C_chol <- gp$fit$C_chol
+      aux <- forwardsolve(C_chol, t(Kt))
+      pred_cov <- Ktt - t(aux) %*% aux
+    } else {
+      C_lu <- gp$fit$C_lu
+      var_reduction <- Kt %*% solve(C_lu$U, solve(C_lu$L, solve(C_lu$P, t(Kt))))
+      pred_cov <- Ktt - var_reduction
+    }
     if (cov)
       return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
     else
