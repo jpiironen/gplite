@@ -183,7 +183,6 @@ gp_pred_post.approx_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
   Kt <- eval_cf(gp$cfs, xt, gp$x, cfind)
   Ktt <- eval_cf(gp$cfs, xt, xt, cfind)
   alpha <- gp$fit$alpha
-  fmean <- gp$fit$fmean
   pred_mean <- Kt %*% alpha
   pred_mean <- as.vector(pred_mean)
   
