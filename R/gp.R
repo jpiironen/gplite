@@ -92,8 +92,9 @@
 #'
 
 #' @export
-gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', 
-                    num_basis=100, num_inducing=100, seed=12345) {
+gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', latent='laplace',
+                    num_basis=100, num_inducing=100, ep_damping=0.9, ep_quad_order=15, 
+                    seed=12345) {
   gp <- list()
   if (!('list' %in% class(cfs)))
     cfs <- list(cfs)
@@ -101,6 +102,8 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full',
   gp$lik <- lik
   gp$approx <- get_approx(method, seed=seed, num_basis=check_num_basis(cfs, num_basis), 
                           num_inducing=num_inducing)
+  gp$latent <- get_latent_method(latent, ep_damping=ep_damping, 
+                                 ep_quad_order=ep_quad_order)
   gp$fitted <- FALSE
   class(gp) <- 'gp'
   gp

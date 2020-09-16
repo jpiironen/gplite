@@ -57,21 +57,42 @@ NULL
 #' @export
 gp_fit <- function(gp, x, y, trials=NULL, jitter=NULL, ...) {
   gp <- learn_scales(gp, x)
-  gp <- gp_laplace(gp, x, y, trials=trials, jitter=jitter, ...)
+  gp <- fit_model(gp, x, y, trials=trials, jitter=jitter, ...)
   gp$fit$type <- 'analytic'
   gp$fitted <- TRUE
   return(gp)
 }
 
-gp_laplace <- function(object, ...) {
-  UseMethod("gp_laplace", object)
+fit_model <- function(object, ...) {
+  UseMethod("fit_model", object)
 }
 
-gp_laplace.gp <- function(object, ...) {
-  gp_laplace(object$approx, object, ...)
+fit_model.gp <- function(object, ...) {
+  fit_model(object$latent, object, ...)
 }
 
-gp_laplace.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+fit_model.latent_laplace <- function(object, gp, ...) {
+  fit_laplace(gp$approx, gp, ...)
+}
+
+fit_model.latent_ep <- function(object, gp, ...) {
+  fit_ep(gp$approx, gp, ...)
+}
+
+fit_laplace <- function(object, ...) {
+  UseMethod("fit_laplace", object)
+}
+
+fit_ep <- function(object, ...) {
+  UseMethod("fit_ep", object)
+}
+
+fit_ep.gp <- function(object, ...) {
+  fit_ep(object$approx, object, ...)
+}
+
+
+fit_laplace.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
@@ -81,7 +102,7 @@ gp_laplace.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, .
   return(gp)
 }
 
-gp_laplace.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+fit_laplace.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
@@ -104,7 +125,7 @@ gp_laplace.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, .
   return(gp)
 }
 
-gp_laplace.approx_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+fit_laplace.approx_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)
   gp$approx$num_basis <- check_num_basis(gp$cfs, gp$approx$num_basis, NCOL(x))
@@ -113,7 +134,7 @@ gp_laplace.approx_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...
   return(gp)
 }
 
-gp_laplace.approx_rbf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+fit_laplace.approx_rbf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   gp$x <- x
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)
@@ -122,6 +143,47 @@ gp_laplace.approx_rbf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ..
   gp$fit <- laplace(object, gp, z, y, trials=trials)
   return(gp)
 }
+
+
+
+fit_ep.approx <- function(object, ...) {
+  stop(paste('No EP implementation for', class(object)[1], 'yet.'))
+}
+
+fit_ep.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+  x <- as.matrix(x)
+  n <- length(y)
+  jitter <- get_jitter(gp,jitter)
+  K <- eval_cf(gp$cfs, x, x) + jitter*diag(n)
+  gp$x <- x
+  gp$fit <- ep(object, gp, K, y, trials=trials, quad_order=gp$latent$quad_order,
+               damping=gp$latent$damping, damping_min=0.1, ...)
+  return(gp)
+}
+
+fit_ep.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+  x <- as.matrix(x)
+  n <- length(y)
+  jitter <- get_jitter(gp,jitter)
+  set.seed(gp$approx$seed)
+  z <- get_inducing(gp, x)
+  Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$approx$num_inducing)
+  Kxz <- eval_cf(gp$cfs, x, z)
+  Kz_chol <- t(chol(Kz))
+  K_diag <- eval_cf(gp$cfs, x, x, diag_only=T) + jitter
+  D <- K_diag - colSums(forwardsolve(Kz_chol, t(Kxz))^2)
+  gp$x <- x
+  gp$x_inducing <- z
+  gp$fit <- tryCatch({
+    ep(object, gp, Kz, Kz_chol, Kxz, K_diag, D, y, trials=trials)
+  },
+  error = function(err) {
+    print(err)
+    list(log_evidence=-Inf)
+  })
+  return(gp)
+}
+
 
 
 get_inducing <- function(gp, x) {

@@ -75,6 +75,14 @@ get_pseudodata <- function(object, ...) {
   UseMethod("get_pseudodata", object)
 }
 
+get_pseudodata_ep <- function(object, ...) {
+  UseMethod("get_pseudodata_ep", object)
+}
+
+get_tilted_moments <- function(object, ...) {
+  UseMethod("get_tilted_moments", object)
+}
+
 get_loglik <- function(object, ...) {
   UseMethod("get_loglik", object)
 }
@@ -119,3 +127,6 @@ learn_scales <- function(object, ...) {
   UseMethod("learn_scales", object)
 }
 
+required_extra_args <- function(object, ...) {
+  UseMethod("required_extra_args", object)
+}

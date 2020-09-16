@@ -217,24 +217,21 @@ gp_pred_post.approx_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
     nt <- length(pred_mean)
     jitter <- get_jitter(gp,jitter)
     Kz <- gp$fit$Kz
-    V <- gp$fit$pseudovar
-    D <- gp$fit$diag
     xt <- as.matrix(xt)
     Dt <- eval_cf(gp$cfs, xt, xt, cfind, diag_only=T)
     Dt <- Dt - colSums(forwardsolve(Kz_chol, t(Ktz))^2)
-    S <- V+D
 
     if (cov) {
-      C_inv <- gp$fit$C_inv
       Linv_Ktz <- forwardsolve(Kz_chol, t(Ktz))
       prior_cov <- t(Linv_Ktz) %*% Linv_Ktz + diag(Dt)
-      pred_cov <- prior_cov - Kt %*% solve_inv_lemma(Kz, Kxz, S, t(Kt), inv_obj=C_inv)$solution
+      C_inv <- gp$fit$C_inv
+      pred_cov <- prior_cov - Kt %*% inv_lemma_solve(C_inv, t(Kt))
       return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
     } else {
       C_inv <- gp$fit$C_inv
       Kz_inv_Ktz <- backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Ktz)))
       prior_var <- rowSums(Ktz * t(Kz_inv_Ktz)) + Dt
-      var_reduction <- rowSums(Kt * t(solve_inv_lemma(Kz, Kxz, S, t(Kt), inv_obj=C_inv)$solution))
+      var_reduction <- rowSums(Kt * t(inv_lemma_solve(C_inv, t(Kt))))
       pred_var <- prior_var - var_reduction
       return(list(mean = pred_mean, var = as.vector(pred_var)))
     }

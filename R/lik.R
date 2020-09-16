@@ -193,6 +193,78 @@ get_pseudodata.lik_betabinom <- function(object, f, y, ...) {
 }
 
 
+# get_pseudodata_ep functions
+
+get_pseudodata_ep.lik <- function(object, post_mean, post_prec, 
+                                  z_old, P_old, y, quad_order=11, damping=0.5, ...) {
+  
+  tilted_moments <- get_tilted_moments(object, post_mean, post_prec, 
+                                       z_old, P_old, y, quad_order=quad_order, ...)
+  mean_tilted <- tilted_moments$mean_tilted
+  var_tilted <- tilted_moments$var_tilted
+  mean_cavity <- tilted_moments$mean_cavity
+  var_cavity <- tilted_moments$var_cavity
+  log_C <- tilted_moments$log_normalizing_const
+  
+  P_new <- 1/var_tilted - 1/var_cavity
+  nu_new <- (mean_tilted/var_tilted - mean_cavity/var_cavity)
+  
+  
+  ### damping ###
+  nu_old <- z_old*P_old
+  nu_new <- damping*nu_new + (1-damping)*nu_old
+  P_new <- damping*P_new + (1-damping)*P_old
+  ###############
+  
+  return(list(z=(1/P_new)*nu_new, var=1/P_new, log_normalizing_const=log_C,
+              mean_cavity=mean_cavity, var_cavity=var_cavity))
+}
+
+
+# get_tilted_moments functions
+
+get_tilted_moments.lik <- function(object, post_mean, post_prec, 
+                                   z_old, P_old, y, quad_order=11, ...) {
+  cavity_prec <- post_prec - P_old
+  cavity_mean <- 1/cavity_prec*(post_mean*post_prec - z_old*P_old)
+  
+  # compute moments of the tilted distributions using quadrature
+  gh <- gauss_hermite_points_scaled(cavity_mean, sqrt(1/cavity_prec), order=quad_order)
+  fgrid <- gh$x
+  weights <- gh$weights
+  
+  loglik <- get_loglik(object, fgrid, y, sum=FALSE, ...)
+  lik <- exp(loglik) # TODO: this might be unstable, but unavoidable
+  
+  #C <- sum( lik * weights)
+  log_C <- apply(loglik, 1, logsumexp, weights=weights)
+  C <- exp(log_C)
+  mean_tilted <- (1/C) * (fgrid*lik) %*% weights
+  mean_tilted <- as.vector(mean_tilted)
+  s2_tilted <- (1/C) * ((fgrid-mean_tilted)^2*lik) %*% weights
+  s2_tilted <- as.vector(s2_tilted)
+  
+  list(mean_tilted=mean_tilted, var_tilted=s2_tilted, log_normalizing_const=log_C,
+       mean_cavity=cavity_mean, var_cavity=1/cavity_prec)
+}
+
+
+
+
+#
+
+required_extra_args.lik <- function(object, ...) {
+  c()
+}
+
+required_extra_args.lik_binomial <- function(object, ...) {
+  c('trials')
+}
+
+required_extra_args.lik_betabinom <- function(object, ...) {
+  c('trials')
+}
+
 
 # get_loglik functions
 
@@ -324,6 +396,7 @@ get_loglik_d2.lik <- function(object, f, y, eps=1e-6, ...) {
   grad2 <- (grad_eps-grad) / eps
   list(grad=grad, grad2=grad2)
 }
+
 
 
 
