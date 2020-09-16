@@ -21,8 +21,8 @@ approx_full <- function(...) {
   approx
 }
 
-approx_fitc <- function(seed=NULL, num_inducing=NULL, ...) {
-  approx <- list(name='fitc', seed=seed, num_inducing=num_inducing)
+approx_fitc <- function(seed=NULL, num_inducing=NULL, bin_inducing=NULL, ...) {
+  approx <- list(name='fitc', seed=seed, num_inducing=num_inducing, bin_inducing=bin_inducing)
   class(approx) <- c('approx_fitc', 'approx')
   approx
 }

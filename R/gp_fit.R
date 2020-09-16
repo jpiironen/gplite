@@ -195,12 +195,57 @@ get_inducing <- function(gp, x) {
   if (!is.null(gp$x_inducing))
     return(gp$x_inducing)
   xscaled <- scale(x)
-  cl <- stats::kmeans(xscaled, gp$approx$num_inducing)
-  zscaled <- cl$centers
+  binning <- gp$approx$bin_inducing
+  num_inducing <- gp$approx$num_inducing
+  
+  if (!is.null(binning)) {
+    varname <- names(binning)[1] # TODO: currently handles only one variable
+    nbins <- binning[[varname]]
+    xscaled_binned <- bin(xscaled, nbins=nbins, var=varname)
+    bin_sizes <- sapply(xscaled_binned, function(bin) NROW(bin))
+    ordering <- order(bin_sizes, decreasing = T)
+    xscaled_binned <- xscaled_binned[ordering]
+    bin_sizes <- bin_sizes[ordering]
+    per_bin <- rep(floor(num_inducing/nbins), nbins)
+    num_leftover <- num_inducing - sum(per_bin)
+    if (num_leftover > 0)
+      per_bin[1:num_leftover] <- per_bin[1:num_leftover] + 1
+    zscaled_binned <- lapply(1:nbins, function(i) {
+      kmeans(xscaled_binned[[i]], per_bin[i])$centers
+    })
+    zscaled <- do.call(rbind, zscaled_binned)
+    rownames(zscaled) <- NULL
+  } else {
+    cl <- stats::kmeans(xscaled, num_inducing)
+    zscaled <- cl$centers
+    rownames(zscaled) <- NULL
+  }
   z <- t( t(zscaled)*attr(xscaled, 'scaled:scale') + attr(xscaled, 'scaled:center') )
   return(z)
 }
 
+
+bin <- function(x, nbins=NULL, cutpoints=NULL, var=1) {
+  
+  x <- as.matrix(x)
+  xv_min <- min(x[,var]) - 2*.Machine$double.eps
+  xv_max <- max(x[,var]) + 2*.Machine$double.eps
+  
+  if (is.null(cutpoints))
+    if (!is.null(nbins))
+      cutpoints <- seq(xv_min, xv_max, len=nbins+1)
+  else
+    stop('Either bins or cutpoints must be provided')
+  else
+    cutpoints <- c(xv_min, cutpoints, xv_max)
+  
+  nbins <- length(cutpoints) - 1
+  xbinned <- lapply(1:nbins, function(i) {
+    ind <- x[,var] > cutpoints[i] & x[,var] < cutpoints[i+1]
+    x[ind,,drop=F]
+  })
+  xbinned
+}
 
 
 
