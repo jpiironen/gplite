@@ -4,30 +4,17 @@
 \alias{gp_optim}
 \title{Optimize hyperparameters of a GP model}
 \usage{
-gp_optim(
-  gp,
-  x,
-  y,
-  method = "Nelder-Mead",
-  tol = 1e-04,
-  maxiter = 500,
-  verbose = T,
-  warnings = T,
-  ...
-)
+gp_optim(gp, x, y, tol = 1e-04, maxiter = 500, verbose = T, warnings = T, ...)
 }
 \arguments{
 \item{gp}{The gp model object to be fitted.}
 
 \item{x}{n-by-d matrix of input values (n is the number of observations and d the input
- dimension). 
-Can also be a vector of length n if the model has only a single input.}
+dimension). Can also be a vector of length n if the model has only a single input.}
 
 \item{y}{Vector of n output (target) values.}
 
-\item{method}{Optimization method that will be passed to \code{\link{optim}} function.}
-
-\item{tol}{Relative change in the objective function value below the optimization is
+\item{tol}{Relative change in the objective function value after which the optimization is
 terminated.}
 
 \item{maxiter}{Maximum number of iterations.}
@@ -35,19 +22,19 @@ terminated.}
 \item{verbose}{If TRUE, then some information about the progress of the optimization is
 printed to the console.}
 
-\item{warnings}{Whether to print out some potential warnigns (such as maximum number of 
+\item{warnings}{Whether to print out some potential warnings (such as maximum number of 
 iterations reached) during the optimization.}
 
-\item{...}{Further arguments to be passed to \code{\link{gp_fit}} that are needed in the fitting
-process, for example \code{trials} in the case of binomial likelihood.}
+\item{...}{Further arguments to be passed to \code{\link{gp_fit}} that are needed 
+in the fitting process, for example \code{trials} in the case of binomial likelihood.}
 }
 \value{
 An updated GP model object.
 }
 \description{
 This function can be used to optimize the hyperparameters of the model to the maximum
- marginal
-likelihood solution (type-II maximum likelihood) based on the Laplace approximation.
+marginal likelihood (or maximum marginal posterior if priors are used), using Nelder-Mead
+algorithm.
 }
 \section{References}{
 

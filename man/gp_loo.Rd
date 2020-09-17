@@ -5,7 +5,17 @@
 \alias{gp_compare}
 \title{Model assessment and comparison}
 \usage{
-gp_loo(gp, x, y, trials = NULL, draws = 4000, jitter = NULL, seed = NULL)
+gp_loo(
+  gp,
+  x,
+  y,
+  quadrature = T,
+  quad_order = 15,
+  draws = 4000,
+  jitter = NULL,
+  seed = NULL,
+  ...
+)
 
 gp_compare(...)
 }
@@ -17,17 +27,23 @@ Can also be a vector of length n if the model has only a single input.}
 
 \item{y}{Vector of n output (target) values.}
 
-\item{trials}{Vector of length n giving the number of trials for each observation in binomial 
-(and beta binomial) model.}
+\item{quadrature}{Whether to use deterministic Gauss-Hermite quadrature to estimate the 
+required integrals. If FALSE, then Monte Carlo estimate is used.}
 
-\item{draws}{Number of posterior draws to estimate the required integrals.}
+\item{quad_order}{Order of the numerical quadrature
+(only applicable if \code{quadrature=TRUE}).}
+
+\item{draws}{Number of posterior draws to estimate the required integrals (only applicable
+if \code{quadrature=FALSE}).}
 
 \item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability.
 Default is 1e-6.}
 
 \item{seed}{Random seed.}
 
-\item{...}{LOO statistics for the models to compare.}
+\item{...}{For \code{gp_compare}, LOO statistics for the models to compare. For
+\code{gp_loo}, possible additional data that is required for LOO predictions (for example,
+argument \code{trials} in case of binomial likelihood).}
 }
 \value{
 \code{gp_loo} returns a list with LOO statistics. 

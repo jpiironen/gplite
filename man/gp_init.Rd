@@ -8,8 +8,12 @@ gp_init(
   cfs = cf_sexp(),
   lik = lik_gaussian(),
   method = "full",
+  latent = "laplace",
   num_basis = 100,
   num_inducing = 100,
+  bin_inducing = NULL,
+  ep_damping = 0.9,
+  ep_quad_order = 15,
   seed = 12345
 )
 }

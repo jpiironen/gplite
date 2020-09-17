@@ -24,8 +24,7 @@ Can also be a vector of length n if the model has only a single input.}
 Default is 1e-6.}
 
 \item{...}{Further arguments to be passed to \link{rstan}'s function 
-\code{\link[rstan]{optimizing}} (if \code{gp_fit} was called) or 
-\code{\link[rstan]{sampling}} (if \code{gp_mcmc} was called).}
+\code{\link[rstan]{sampling}} if \code{gp_mcmc} was called.}
 }
 \value{
 An updated GP model object.
