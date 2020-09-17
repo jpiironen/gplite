@@ -45,6 +45,9 @@ laplace_iter.approx_full <- function(object, gp, K, y, fhat_old, pobs=NULL, ...)
     bad <- which(V <= 0)
     nbad <- length(bad)
     
+    if (nbad > 500)
+      warning('More than 500 data points with pseudo-variance < 0 (outliers), computation getting slow. Check that the model and hyperparameter values are sensible.')
+    
     args <- c(
       list(object=object, gp=gp, K=K[good,good,drop=F], y=y[good], fhat_old=NULL,
            pobs=list(z=z[good], var=V[good])),
@@ -140,6 +143,9 @@ laplace_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
     bad <- which(V <= 0)
     nbad <- length(bad)
     
+    if (nbad > 500)
+      warning('More than 500 data points with pseudo-variance < 0 (outliers), computation getting slow. Check that the model and hyperparameter values are sensible.')
+    
     args <- c(
       list(object=object, gp=gp, Kz=Kz, Kz_chol=Kz_chol, Kxz=Kxz[good,,drop=F],
            D=D[good], y=y[good], fhat_old=NULL, pobs=list(z=z[good], var=V[good])),
@@ -193,7 +199,7 @@ laplace_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
     
   }
   
-  list(fmean=fhat_new, pseudovar=V, Kz=Kz, Kxz=Kxz, Kz_chol=Kz_chol, C_inv=C_inv,
+  list(fmean=fhat_new, Kz=Kz, Kxz=Kxz, Kz_chol=Kz_chol, C_inv=C_inv,
        diag=D, alpha=alpha, log_evidence=log_evidence)
 }
 
