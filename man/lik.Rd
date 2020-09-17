@@ -14,7 +14,7 @@ lik_bernoulli(link = "logit")
 
 lik_binomial(link = "logit")
 
-lik_betabinom(link = "logit", phi = 0.1, prior_phi = prior_logunif())
+lik_betabinom(link = "logit", phi = 1, prior_phi = prior_logunif())
 }
 \arguments{
 \item{sigma}{Initial value for the noise standard deviation.}

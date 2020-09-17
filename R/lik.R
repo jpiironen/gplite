@@ -72,7 +72,7 @@ lik_binomial <- function(link='logit') {
 
 #' @rdname lik
 #' @export
-lik_betabinom <- function(link='logit', phi=0.1, prior_phi=prior_logunif()) {
+lik_betabinom <- function(link='logit', phi=1.0, prior_phi=prior_logunif()) {
   lik <- list() 
   lik$phi <- phi
   lik$link <- link
