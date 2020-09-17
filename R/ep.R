@@ -110,12 +110,16 @@ ep_iter.approx_full <- function(object, gp, K, y, fmean_old, fvar_old, z_old, P_
     alpha <- solve(C_lu$U, solve(C_lu$L, solve(C_lu$P, z)))
     fmean_new <- as.vector(K %*% alpha)
     fcov_new <- diag_times_dense(V, solve(C_lu$U, solve(C_lu$L, solve(C_lu$P, K))))
-    return(list(fmean=fmean_new, fvar=diag(fcov_new), z=z, P=1/V, C_lu=C_lu, 
+    return(list(fmean=fmean_new, fvar=diag(fcov_new), 
+                cavity_mean=mean_cavity, cavity_var=var_cavity,
+                z=z, P=1/V, C_lu=C_lu, 
                 alpha=alpha, log_evidence=log_evidence))
     
   }
   
-  list(fmean=fmean_new, fvar=diag(fcov_new), z=z, P=1/V, C_chol=C_chol, 
+  list(fmean=fmean_new, fvar=diag(fcov_new), 
+       cavity_mean=mean_cavity, cavity_var=var_cavity,
+       z=z, P=1/V, C_chol=C_chol, 
        alpha=alpha, log_evidence=log_evidence)
 }
 
@@ -226,7 +230,8 @@ ep_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
     fmean_new <- Kxz %*% backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Kxz) %*% alpha)) + D*alpha
   }
   
-  list(fmean=as.vector(fmean_new), fvar=fvar_new, z=z, P=1/V,
+  list(fmean=as.vector(fmean_new), fvar=fvar_new, 
+       cavity_mean=mean_cavity, cavity_var=var_cavity, z=z, P=1/V,
        Kz=Kz, Kxz=Kxz, Kz_chol=Kz_chol, C_inv=C_inv, diag=D,
        alpha=alpha, log_evidence=log_evidence)
 }

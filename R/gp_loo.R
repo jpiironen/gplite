@@ -12,13 +12,18 @@
 #' @param x n-by-d matrix of input values (n is the number of observations and d the input dimension). 
 #' Can also be a vector of length n if the model has only a single input.
 #' @param y Vector of n output (target) values.
-#' @param trials Vector of length n giving the number of trials for each observation in binomial 
-#' (and beta binomial) model.
-#' @param draws Number of posterior draws to estimate the required integrals.
+#' @param quadrature Whether to use deterministic Gauss-Hermite quadrature to estimate the 
+#'  required integrals. If FALSE, then Monte Carlo estimate is used.
+#' @param quad_order Order of the numerical quadrature
+#'  (only applicable if \code{quadrature=TRUE}).
+#' @param draws Number of posterior draws to estimate the required integrals (only applicable
+#'  if \code{quadrature=FALSE}).
 #' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
 #'  Default is 1e-6.
 #' @param seed Random seed.
-#' @param ... LOO statistics for the models to compare.
+#' @param ... For \code{gp_compare}, LOO statistics for the models to compare. For
+#' \code{gp_loo}, possible additional data that is required for LOO predictions (for example,
+#' argument \code{trials} in case of binomial likelihood).
 #'
 #'
 #' @return \code{gp_loo} returns a list with LOO statistics. 
@@ -63,8 +68,8 @@ NULL
 
 #' @rdname gp_loo
 #' @export
-gp_loo <- function(gp, x, y, trials=NULL, draws=4000, order=7, quadrature=T, 
-                   jitter=NULL, seed=NULL) {
+gp_loo <- function(gp, x, y, quadrature=T, quad_order=15, draws=4000,
+                   jitter=NULL, seed=NULL, ...) {
   # set random seed but ensure the old RNG state is restored on exit
   if (exists('.Random.seed')) {
     rng_state_old <- .Random.seed
@@ -72,36 +77,54 @@ gp_loo <- function(gp, x, y, trials=NULL, draws=4000, order=7, quadrature=T,
   }
   set.seed(seed)
   
-  fhat <- as.vector(gp$fit$fmean)
-  pobs <- get_pseudodata(gp$lik, fhat, y, trials=trials)
-  z <- pobs$z
-  V <- pobs$var
-  grad <- (z - fhat)/V
-  pred_var <- gp_pred(gp, x, var=TRUE)$var
-  
-  # mean and variance of LOO posteriors
-  loo_var <- 1/(1/pred_var - 1/V)
-  loo_mean <- fhat - loo_var*grad
+  loo_post <- loo_posteriors(gp, x, y, ...)
+  loo_mean <- loo_post$mean
+  loo_var <- loo_post$var
   
   if (quadrature) {
     # use Gauss-Hermite quadrature to evaluate predictive distribution
-    quadrature <- gauss_hermite_points_scaled(loo_mean, sqrt(loo_var), order=order)
+    quadrature <- gauss_hermite_points_scaled(loo_mean, sqrt(loo_var), order=quad_order)
     fgrid <- quadrature$x
     weights <- quadrature$weights
-    loglik <- get_loglik(gp$lik, fgrid, y, trials=trials, sum=FALSE)
+    loglik <- get_loglik(gp$lik, fgrid, y, sum=FALSE, ...)
     loos <- apply(loglik, 1, logsumexp, weights=weights)
   } else {
     # sample from LOO posteriors and evaluate predictive distribution using Monte Carlo
     n <- length(y)
     fsample <- matrix(stats::rnorm(n*draws, mean = loo_mean, sd = sqrt(loo_var)), nrow=n) 
-    loglik <- get_loglik(gp$lik, fsample, y, trials=trials, sum=FALSE)
+    loglik <- get_loglik(gp$lik, fsample, y, sum=FALSE, ...)
     loos <- apply(loglik, 1, logsumexp) - log(draws)
   }
   
-  res <- list(loo=sum(loos), sd=stats::sd(loos), loos=loos)
+  n <- length(y)
+  res <- list(loo=sum(loos), sd=n*(stats::sd(loos)/sqrt(n)), loos=loos)
   class(res) <- 'loores'
   return(res)
   
+}
+
+loo_posteriors <- function(object, ...) {
+  UseMethod("loo_posteriors", object)
+}
+
+loo_posteriors.gp <- function(object, ...) {
+  loo_posteriors(object$latent, object, ...)
+}
+
+loo_posteriors.latent_laplace <- function(object, gp, x, y, ...) {
+  fhat <- as.vector(gp$fit$fmean)
+  pobs <- get_pseudodata(gp$lik, fhat, y, ...)
+  z <- pobs$z
+  V <- pobs$var
+  grad <- (z - fhat)/V
+  pred_var <- gp_pred(gp, x, var=TRUE)$var
+  loo_var <- 1/(1/pred_var - 1/V)
+  loo_mean <- fhat - loo_var*grad
+  return(list(mean=loo_mean, var=loo_var))
+}
+
+loo_posteriors.latent_ep <- function(object, gp, x, y, ...) {
+  return(list(mean=gp$fit$cavity_mean, var=gp$fit$cavity_var))
 }
 
 
