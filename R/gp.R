@@ -101,7 +101,7 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', latent='la
     cfs <- list(cfs)
   gp$cfs <- cfs
   gp$lik <- lik
-  gp$approx <- get_approx(method, seed=seed, num_basis=check_num_basis(cfs, num_basis), 
+  gp$method <- get_method(method, seed=seed, num_basis=check_num_basis(cfs, num_basis), 
                           num_inducing=num_inducing, bin_inducing=bin_inducing)
   gp$latent <- get_latent_method(latent, ep_damping=ep_damping, 
                                  ep_quad_order=ep_quad_order)
@@ -177,19 +177,19 @@ lpdf_prior.gp <- function(object, ...) {
 }
 
 get_featuremap.gp <- function(object, num_inputs, ...) {
-  if ('approx_rf' %in% class(object$approx)) {
-    featmap <- rf_featmap(object$cfs, object$approx$num_basis, 
-                          num_inputs=num_inputs, seed=object$approx$seed)
+  if ('method_rf' %in% class(object$method)) {
+    featmap <- rf_featmap(object$cfs, object$method$num_basis, 
+                          num_inputs=num_inputs, seed=object$method$seed)
     return(featmap)
-  } else if ('approx_rbf' %in% class(object$approx)) {
+  } else if ('method_rbf' %in% class(object$method)) {
     x <- object$x
     if (is.null(x))
       stop('Cannot compute RBF feature map when the x matrix is not known.')
-    featmap <- rbf_featmap(object$cfs, object$approx$num_basis, 
-                           num_inputs=num_inputs, x=x, seed=object$approx$seed)
+    featmap <- rbf_featmap(object$cfs, object$method$num_basis, 
+                           num_inputs=num_inputs, x=x, seed=object$method$seed)
     return(featmap)
   } else
-    stop('No feature map implementation for method: ', object$approx$name)
+    stop('No feature map implementation for method: ', object$method$name)
 }
 
 is_fitted.gp <- function(object, type, ...) {
@@ -233,7 +233,7 @@ check_num_basis <- function(cfs, num_basis, num_inputs=NA) {
 get_weight_inds <- function(gp, cfind=NULL) {
   if (is.null(cfind))
     cfind <- seq_along(gp$cfs)
-  end_points <- c(0, cumsum(gp$approx$num_basis))
+  end_points <- c(0, cumsum(gp$method$num_basis))
   inds <- c()
   for (k in cfind)
     inds <- c(inds, (end_points[k]+1):end_points[k+1])

@@ -71,11 +71,11 @@ fit_model.gp <- function(object, ...) {
 }
 
 fit_model.latent_laplace <- function(object, gp, ...) {
-  fit_laplace(gp$approx, gp, ...)
+  fit_laplace(gp$method, gp, ...)
 }
 
 fit_model.latent_ep <- function(object, gp, ...) {
-  fit_ep(gp$approx, gp, ...)
+  fit_ep(gp$method, gp, ...)
 }
 
 fit_laplace <- function(object, ...) {
@@ -87,11 +87,11 @@ fit_ep <- function(object, ...) {
 }
 
 fit_ep.gp <- function(object, ...) {
-  fit_ep(object$approx, object, ...)
+  fit_ep(object$method, object, ...)
 }
 
 
-fit_laplace.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+fit_laplace.method_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
@@ -101,12 +101,12 @@ fit_laplace.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, 
   return(gp)
 }
 
-fit_laplace.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+fit_laplace.method_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
   z <- get_inducing(gp, x)
-  Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$approx$num_inducing)
+  Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$method$num_inducing)
   Kxz <- eval_cf(gp$cfs, x, z)
   Kz_chol <- t(chol(Kz))
   D <- eval_cf(gp$cfs, x, x, diag_only=T) + jitter
@@ -123,20 +123,20 @@ fit_laplace.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, 
   return(gp)
 }
 
-fit_laplace.approx_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+fit_laplace.method_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)
-  gp$approx$num_basis <- check_num_basis(gp$cfs, gp$approx$num_basis, NCOL(x))
+  gp$method$num_basis <- check_num_basis(gp$cfs, gp$method$num_basis, NCOL(x))
   z <- featuremap(x)
   gp$fit <- laplace(object, gp, z, y, trials=trials)
   return(gp)
 }
 
-fit_laplace.approx_rbf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+fit_laplace.method_rbf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   gp$x <- x
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)
-  gp$approx$num_basis <- check_num_basis(gp$cfs, gp$approx$num_basis, NCOL(x))
+  gp$method$num_basis <- check_num_basis(gp$cfs, gp$method$num_basis, NCOL(x))
   z <- featuremap(x)
   gp$fit <- laplace(object, gp, z, y, trials=trials)
   return(gp)
@@ -144,11 +144,11 @@ fit_laplace.approx_rbf <- function(object, gp, x, y, trials=NULL, jitter=NULL, .
 
 
 
-fit_ep.approx <- function(object, ...) {
+fit_ep.method <- function(object, ...) {
   stop(paste('No EP implementation for', class(object)[1], 'yet.'))
 }
 
-fit_ep.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+fit_ep.method_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
@@ -159,12 +159,12 @@ fit_ep.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) 
   return(gp)
 }
 
-fit_ep.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+fit_ep.method_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
   z <- get_inducing(gp, x)
-  Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$approx$num_inducing)
+  Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$method$num_inducing)
   Kxz <- eval_cf(gp$cfs, x, z)
   Kz_chol <- t(chol(Kz))
   K_diag <- eval_cf(gp$cfs, x, x, diag_only=T) + jitter
@@ -189,13 +189,13 @@ get_inducing <- function(gp, x) {
     rng_state_old <- .Random.seed
     on.exit(assign(".Random.seed", rng_state_old, envir = .GlobalEnv))
   }
-  set.seed(gp$approx$seed)
+  set.seed(gp$method$seed)
   
   if (!is.null(gp$x_inducing))
     return(gp$x_inducing)
   xscaled <- scale(x)
-  binning <- gp$approx$bin_inducing
-  num_inducing <- gp$approx$num_inducing
+  binning <- gp$method$bin_inducing
+  num_inducing <- gp$method$num_inducing
   
   if (!is.null(binning)) {
     varname <- names(binning)[1] # TODO: currently handles only one variable

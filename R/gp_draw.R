@@ -53,19 +53,19 @@ gp_draw_mcmc <- function(object, ...) {
 }
 
 gp_draw_prior.gp <- function(object, ...) {
-  gp_draw_prior(object$approx, object, ...)
+  gp_draw_prior(object$method, object, ...)
 }
 
 gp_draw_analytic.gp <- function(object, ...) {
-  gp_draw_analytic(object$approx, object, ...)
+  gp_draw_analytic(object$method, object, ...)
 }
 
 gp_draw_mcmc.gp <- function(object, ...) {
-  gp_draw_mcmc(object$approx, object, ...)
+  gp_draw_mcmc(object$method, object, ...)
 }
 
 
-gp_draw_prior.approx_full <- function(object, gp, xt, draws=NULL, transform=T, target=F,
+gp_draw_prior.method_full <- function(object, gp, xt, draws=NULL, transform=T, target=F,
                                       cfind=NULL, jitter=NULL, ...) {
   
   pred <- gp_pred_prior(object, gp, xt, cov=T, cfind=cfind, jitter=jitter)
@@ -77,7 +77,7 @@ gp_draw_prior.approx_full <- function(object, gp, xt, draws=NULL, transform=T, t
   return(sample)
 }
 
-gp_draw_prior.approx_fitc <- function(object, gp, xt, draws=NULL, transform=T, target=F,
+gp_draw_prior.method_fitc <- function(object, gp, xt, draws=NULL, transform=T, target=F,
                                       cfind=NULL, jitter=NULL, ...) {
   
   pred <- gp_pred_prior(object, gp, xt, cov=T, cfind=cfind, jitter=jitter)
@@ -89,7 +89,7 @@ gp_draw_prior.approx_fitc <- function(object, gp, xt, draws=NULL, transform=T, t
   return(sample)
 }
 
-gp_draw_prior.approx_rf <- function(object, gp, xt, var=F, draws=NULL, transform=T, target=F,
+gp_draw_prior.method_rf <- function(object, gp, xt, var=F, draws=NULL, transform=T, target=F,
                                     cfind=NULL, ...) {
   
   # draw from the prior of w
@@ -107,7 +107,7 @@ gp_draw_prior.approx_rf <- function(object, gp, xt, var=F, draws=NULL, transform
 }
 
 
-gp_draw_analytic.approx_full <- function(object, gp, xt, draws=NULL, transform=T, target=F,
+gp_draw_analytic.method_full <- function(object, gp, xt, draws=NULL, transform=T, target=F,
                                          marginal=F, cfind=NULL, jitter=NULL, ...) {
   if (marginal) {
     pred <- gp_pred_post(object, gp, xt, cov=F, var=T, cfind=cfind, jitter=jitter)
@@ -123,7 +123,7 @@ gp_draw_analytic.approx_full <- function(object, gp, xt, draws=NULL, transform=T
   return(sample)
 }
 
-gp_draw_analytic.approx_fitc <- function(object, gp, xt, draws=NULL, transform=T, target=F,
+gp_draw_analytic.method_fitc <- function(object, gp, xt, draws=NULL, transform=T, target=F,
                                          marginal=F, cfind=NULL, jitter=NULL, ...) {
   if (marginal) {
     pred <- gp_pred_post(object, gp, xt, cov=F, var=T, cfind=cfind, jitter=jitter)
@@ -139,7 +139,7 @@ gp_draw_analytic.approx_fitc <- function(object, gp, xt, draws=NULL, transform=T
   return(sample)
 }
 
-gp_draw_analytic.approx_rf <- function(object, gp, xt, draws=NULL, transform=T, target=F,
+gp_draw_analytic.method_rf <- function(object, gp, xt, draws=NULL, transform=T, target=F,
                                        cfind=NULL, ...) {
   
   # draw from the posterior of w
@@ -157,16 +157,16 @@ gp_draw_analytic.approx_rf <- function(object, gp, xt, draws=NULL, transform=T, 
   return(sample)
 }
 
-gp_draw_analytic.approx_rbf <- function(object, gp, xt, draws=NULL, transform=T, target=F,
+gp_draw_analytic.method_rbf <- function(object, gp, xt, draws=NULL, transform=T, target=F,
                                         cfind=NULL, ...) {
-  gp_draw_analytic.approx_rf(object, gp, xt, draws=draws, transform=transform, target=target,
+  gp_draw_analytic.method_rf(object, gp, xt, draws=draws, transform=transform, target=target,
                              cfind=cfind, ...)
 }
 
 
 
 
-gp_draw_mcmc.approx_full <- function(object, gp, xt, draws=NULL, transform=T, target=T,
+gp_draw_mcmc.method_full <- function(object, gp, xt, draws=NULL, transform=T, target=T,
                                      marginal=F, cfind=NULL, jitter=NULL, ...) {
   
   fsample <- gp$fit$fsample
@@ -197,7 +197,7 @@ gp_draw_mcmc.approx_full <- function(object, gp, xt, draws=NULL, transform=T, ta
   return(sample)
 }
 
-gp_draw_mcmc.approx_fitc <- function(object, gp, xt, draws=NULL, transform=T, target=T,
+gp_draw_mcmc.method_fitc <- function(object, gp, xt, draws=NULL, transform=T, target=T,
                                      marginal=F, cfind=NULL, jitter=NULL, ...) {
   
   usample <- gp$fit$usample
@@ -228,7 +228,7 @@ gp_draw_mcmc.approx_fitc <- function(object, gp, xt, draws=NULL, transform=T, ta
   return(sample)
 }
 
-gp_draw_mcmc.approx_rf <- function(object, gp, xt, draws=NULL, transform=T, target=T, 
+gp_draw_mcmc.method_rf <- function(object, gp, xt, draws=NULL, transform=T, target=T, 
                                    cfind=NULL, ...) {
   
   wsample <- get_w_sample(gp, cfind)

@@ -110,15 +110,15 @@ gp_pred_post <- function(object, ...) {
 }
 
 gp_pred_prior.gp <- function(object, ...) {
-  gp_pred_prior(object$approx, object, ...)
+  gp_pred_prior(object$method, object, ...)
 }
 
 gp_pred_post.gp <- function(object, ...) {
-  gp_pred_post(object$approx, object, ...)
+  gp_pred_post(object$method, object, ...)
 }
 
 
-gp_pred_prior.approx_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+gp_pred_prior.method_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   
   nt <- NROW(xt)
   pred_mean <- rep(0,nt)
@@ -134,7 +134,7 @@ gp_pred_prior.approx_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, 
   return(pred_mean)
 }
 
-gp_pred_prior.approx_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+gp_pred_prior.method_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   
   nt <- NROW(xt)
   pred_mean <- rep(0,nt)
@@ -145,7 +145,7 @@ gp_pred_prior.approx_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, 
     if (is.null(gp$x_inducing))
       stop('Inducing points not set yet.')
     z <- gp$x_inducing
-    Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$approx$num_inducing)
+    Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$method$num_inducing)
     Kxz <- eval_cf(gp$cfs, xt, z)
     Kz_chol <- t(chol(Kz))
     xt <- as.matrix(xt)
@@ -161,7 +161,7 @@ gp_pred_prior.approx_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, 
   return(pred_mean)
 }
 
-gp_pred_prior.approx_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
+gp_pred_prior.method_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
   
   # mean is zero
   nt <- NROW(xt)
@@ -177,7 +177,7 @@ gp_pred_prior.approx_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NU
   return(pred_mean)
 }
 
-gp_pred_post.approx_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+gp_pred_post.method_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
   Kt <- eval_cf(gp$cfs, xt, gp$x, cfind)
@@ -207,7 +207,7 @@ gp_pred_post.approx_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
   return(pred_mean)
 }
 
-gp_pred_post.approx_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+gp_pred_post.method_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
   Ktz <- eval_cf(gp$cfs, xt, gp$x_inducing, cfind)
@@ -244,7 +244,7 @@ gp_pred_post.approx_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
   return(pred_mean)
 }
 
-gp_pred_post.approx_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
+gp_pred_post.method_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
   featuremap <- get_featuremap(gp, num_inputs = NCOL(xt))
@@ -262,8 +262,8 @@ gp_pred_post.approx_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NUL
   return(pred_mean)
 }
 
-gp_pred_post.approx_rbf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
-  gp_pred_post.approx_rf(object, gp, xt, var=var, cfind=cfind, jitter=jitter)
+gp_pred_post.method_rbf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
+  gp_pred_post.method_rf(object, gp, xt, var=var, cfind=cfind, jitter=jitter)
 }
 
 

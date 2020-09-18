@@ -13,7 +13,7 @@ ep <- function(object, ...) {
 
 
 
-ep_iter.approx_full <- function(object, gp, K, y, fmean_old, fvar_old, z_old, P_old,
+ep_iter.method_full <- function(object, gp, K, y, fmean_old, fvar_old, z_old, P_old,
                                 pobs=NULL, ...) {
   
   # get the pseudo data first
@@ -127,7 +127,7 @@ ep_iter.approx_full <- function(object, gp, K, y, fmean_old, fvar_old, z_old, P_
        alpha=alpha, log_evidence=log_evidence, quad_ok=pobs$quad_ok)
 }
 
-ep_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
+ep_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
                                 fmean_old, fvar_old, z_old, P_old, pobs=NULL, ...) {
   
   # get the pseudo data first
@@ -247,7 +247,7 @@ ep_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
 
 
 
-ep.approx_full <- function(object, gp, K, y, maxiter=300, tol=1e-4, 
+ep.method_full <- function(object, gp, K, y, maxiter=300, tol=1e-4, 
                            damping=0.9, damping_min=0.1, ...) {
   
   # this is the EP iteration, so iterate the parallel EP until convergence
@@ -291,7 +291,7 @@ ep.approx_full <- function(object, gp, K, y, maxiter=300, tol=1e-4,
 }
 
 
-ep.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, K_diag, D, y, 
+ep.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, K_diag, D, y, 
                            damping=0.9, damping_min=0.1,
                            maxiter=100, tol=1e-3, ...) {
   

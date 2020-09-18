@@ -10,7 +10,7 @@ laplace <- function(object, ...) {
 
 
 
-laplace_iter.approx_full <- function(object, gp, K, y, fhat_old, pobs=NULL, ...) {
+laplace_iter.method_full <- function(object, gp, K, y, fhat_old, pobs=NULL, ...) {
   
   # get the pseudo data first
   if (is.null(pobs))
@@ -105,7 +105,7 @@ laplace_iter.approx_full <- function(object, gp, K, y, fhat_old, pobs=NULL, ...)
   list(fmean=fhat_new, C_chol=C_chol, alpha=alpha, log_evidence=log_evidence)
 }
 
-laplace_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_old, 
+laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_old, 
                                      pobs=NULL, ...) {
   
   # get the pseudo data first
@@ -204,7 +204,7 @@ laplace_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
 }
 
 
-laplace_iter.approx_rf <- function(object, gp, Z, y, fhat_old, ...) {
+laplace_iter.method_rf <- function(object, gp, Z, y, fhat_old, ...) {
   
   # calculate first the new estimate for posterior mean for f
   pobs <- get_pseudodata(gp$lik, fhat_old, y, ...)
@@ -227,8 +227,8 @@ laplace_iter.approx_rf <- function(object, gp, Z, y, fhat_old, ...) {
   list(wmean=what, wcov=wcov, log_evidence=log_evidence)
 }
 
-laplace_iter.approx_rbf <- function(object, gp, Z, y, fhat_old, ...) {
-  laplace_iter.approx_rf(object, gp, Z, y, fhat_old, ...)
+laplace_iter.method_rbf <- function(object, gp, Z, y, fhat_old, ...) {
+  laplace_iter.method_rf(object, gp, Z, y, fhat_old, ...)
 }
 
 
@@ -237,7 +237,7 @@ laplace_iter.approx_rbf <- function(object, gp, Z, y, fhat_old, ...) {
 
 
 
-laplace.approx_full <- function(object, gp, K, y, maxiter=100, tol=1e-4, ...) {
+laplace.method_full <- function(object, gp, K, y, maxiter=100, tol=1e-4, ...) {
   
   # this is the newton iteration, so iterate the second order approximation
   # to the log likelihood by updating the mean until convergence
@@ -259,7 +259,7 @@ laplace.approx_full <- function(object, gp, K, y, maxiter=100, tol=1e-4, ...) {
   return(fit)
 }
 
-laplace.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, maxiter=100, tol=1e-3, ...) {
+laplace.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, maxiter=100, tol=1e-3, ...) {
   n <- length(y)
   fhat <- rep(0, n)
   if ('lik_gaussian' %in% class(gp$lik))
@@ -277,7 +277,7 @@ laplace.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, maxiter=100,
   return(fit)
 }
 
-laplace.approx_rf <- function(object, gp, Z, y, maxiter=100, tol=1e-4, ...) {
+laplace.method_rf <- function(object, gp, Z, y, maxiter=100, tol=1e-4, ...) {
   
   # this is the newton iteration, so iterate the second order approximation
   # to the log likelihood by updating the mean until convergence
@@ -300,8 +300,8 @@ laplace.approx_rf <- function(object, gp, Z, y, maxiter=100, tol=1e-4, ...) {
   return(fit)
 }
 
-laplace.approx_rbf <- function(object, gp, Z, y, maxiter=100, tol=1e-4, ...) {
-  laplace.approx_rf(object, gp, Z, y, maxiter=maxiter, tol=tol, ...)
+laplace.method_rbf <- function(object, gp, Z, y, maxiter=100, tol=1e-4, ...) {
+  laplace.method_rf(object, gp, Z, y, maxiter=maxiter, tol=tol, ...)
 }
 
 

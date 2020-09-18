@@ -15,14 +15,14 @@ fit_mcmc <- function(object, ...) {
 }
 
 fit_mcmc.gp <- function(object, ...) {
-  fit_mcmc(object$approx, object, ...)
+  fit_mcmc(object$method, object, ...)
 }
 
-fit_mcmc.approx <- function(object, ...) {
+fit_mcmc.method <- function(object, ...) {
   stop("MCMC for ", class(object)[1], " not implemented yet.")
 }
 
-fit_mcmc.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+fit_mcmc.method_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp,jitter)
@@ -34,19 +34,19 @@ fit_mcmc.approx_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...
     list(n=n, L=gp$K_chol, y=as.array(y)), 
     get_standata(gp$lik, trials=trials, n=n)
   )
-  model <- get_stanmodel(gp$lik, gp$approx$name)
+  model <- get_stanmodel(gp$lik, gp$method$name)
   stanfit <- rstan::sampling(model, data=data, ...)
   draws <- rstan::extract(stanfit)
   gp$fit <- list(fsample=t(draws$f))
   return(gp)
 }
 
-fit_mcmc.approx_fitc <- function(object, gp, x,y, trials=NULL, jitter, ...) {
+fit_mcmc.method_fitc <- function(object, gp, x,y, trials=NULL, jitter, ...) {
   x <- as.matrix(x)
   n <- length(y)
   z <- get_inducing(gp, x)
   jitter <- get_jitter(gp,jitter)
-  Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$approx$num_inducing)
+  Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$method$num_inducing)
   Kxz <- eval_cf(gp$cfs, x, z)
   Kz_chol <- t(chol(Kz))
   Kxz_U_inv <- t(forwardsolve(Kz_chol, t(Kxz)))
@@ -58,7 +58,7 @@ fit_mcmc.approx_fitc <- function(object, gp, x,y, trials=NULL, jitter, ...) {
     list(n=n, m=NROW(z), Kxz_U_inv=Kxz_U_inv, D=D, y=as.array(y)), 
     get_standata(gp$lik, trials=trials, n=n)
   )
-  model <- get_stanmodel(gp$lik, gp$approx$name)
+  model <- get_stanmodel(gp$lik, gp$method$name)
   stanfit <- rstan::sampling(model, data=data, ...)
   draws <- rstan::extract(stanfit)
   u <- Kz_chol %*% t(draws$u_white)
@@ -66,7 +66,7 @@ fit_mcmc.approx_fitc <- function(object, gp, x,y, trials=NULL, jitter, ...) {
   return(gp)
 }
 
-fit_mcmc.approx_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
+fit_mcmc.method_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) {
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)
   z <- featuremap(x)
@@ -75,7 +75,7 @@ fit_mcmc.approx_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) 
     list(n=n, m=ncol(z), Z=z, y=as.array(y)), 
     get_standata(gp$lik, trials=trials, n=n)
   )
-  model <- get_stanmodel(gp$lik, gp$approx$name)
+  model <- get_stanmodel(gp$lik, gp$method$name)
   stanfit <- rstan::sampling(model, data=data, ...)
   draws <- rstan::extract(stanfit)
   gp$fit <- list(wsample=t(draws$w))
