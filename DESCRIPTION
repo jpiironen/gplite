@@ -3,7 +3,7 @@ Title: Lightweight Implementation for the Most Common Gaussian Process Models
 Version: 0.3.0
 Authors@R: c(person("Juho", "Piironen", role = c("cre", "aut"), email = "juho.t.piironen@gmail.com"))
 Description: 
-  Implements the most common Gaussian process (GP) models using Laplace approximation, 
+  Implements the most common Gaussian process (GP) models using Laplace and EP approximations, 
   maximum marginal likelihood inference for the hyperparameters, and sparse
   approximations for larger datasets. In addition, provides also convenient 
   interface to perform Markov chain Monte Carlo (MCMC) inference for the latent values with 
