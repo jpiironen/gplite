@@ -67,14 +67,14 @@ fit_model <- function(object, ...) {
 }
 
 fit_model.gp <- function(object, ...) {
-  fit_model(object$latent, object, ...)
+  fit_model(object$approx, object, ...)
 }
 
-fit_model.latent_laplace <- function(object, gp, ...) {
+fit_model.approx_laplace <- function(object, gp, ...) {
   fit_laplace(gp$method, gp, ...)
 }
 
-fit_model.latent_ep <- function(object, gp, ...) {
+fit_model.approx_ep <- function(object, gp, ...) {
   fit_ep(gp$method, gp, ...)
 }
 
@@ -154,8 +154,8 @@ fit_ep.method_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) 
   jitter <- get_jitter(gp,jitter)
   K <- eval_cf(gp$cfs, x, x) + jitter*diag(n)
   gp$x <- x
-  gp$fit <- ep(object, gp, K, y, trials=trials, quad_order=gp$latent$quad_order,
-               damping=gp$latent$damping, damping_min=0.1, ...)
+  gp$fit <- ep(object, gp, K, y, trials=trials, quad_order=gp$approx$quad_order,
+               damping=gp$approx$damping, damping_min=0.1, ...)
   return(gp)
 }
 

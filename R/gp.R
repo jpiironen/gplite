@@ -92,7 +92,7 @@
 #'
 
 #' @export
-gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', latent='laplace',
+gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', approx='laplace',
                     num_basis=100, num_inducing=100, bin_inducing=NULL, 
                     ep_damping=0.9, ep_quad_order=11, 
                     seed=12345) {
@@ -103,7 +103,7 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method='full', latent='la
   gp$lik <- lik
   gp$method <- get_method(method, seed=seed, num_basis=check_num_basis(cfs, num_basis), 
                           num_inducing=num_inducing, bin_inducing=bin_inducing)
-  gp$latent <- get_latent_method(latent, ep_damping=ep_damping, 
+  gp$approx <- get_approx_method(approx, ep_damping=ep_damping, 
                                  ep_quad_order=ep_quad_order)
   gp$fitted <- FALSE
   class(gp) <- 'gp'

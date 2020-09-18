@@ -108,10 +108,10 @@ loo_posteriors <- function(object, ...) {
 }
 
 loo_posteriors.gp <- function(object, ...) {
-  loo_posteriors(object$latent, object, ...)
+  loo_posteriors(object$approx, object, ...)
 }
 
-loo_posteriors.latent_laplace <- function(object, gp, x, y, ...) {
+loo_posteriors.approx_laplace <- function(object, gp, x, y, ...) {
   fhat <- as.vector(gp$fit$fmean)
   pobs <- get_pseudodata(gp$lik, fhat, y, ...)
   z <- pobs$z
@@ -123,7 +123,7 @@ loo_posteriors.latent_laplace <- function(object, gp, x, y, ...) {
   return(list(mean=loo_mean, var=loo_var))
 }
 
-loo_posteriors.latent_ep <- function(object, gp, x, y, ...) {
+loo_posteriors.approx_ep <- function(object, gp, x, y, ...) {
   return(list(mean=gp$fit$cavity_mean, var=gp$fit$cavity_var))
 }
 
