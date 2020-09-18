@@ -26,6 +26,10 @@ ep_iter.approx_full <- function(object, gp, K, y, fmean_old, fvar_old, z_old, P_
   var_cavity <- pobs$var_cavity
   n <- length(z)
   
+  if (any(is.na(V) | is.na(z))) {
+    return(list(fmean_new=fmean_old, log_evidence=-Inf))
+  }
+  
   if (all(V > 0)) {
     
     # normal case; all pseudo-variances are positive (log-concave likelihood)
@@ -83,7 +87,7 @@ ep_iter.approx_full <- function(object, gp, K, y, fmean_old, fvar_old, z_old, P_
     A <- diag(nbad) + t(Lk) %*% diag_times_dense(1/V[bad], Lk)
     A_chol <- tryCatch({ t(chol(A)) }, error = function(err) { NULL })
     if (is.null(A_chol))
-      return(list(fmean=fhat_old, log_evidence=-Inf))
+      return(list(fmean=Inf, log_evidence=-Inf))
     alpha2 <- backsolve(t(Lk), backsolve(t(A_chol), forwardsolve(A_chol, t(Lk) %*% (z[bad]/V[bad]))))
     
     aux <- backsolve(t(Lk), forwardsolve(Lk, pred_mean))
@@ -112,7 +116,7 @@ ep_iter.approx_full <- function(object, gp, K, y, fmean_old, fvar_old, z_old, P_
     fcov_new <- diag_times_dense(V, solve(C_lu$U, solve(C_lu$L, solve(C_lu$P, K))))
     return(list(fmean=fmean_new, fvar=diag(fcov_new), 
                 cavity_mean=mean_cavity, cavity_var=var_cavity,
-                z=z, P=1/V, C_lu=C_lu, 
+                z=z, P=1/V, C_lu=C_lu, quad_ok=pobs$quad_ok,
                 alpha=alpha, log_evidence=log_evidence))
     
   }
@@ -120,7 +124,7 @@ ep_iter.approx_full <- function(object, gp, K, y, fmean_old, fvar_old, z_old, P_
   list(fmean=fmean_new, fvar=diag(fcov_new), 
        cavity_mean=mean_cavity, cavity_var=var_cavity,
        z=z, P=1/V, C_chol=C_chol, 
-       alpha=alpha, log_evidence=log_evidence)
+       alpha=alpha, log_evidence=log_evidence, quad_ok=pobs$quad_ok)
 }
 
 ep_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
@@ -137,6 +141,9 @@ ep_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
   n <- length(z)
   S <- D+V
   
+  if (any(is.na(V) | is.na(z))) {
+    return(list(fmean_new=fmean_old, log_evidence=-Inf))
+  }
   
   if (all(V > 0)) {
     
@@ -199,7 +206,7 @@ ep_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
     A <- diag(nbad) + t(Lk) %*% diag_times_dense(1/V[bad], Lk)
     A_chol <- tryCatch({ t(chol(A)) }, error = function(err) { NULL })
     if (is.null(A_chol))
-      return(list(fmean=fhat_old, log_evidence=-Inf))
+      return(list(fmean=Inf, log_evidence=-Inf))
     alpha2 <- backsolve(t(Lk), backsolve(t(A_chol), forwardsolve(A_chol, t(Lk) %*% (z[bad]/V[bad]))))
     
     aux <- backsolve(t(Lk), forwardsolve(Lk, pred_mean))
@@ -233,7 +240,7 @@ ep_iter.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
   list(fmean=as.vector(fmean_new), fvar=fvar_new, 
        cavity_mean=mean_cavity, cavity_var=var_cavity, z=z, P=1/V,
        Kz=Kz, Kxz=Kxz, Kz_chol=Kz_chol, C_inv=C_inv, diag=D,
-       alpha=alpha, log_evidence=log_evidence)
+       alpha=alpha, log_evidence=log_evidence, quad_ok=pobs$quad_ok)
 }
 
 
@@ -278,6 +285,8 @@ ep.approx_full <- function(object, gp, K, y, maxiter=300, tol=1e-4,
     fit$log_evidence <- -Inf
     warning('Maximum number of iterations in EP reached, max delta f = ', diff_new) 
   }
+  if (!is.null(fit$quad_ok) && !fit$quad_ok)
+    fit$log_evidence <- -Inf
   return(fit)
 }
 
@@ -313,10 +322,13 @@ ep.approx_fitc <- function(object, gp, Kz, Kz_chol, Kxz, K_diag, D, y,
     if (diff_new < tol)
       break
   }
+  print(iter)
   if (maxiter > 1 && iter == maxiter) {
     fit$log_evidence <- -Inf
     warning('Maximum number of iterations in EP reached, max delta f = ', diff_new) 
   }
+  if (!is.null(fit$quad_ok) && !fit$quad_ok)
+    fit$log_evidence <- -Inf
   return(fit)
 }
 

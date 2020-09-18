@@ -205,19 +205,18 @@ get_pseudodata_ep.lik <- function(object, post_mean, post_prec,
   mean_cavity <- tilted_moments$mean_cavity
   var_cavity <- tilted_moments$var_cavity
   log_C <- tilted_moments$log_normalizing_const
+  quad_ok <- tilted_moments$quad_ok
   
   P_new <- 1/var_tilted - 1/var_cavity
   nu_new <- (mean_tilted/var_tilted - mean_cavity/var_cavity)
   
-  
-  ### damping ###
+  # damping
   nu_old <- z_old*P_old
   nu_new <- damping*nu_new + (1-damping)*nu_old
   P_new <- damping*P_new + (1-damping)*P_old
-  ###############
   
   return(list(z=(1/P_new)*nu_new, var=1/P_new, log_normalizing_const=log_C,
-              mean_cavity=mean_cavity, var_cavity=var_cavity))
+              mean_cavity=mean_cavity, var_cavity=var_cavity, quad_ok=quad_ok))
 }
 
 
@@ -234,9 +233,17 @@ get_tilted_moments.lik <- function(object, post_mean, post_prec,
   weights <- gh$weights
   
   loglik <- get_loglik(object, fgrid, y, sum=FALSE, ...)
-  lik <- exp(loglik) # TODO: this might be unstable, but unavoidable
+  lik <- exp(loglik) # this might be unstable, but unavoidable
   
-  #C <- sum( lik * weights)
+  if (any(is.na(lik))) {
+    # set NaNs to zero, but return a flag indicating that the result might be unreliable
+    lik[is.na(lik)] <- 0
+    loglik[is.na(loglik)] <- -Inf
+    quad_ok <- F
+  } else {
+    quad_ok <- T
+  }
+  
   log_C <- apply(loglik, 1, logsumexp, weights=weights)
   C <- exp(log_C)
   mean_tilted <- (1/C) * (fgrid*lik) %*% weights
@@ -245,7 +252,7 @@ get_tilted_moments.lik <- function(object, post_mean, post_prec,
   s2_tilted <- as.vector(s2_tilted)
   
   list(mean_tilted=mean_tilted, var_tilted=s2_tilted, log_normalizing_const=log_C,
-       mean_cavity=cavity_mean, var_cavity=1/cavity_prec)
+       mean_cavity=cavity_mean, var_cavity=1/cavity_prec, quad_ok=quad_ok)
 }
 
 

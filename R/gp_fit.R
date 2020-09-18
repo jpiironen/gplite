@@ -172,7 +172,7 @@ fit_ep.approx_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) 
   gp$x <- x
   gp$x_inducing <- z
   gp$fit <- tryCatch({
-    ep(object, gp, Kz, Kz_chol, Kxz, K_diag, D, y, trials=trials)
+    ep(object, gp, Kz, Kz_chol, Kxz, K_diag, D, y, trials=trials, ...)
   },
   error = function(err) {
     print(err)
