@@ -32,8 +32,8 @@ An updated GP model object.
 \description{
 Function \code{gp_fit} fits a GP model with the current hyperparameters. 
 Notice that this function does not optimize the hyperparameters in any way, 
-but only finds the Laplace approximation (or the analytical 
-true posterior in the case of Gaussian likelihood) to the latent values. 
+but only finds the analytical posterior approximation (depending on chosen
+ \code{\link{approx}}) for the latent values with the current hyperparameters. 
 Function \code{gp_mcmc} draws from the posterior of the latent values 
 given the current hyperparameter estimates using MCMC. For optimizing the hyperparameter
 values, see \code{gp_optim}.
@@ -41,7 +41,8 @@ values, see \code{gp_optim}.
 \section{References}{
 
 
-Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
+Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning.
+MIT Press.
 }
 
 \examples{

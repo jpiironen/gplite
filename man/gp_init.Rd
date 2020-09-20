@@ -7,14 +7,8 @@
 gp_init(
   cfs = cf_sexp(),
   lik = lik_gaussian(),
-  method = "full",
-  latent = "laplace",
-  num_basis = 100,
-  num_inducing = 100,
-  bin_inducing = NULL,
-  ep_damping = 0.9,
-  ep_quad_order = 15,
-  seed = 12345
+  method = method_full(),
+  approx = approx_laplace()
 )
 }
 \arguments{
@@ -22,17 +16,11 @@ gp_init(
 
 \item{lik}{Likelihood (observation model). See \code{\link{lik}}.}
 
-\item{method}{Method for approximating the covariance function, can be one of 
-\code{'full'} (full exact GP),
-\code{'rf'} (random features), or 
-\code{'fitc'} (fully independent training conditional, FITC). See below for details.}
+\item{method}{Method for approximating the covariance function. 
+See \code{\link{method}}.}
 
-\item{num_basis}{Number of basis functions in the covariance approximation for 'rf' and other
-basis function methods.}
-
-\item{num_inducing}{Number of inducing points for FITC approximation.}
-
-\item{seed}{Seed for reproducible results.}
+\item{approx}{Approximate inference method for Gaussian approximation 
+for the posterior of the latent values. See \code{\link{approx}}.}
 }
 \value{
 A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
@@ -40,51 +28,11 @@ A GP model object that can be passed to other functions, for example when optimi
 \description{
 Initializes a GP model with given covariance function(s) and likelihood. The model can then be fitted using \code{\link{gp_fit}} or \code{\link{gp_mcmc}}. For hyperparameter optimization, see \code{\link{gp_optim}}
 }
-\details{
-The argument \code{method} defines the method for approximating the covariance
-function calculation. The choices are:
-\itemize{
- \item{\code{'full'}:} {
- Full exact covariance function is used, meaning
-that the inference will be for the \code{n} latent
-function values (fitting time scales cubicly in \code{n}).
-}
- \item{\code{'rf'}:} {
- Uses random features (or basis functions) for approximating the covariance function,
- which means the inference
-time scales cubicly in the number of approximating basis functions \code{num_basis}.
-For stationary covariance functions random Fourier features (Rahimi and Recht, 2007)
-is used, and for non-stationary kernels using case specific method when possible 
-(for example, drawing the hidden layer parameters randomly for \code{cf_nn}). For
-\code{cf_const} and \code{cf_lin} this means using standard linear model, and the
-inference is performed on the weight space (not in the function space). Thus if
-the model is linear (only \code{cf_const} and \code{cf_lin} are used), this will give
-a potentially huge speed-up if the number of features is considerably smaller than
-the number of data points.
-}
- \item{\code{'fitc'}:} {
- Uses the fully independent training conditional, FITC, approximation 
- (see Quiñonero-Candela and Rasmussen, 2005; Snelson and Ghahramani, 2006). 
- The fitting time scales \code{O(n*m^2)}, where n is the number of data points and 
- m the number of inducing points \code{num_inducing}.
- The inducing point locations are chosen using the k-means algorithm.
- }
- }
-}
 \section{References}{
 
 
-Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. 
+Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning.
 MIT Press.
-
-Rahimi, A. and Recht, B. (2008). Random features for large-scale kernel machines. 
-In Advances in Neural Information Processing Systems 20.
-
-Quiñonero-Candela, J. and Rasmussen, C. E (2005). A unifying view of sparse approximate 
-Gaussian process regression. Journal of Machine Learning Research 6:1939-1959.
-
-Snelson, E. and Ghahramani, Z. (2006). Sparse Gaussian processes using pseudo-inputs. 
-In Advances in Neural Information Processing Systems 18.
 }
 
 \examples{
@@ -98,16 +46,20 @@ f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
 y <- f + 0.5*rnorm(n)
 x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
 
-# Full GP
+# Full exact GP with Gaussian likelihood
 gp <- gp_init(cf_sexp())
 gp <- gp_optim(gp, x, y)
 
 # Approximate solution using random features
-gp <- gp_init(cf_sexp(), method='rf', num_basis=300)
+gp <- gp_init(cf_sexp(), method=method_rf(num_basis=300))
 gp <- gp_optim(gp, x, y)
 
 # Approximate solution using FITC
-gp <- gp_init(cf_sexp(), method='fitc', num_inducing=100)
+gp <- gp_init(cf_sexp(), method=method_fitc(num_inducing=100))
+gp <- gp_optim(gp, x, y)
+
+# Bernoulli likelihood, use EP approximation + FITC
+gp <- gp_init(lik=lik_bernoulli(), approx=approx_ep(), method=method_fitc())
 gp <- gp_optim(gp, x, y)
 
 }

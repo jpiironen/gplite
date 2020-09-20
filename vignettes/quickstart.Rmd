@@ -136,7 +136,33 @@ ggplot() +
 
 The fit looks reasonable, but one could expect that the predictive probabilities would be even closer to zero and one around the origin, given the data we see. Indeed, it is well known that the Laplace approximation tends to be too conservative and underestimate the extreme probabilities in this sort of cases [see, for example, @kuss2005]. 
 
-For more accurate inference, we can run MCMC for the latent values with the optimized hyperparameters. To use more than one core for the computation, uncomment the first line.
+For more accurate inference, we can use EP approximation for the latent values.
+```{r, results='hide'}
+gp <- gp_init(cfs = cf_sexp(), lik = lik_bernoulli(), approx = approx_ep())
+gp <- gp_optim(gp, x, y)
+```
+
+Let's visualize the fit again
+```{r}
+# predict in a grid of points
+xt <- seq(-4,4,len=200)
+pred <- gp_draw(gp, xt, draws=1000)
+pred_mean <- rowMeans(pred)
+qt <- apply(pred, 1, quantile, c(0.05, 0.95))
+pred_lb <- qt[1,]
+pred_ub <- qt[2,]
+
+ggplot() + 
+  geom_ribbon(aes(x=xt,ymin=pred_lb,ymax=pred_ub), fill='lightgray') +
+  geom_line(aes(x=xt,y=pred_mean), color='black', size=1) +
+  geom_point(aes(x=x,y=y), color='black', size=0.5) +
+  xlab('x') + ylab('y')
+
+```
+
+The probabilities look much more what one would expect simply by looking at the data.
+
+It is also possible to run MCMC for the latent values with the optimized hyperparameters. To use more than one core for the computation, uncomment the first line.
 ```{r, results='hide'}
 #options(mc.cores = parallel::detectCores())
 gpmc <- gp_mcmc(gp, x, y, chains=2, iter=1000)
@@ -159,7 +185,7 @@ ggplot() +
   xlab('x') + ylab('y')
 ```
 
-As we see, the fit is substantially different in those cases where the predictive probability is close to zero or one. It is worthwhile to note that even though the Laplace approximation is not very accurate in the extreme cases, it gives reasonable estimates for the hyperparameters. Running then MCMC for the latent values (given the hyperparameters) gives more accurate estimates for the latent function values. 
+As we see, the EP algorithm gives very accurate approximation and similar fit compared to the MCMC.
 
 
 
@@ -195,9 +221,12 @@ The accuracy of the approximation is determined by the number of inducing points
 Notice that we use here only a relatively small number of inducing points to make this vignette build fast. In this toy example it does not affect the accuracy that much, but in more complicated example many more inducing points might be needed to get reasonable accuracy.
 
 ```{r, results='hide'}
-
 # fit the model
-gp <- gp_init(lik=lik_bernoulli(), cfs=cf_sexp(), method = 'fitc', num_inducing=50)
+gp <- gp_init(
+  lik = lik_bernoulli(), 
+  cfs = cf_sexp(), 
+  method = method_fitc(num_inducing=50)
+)
 gp <- gp_optim(gp,x,y)
 ```
 
@@ -229,7 +258,11 @@ The fit seems reasonably good even with only a small number of inducing points.
 The package also implements the method of random features [@rahimi2008]. The accuracy of the approximation is determined by the number of random features (also called basis functions). Again, we use a relatively small number of features, which works fine here, but in more complicated problems many more might be needed for reasonable accuracy.
 ```{r, results='hide'}
 # fit the model
-gp <- gp_init(cfs=cf_sexp(), lik=lik_bernoulli(), method = 'rf', num_basis=100)
+gp <- gp_init(
+  cfs = cf_sexp(), 
+  lik = lik_bernoulli(), 
+  method = method_rf(num_basis=100)
+)
 gp <- gp_optim(gp,x,y)
 ```
 
@@ -253,7 +286,7 @@ ggplot() +
 
 ```
 
-The fit seems more or less reasonable, albeit less accurate than the one with FITC. As a rule of thumb, the random features approach usually requires more basis functions than the FITC requires inducing inputs for comparable accuracy.
+The fit seems more or less reasonable, albeit the extrapolations outside the training data seem a bit wild compared to FITC. As a rule of thumb, the random features approach usually requires more basis functions than the FITC requires inducing inputs for comparable accuracy.
 
 
 

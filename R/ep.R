@@ -322,7 +322,6 @@ ep.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, K_diag, D, y,
     if (diff_new < tol)
       break
   }
-  print(iter)
   if (maxiter > 1 && iter == maxiter) {
     fit$log_evidence <- -Inf
     warning('Maximum number of iterations in EP reached, max delta f = ', diff_new) 
