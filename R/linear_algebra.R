@@ -26,8 +26,6 @@ inv_lemma_get <- function(K, U, D, V=NULL, logdet=T) {
     V_inv_D_U <- 0.5*(V_inv_D_U + t(V_inv_D_U)) # ensure symmetric
   L <- t(chol(K + V_inv_D_U))
   
-  #v <- b/D - invD_U %*% backsolve(t(L), forwardsolve(L, t(invD_U) %*% b))
-  
   # log determinant of the matrix that is to be inverted
   if (logdet) {
     logdet <- sum(log(D)) - 2*sum(log(diag(chol(K)))) + 2*sum(log(diag(L)))

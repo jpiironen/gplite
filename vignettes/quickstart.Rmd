@@ -173,7 +173,8 @@ The package provides a few methods for handling bigger datasets for which the fu
 ```{r}
 # 2d data, version 2
 set.seed(2)
-n_per_cluster <- 2000
+n <- 6000
+n_per_cluster <- n/3
 d <- 2
 drel <- 2
 x <- 0.5*cbind( matrix(rnorm(n_per_cluster*drel), nrow=drel) + 3*rep(1,drel), 
@@ -181,7 +182,6 @@ x <- 0.5*cbind( matrix(rnorm(n_per_cluster*drel), nrow=drel) + 3*rep(1,drel),
                 matrix(rnorm(n_per_cluster*drel), nrow=drel) + c(-3,3))
 x <- t(x)
 y <- c(rep(0,n_per_cluster), rep(1,n_per_cluster), rep(0,n_per_cluster))
-n <- length(y) 
 
 # plot 
 ggplot() +
