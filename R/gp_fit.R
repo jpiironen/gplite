@@ -211,7 +211,7 @@ get_inducing <- function(gp, x) {
     if (num_leftover > 0)
       per_bin[1:num_leftover] <- per_bin[1:num_leftover] + 1
     zscaled_binned <- lapply(1:nbins, function(i) {
-      kmeans(xscaled_binned[[i]], per_bin[i])$centers
+      stats::kmeans(xscaled_binned[[i]], per_bin[i])$centers
     })
     zscaled <- do.call(rbind, zscaled_binned)
     rownames(zscaled) <- NULL

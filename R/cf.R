@@ -742,7 +742,7 @@ learn_scales.cf <- function(object, x, ...) {
   else
     x <- as.matrix(x)[,object$vars,drop=F]
   object$means <- colMeans(x)
-  object$scales <- apply(x, 2, sd)
+  object$scales <- apply(x, 2, stats::sd)
   object
 }
 
