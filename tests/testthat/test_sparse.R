@@ -1,11 +1,11 @@
-context('rf')
+context('sparse')
 source(file.path('helpers', 'helpers.R'))
 
 
 # create some data
 set.seed(1234)
 n <- 30
-nt <- 30
+nt <- 5
 x <- runif(n)*6-3
 xt <- runif(nt)*6-3
 f <- x^2 - 2 
@@ -32,43 +32,54 @@ liks <- list(
   lik_betabinom('probit')
 )
 
-method <- 'rf'
+methods <- list(
+  method_rf(num_basis = 20),
+  method_fitc(num_inducing = 10)
+)
 
 # create some gps 
 k <- 1
 gps <- list()
 yval <- list()
 
-# loop through the likelihoods
-for (j in seq_along(liks)) {
+
+# loop through the methods
+for (m in seq_along(methods)) {
   
-  # all covariance functions alone
-  for (i in seq_along(cfs)) {
-    gps[[k]] <- gp_init(cfs=cfs[[i]], lik=liks[[j]], method=method)
-    yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
-    k <- k+1
+  # loop through the likelihoods
+  for (j in seq_along(liks)) {
+    
+    # all covariance functions alone
+    for (i in seq_along(cfs)) {
+      gps[[k]] <- gp_init(cfs=cfs[[i]], lik=liks[[j]], method=methods[[m]])
+      yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
+      k <- k+1
+    }
+    
+    # all pairs of covariance functions
+    cf_comb <- combn(cfs,2)
+    for (i in 1:NCOL(cf_comb)) {
+      gps[[k]] <- gp_init(cfs=cf_comb[,i], lik=liks[[j]], method=methods[[m]])
+      yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
+      k <- k+1
+    }
+    
+    ## add products of kernels
+    cf_comb <- combn(cfs,3)
+    for (i in 1:NCOL(cf_comb)) {
+      cf <- cf_comb[[1,i]] * cf_comb[[2,i]] * cf_comb[[3,i]]
+      if ('cf_const' %in% sapply(cf$cfs, class) ||
+          'cf_lin' %in% sapply(cf$cfs, class) )
+        next
+      gps[[k]] <- gp_init(cfs=cf, lik=liks[[j]], method=methods[[m]])
+      yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
+      k <- k+1
+    }
   }
   
-  # all pairs of covariance functions
-  cf_comb <- combn(cfs,2)
-  for (i in 1:NCOL(cf_comb)) {
-    gps[[k]] <- gp_init(cfs=cf_comb[,i], lik=liks[[j]], method=method)
-    yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
-    k <- k+1
-  }
-  
-  # add products of kernels
-  cf_comb <- combn(cfs,3)
-  for (i in 1:NCOL(cf_comb)) {
-    cf <- cf_comb[[1,i]] * cf_comb[[2,i]] * cf_comb[[3,i]]
-    if ('cf_const' %in% sapply(cf$cfs, class) ||
-        'cf_lin' %in% sapply(cf$cfs, class) )
-      next
-    gps[[k]] <- gp_init(cfs=cf, lik=liks[[j]], method=method)
-    yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
-    k <- k+1
-  }
 }
+
+
 
 
 
@@ -77,13 +88,25 @@ test_that("gp_pred: error is raised (only) if model has not been refitted after
             
   for (k in seq_along(gps)) {
 
+    #print(paste0('k = ', k))
     gp0 <- gps[[k]]
     gp <- gp_fit(gp0, x, yval[[k]], trials=trials)
     
-    # prior predicion, should work fine
-    expect_silent(gp_draw(gp0, x, draws = 1))
-    expect_silent(gp_pred(gp0, x, var=T))
-    expect_silent(gp_pred(gp0, x, var=F))
+    if ('method_rf' %in% class(gp0$method)) {
+      # prior prediction, should work fine
+      expect_silent(gp_draw(gp0, x, draws = 1))
+      expect_silent(gp_pred(gp0, x, var=T))
+      expect_silent(gp_pred(gp0, x, var=F))
+    }
+    
+    if ('method_fitc' %in% class(gp0$method)) {
+      # these should raise error because inducing points not set yet
+      expect_error(gp_draw(gp0, x, draws = 1))
+      expect_error(gp_pred(gp0, x, var=T))
+      # this should work
+      expect_silent(gp_pred(gp0, x, var=F))
+    }
+    
     
     # should work fine
     expect_silent(gp_draw(gp, x, draws = 1))
@@ -102,13 +125,20 @@ test_that("gp_pred: error is raised (only) if model has not been refitted after
     
     # refit the model
     gp1 <- gp_fit(gp,x,yval[[k]], trials=trials)
-    SWO(gp2 <- gp_mcmc(gp,x,yval[[k]], trials=trials, iter=400, chains=1))
     
     # these should again work fine
     expect_silent(gp_draw(gp1, x, draws = 1))
     expect_silent(gp_pred(gp1, x, var=T))
     expect_silent(gp_pred(gp1, x, var=F))
-    expect_silent(gp_draw(gp2, x, draws = 1))
+    
+    
+    if (!('lik_gaussian' %in% class(gp$lik))) {
+      # refit with MCMC
+      SWO(gp2 <- gp_mcmc(gp,x,yval[[k]], trials=trials, iter=400, chains=1))
+      # should work fine
+      expect_silent(gp_draw(gp2, x, draws = 1))
+    }
+    
   }
 })
 
