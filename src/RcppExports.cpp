@@ -2,7 +2,6 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include <RcppArmadillo.h>
-#include <RcppEigen.h>
 #include <Rcpp.h>
 
 using namespace Rcpp;
@@ -69,32 +68,11 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP _rcpp_module_boot_stan_fit4gp_betabinom_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4gp_binomial_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4gp_fitc_betabinom_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4gp_fitc_binomial_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4gp_gaussian_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4gpa_betabinom_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4gpa_binomial_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4gpa_gaussian_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4lik_betabinom_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4lik_binomial_mod();
-
 static const R_CallMethodDef CallEntries[] = {
     {"_gplite_cf_sexp_c", (DL_FUNC) &_gplite_cf_sexp_c, 5},
     {"_gplite_cf_matern32_c", (DL_FUNC) &_gplite_cf_matern32_c, 5},
     {"_gplite_cf_matern52_c", (DL_FUNC) &_gplite_cf_matern52_c, 5},
     {"_gplite_cf_nn_c", (DL_FUNC) &_gplite_cf_nn_c, 6},
-    {"_rcpp_module_boot_stan_fit4gp_betabinom_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gp_betabinom_mod, 0},
-    {"_rcpp_module_boot_stan_fit4gp_binomial_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gp_binomial_mod, 0},
-    {"_rcpp_module_boot_stan_fit4gp_fitc_betabinom_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gp_fitc_betabinom_mod, 0},
-    {"_rcpp_module_boot_stan_fit4gp_fitc_binomial_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gp_fitc_binomial_mod, 0},
-    {"_rcpp_module_boot_stan_fit4gp_gaussian_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gp_gaussian_mod, 0},
-    {"_rcpp_module_boot_stan_fit4gpa_betabinom_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gpa_betabinom_mod, 0},
-    {"_rcpp_module_boot_stan_fit4gpa_binomial_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gpa_binomial_mod, 0},
-    {"_rcpp_module_boot_stan_fit4gpa_gaussian_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gpa_gaussian_mod, 0},
-    {"_rcpp_module_boot_stan_fit4lik_betabinom_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4lik_betabinom_mod, 0},
-    {"_rcpp_module_boot_stan_fit4lik_binomial_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4lik_binomial_mod, 0},
     {NULL, NULL, 0}
 };
 

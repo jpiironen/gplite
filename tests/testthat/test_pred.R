@@ -99,13 +99,11 @@ test_that("gp_pred: error is raised (only) if model has not been refitted after
     
     # refit the model
     gp1 <- gp_fit(gp,x,yval[[k]], trials=trials)
-    SWO(gp2 <- gp_mcmc(gp,x,yval[[k]], trials=trials, iter=400, chains=1))
     
     # these should again work fine
     expect_silent(gp_draw(gp1, x, draws = 1))
     expect_silent(gp_pred(gp1, x, var=T))
     expect_silent(gp_pred(gp1, x, var=F))
-    expect_silent(gp_draw(gp2, x, draws = 1))
   }
 })
 
@@ -124,7 +122,7 @@ test_that("gp_pred: analytic prediction gives the same result as the sampling
     pred <- gp_pred(gp,xt, var=T)
     
     # sampling based prediction
-    draws <- gp_draw(gp,xt,draws=1e5, transform=F)
+    draws <- gp_draw(gp,xt,draws=2e5, transform=F)
     
     expect_equal(rowMeans(draws), pred$mean, tol=1e-2)
     expect_equal(apply(draws, 1, sd),  sqrt(pred$var), tol=1e-2)

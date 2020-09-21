@@ -4,8 +4,7 @@
 #' Notice that this function does not optimize the hyperparameters in any way, 
 #' but only finds the analytical posterior approximation (depending on chosen
 #'  \code{\link{approx}}) for the latent values with the current hyperparameters. 
-#' Function \code{gp_mcmc} draws from the posterior of the latent values 
-#' given the current hyperparameter estimates using MCMC. For optimizing the hyperparameter
+#' For optimizing the hyperparameter
 #' values, see \code{gp_optim}.
 #' 
 #' @name gp_fit
@@ -18,8 +17,7 @@
 #' (and beta binomial) model.
 #' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
 #'  Default is 1e-6.
-#' @param ... Further arguments to be passed to \link{rstan}'s function 
-#' \code{\link[rstan]{sampling}} if \code{gp_mcmc} was called.
+#' @param ... Currently ignored
 #'
 #'
 #' @return An updated GP model object.
@@ -42,13 +40,11 @@
 #' y[ycont > 0] <- 1
 #' trials <- rep(1,n)
 #' 
-#' # Analytic approximation (Laplace)
+#' # Fit the model using Laplace approximation
 #' cf <- cf_sexp(lscale=0.3, magn=3)
 #' gp <- gp_init(cf, lik_binomial())
 #' gp <- gp_fit(gp, x, y, trials=trials)
 #' 
-#' # MCMC solution
-#' gpmc <- gp_mcmc(gp, x, y, trials=trials, chains=2, iter=1000)
 #' }
 #'
 NULL

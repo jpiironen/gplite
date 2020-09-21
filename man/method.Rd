@@ -9,9 +9,9 @@
 \usage{
 method_full()
 
-method_fitc(num_inducing = NULL, bin_inducing = NULL, seed = 12345)
+method_fitc(num_inducing = 100, bin_inducing = NULL, seed = 12345)
 
-method_rf(num_basis = NULL, seed = 12345)
+method_rf(num_basis = 400, seed = 12345)
 }
 \arguments{
 \item{num_inducing}{Number of inducing points for the approximation.}

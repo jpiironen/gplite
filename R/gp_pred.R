@@ -86,9 +86,6 @@ NULL
 #' @rdname pred
 #' @export
 gp_pred <- function(gp, xnew, var=F, cfind=NULL, jitter=NULL) {
-  
-  if (is_fitted(gp, 'sampling')) 
-    stop('Only gp_draw currently available for models fitted using gp_mcmc.')
 
   if (!is_fitted(gp, 'analytic')) {
     # model not fitted, so predict based on the prior

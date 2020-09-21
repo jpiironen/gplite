@@ -15,27 +15,22 @@ gp_draw <- function(gp, xnew, draws=NULL, transform=T, target=F, marginal=F,
   }
   set.seed(seed)
 
-  if (is_fitted(gp, 'sampling')) {
-    # model fitted using mcmc, so predict using the draws from the posterior
-    pred <- gp_draw_mcmc(gp, xnew, draws=draws, transform=transform,
-                         target=target, marginal=marginal, cfind=cfind, 
-                         jitter=jitter, ...)
+  
+  # model fitted using analytical gaussian approximation (or not fitted at all),
+  # so predict based on that
+  if (is.null(draws))
+    draws <- 1
+  if (is_fitted(gp, 'analytic')) {
+    # draw from the analytical posterior approximation
+    pred <- gp_draw_analytic(gp, xnew, draws=draws, transform=transform,
+                             target=target, marginal=marginal, cfind=cfind, 
+                             jitter=jitter, ...)
   } else {
-    # model fitted using analytical gaussian approximation (or not fitted at all),
-    # so predict based on that
-    if (is.null(draws))
-      draws <- 1
-    if (is_fitted(gp, 'analytic')) {
-      # draw from the analytical posterior approximation
-      pred <- gp_draw_analytic(gp, xnew, draws=draws, transform=transform,
-                               target=target, marginal=marginal, cfind=cfind, 
-                               jitter=jitter, ...)
-    } else {
-      # draw from the prior
-      pred <- gp_draw_prior(gp, xnew, draws=draws, transform=transform,
-                            target=target, cfind=cfind, jitter=jitter, ...)
-    }
+    # draw from the prior
+    pred <- gp_draw_prior(gp, xnew, draws=draws, transform=transform,
+                          target=target, cfind=cfind, jitter=jitter, ...)
   }
+  
   return(pred)
 }
 
@@ -48,10 +43,6 @@ gp_draw_analytic <- function(object, ...) {
   UseMethod('gp_draw_analytic', object)
 }
 
-gp_draw_mcmc <- function(object, ...) {
-  UseMethod('gp_draw_mcmc', object)
-}
-
 gp_draw_prior.gp <- function(object, ...) {
   gp_draw_prior(object$method, object, ...)
 }
@@ -60,9 +51,6 @@ gp_draw_analytic.gp <- function(object, ...) {
   gp_draw_analytic(object$method, object, ...)
 }
 
-gp_draw_mcmc.gp <- function(object, ...) {
-  gp_draw_mcmc(object$method, object, ...)
-}
 
 
 gp_draw_prior.method_full <- function(object, gp, xt, draws=NULL, transform=T, target=F,
@@ -166,90 +154,10 @@ gp_draw_analytic.method_rbf <- function(object, gp, xt, draws=NULL, transform=T,
 
 
 
-gp_draw_mcmc.method_full <- function(object, gp, xt, draws=NULL, transform=T, target=T,
-                                     marginal=F, cfind=NULL, jitter=NULL, ...) {
-  
-  fsample <- gp$fit$fsample
-  if (is.null(draws))
-    draws <- NCOL(fsample)
-  else if (draws > NCOL(fsample))
-    stop('Can\'t draw more than the provided GP has posterior draws.')
-  # permute the posterior draws and pick right number of draws
-  fsample <- fsample[,sample(1:NCOL(fsample))]
-  fsample <- fsample[,1:draws]
-  
-  nt <- NROW(xt)
-  jitter <- get_jitter(gp,jitter)
-  Kt <- eval_cf(gp$cfs, xt, gp$x, cfind)
-  Ktt <- eval_cf(gp$cfs, xt, xt, cfind)
-  K_chol <- gp$K_chol
-  aux <- forwardsolve(K_chol, t(Kt))
-  pred_cov <- Ktt - t(aux) %*% aux + jitter*diag(nt)
-  pred_mean <- Kt %*% backsolve(t(K_chol), forwardsolve(K_chol, fsample))
-  if (marginal)
-    sample <- mvnrnd(draws, pred_mean[,1:draws], chol_cov = sqrt(diag(pred_cov)))
-  else
-    sample <- mvnrnd(draws, pred_mean[,1:draws], chol_cov = t(chol(pred_cov)))
-  if (target)
-    sample <- generate_target(gp, sample, ...)
-  else if (transform)
-    sample <- get_response(gp, sample)
-  return(sample)
-}
 
-gp_draw_mcmc.method_fitc <- function(object, gp, xt, draws=NULL, transform=T, target=T,
-                                     marginal=F, cfind=NULL, jitter=NULL, ...) {
-  
-  usample <- gp$fit$usample
-  if (is.null(draws))
-    draws <- NCOL(usample)
-  else if (draws > NCOL(usample))
-    stop('Can\'t draw more than the provided GP has posterior draws.')
-  # permute the posterior draws and pick right number of draws
-  usample <- usample[,sample(1:NCOL(usample))]
-  usample <- usample[,1:draws]
-  
-  nt <- NROW(xt)
-  jitter <- get_jitter(gp,jitter)
-  z <- gp$x_inducing
-  Ktz <- eval_cf(gp$cfs, xt, z, cfind)
-  Kz_chol <- gp$fit$Kz_chol
-  Dt <- eval_cf(gp$cfs, xt, xt, cfind, diag_only=T)
-  Dt <- Dt - colSums(forwardsolve(Kz_chol, t(Ktz))^2)
-  
-  a <- backsolve(t(Kz_chol), forwardsolve(Kz_chol, usample))
-  pred_mean <- Ktz %*% a
-  pred_var <- Dt
-  sample <- mvnrnd(draws, pred_mean[,1:draws], chol_cov = sqrt(pred_var))
-  if (target)
-    sample <- generate_target(gp, sample, ...)
-  else if (transform)
-    sample <- get_response(gp, sample)
-  return(sample)
-}
 
-gp_draw_mcmc.method_rf <- function(object, gp, xt, draws=NULL, transform=T, target=T, 
-                                   cfind=NULL, ...) {
-  
-  wsample <- get_w_sample(gp, cfind)
-  if (is.null(draws))
-    draws <- NCOL(wsample)
-  else if (draws > NCOL(wsample))
-    stop('Can\'t draw more than the provided GP has posterior draws.')
-  # permute the posterior draws and pick right number of draws
-  wsample <- wsample[,sample(1:NCOL(wsample)),drop=F]
-  wsample <- wsample[,1:draws]
-  
-  num_inputs <- NCOL(xt)
-  featuremap <- get_featuremap(gp, num_inputs)
-  zt <- featuremap(xt, cfind)
-  sample <- zt %*% wsample
-  if (target)
-    sample <- generate_target(gp, sample, ...)
-  else if (transform)
-    sample <- get_response(gp, sample)
-  return(sample)
-}
+
+
 
 
 mvnrnd <- function(draws, mean, chol_cov=NULL, chol_prec=NULL) {

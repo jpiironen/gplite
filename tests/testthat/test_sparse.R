@@ -132,13 +132,6 @@ test_that("gp_pred: error is raised (only) if model has not been refitted after
     expect_silent(gp_pred(gp1, x, var=F))
     
     
-    if (!('lik_gaussian' %in% class(gp$lik))) {
-      # refit with MCMC
-      SWO(gp2 <- gp_mcmc(gp,x,yval[[k]], trials=trials, iter=400, chains=1))
-      # should work fine
-      expect_silent(gp_draw(gp2, x, draws = 1))
-    }
-    
   }
 })
 

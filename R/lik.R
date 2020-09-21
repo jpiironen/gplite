@@ -149,17 +149,7 @@ lpdf_prior.lik <- function(object, ...) {
 # get_pseudodata functions
 
 get_pseudodata.lik <- function(object, f, y, eps=1e-6, ...) {
-  model <- get_stanmodel(object, lik_only=T)
-  data <- c(list(n=length(y), y=as.array(y)), get_standata(object, ...))
-  utils::capture.output(
-    # get the stanfit-object corresponding to the likelihood
-    fit <- sampling(model, data=data, chains=1, iter=1, algorithm='Fixed_param')
-  )
-  grad <- rstan::grad_log_prob(fit, f)
-  grad2 <- (rstan::grad_log_prob(fit, f+eps) - grad) / eps # second derivatives
-  attr(grad, 'log_prob') <- NULL
-  attr(grad2, 'log_prob') <- NULL
-  list(z = f-grad/grad2, var = -1/grad2)
+  stop(paste('No implementation for class', class(object)[1], 'yet.'))
 }
 
 get_pseudodata.lik_gaussian <- function(object, f, y, ...) {
@@ -276,17 +266,7 @@ required_extra_args.lik_betabinom <- function(object, ...) {
 # get_loglik functions
 
 get_loglik.lik <- function(object, f, y, ...) {
-  model <- get_stanmodel(object, lik_only=T)
-  data <- c(
-    list(n=length(y), y=as.array(y)), 
-    get_standata(object, ...)
-  )
-  utils::capture.output(
-    # get the stanfit-object corresponding to the likelihood
-    fit <- sampling(model, data=data, chains=1, iter=1, algorithm='Fixed_param')
-  )
-  loglik <- rstan::log_prob(fit, f)
-  loglik
+  stop(paste('No implementation for class', class(object)[1], 'yet.'))
 }
 
 get_loglik.lik_bernoulli <- function(object, f, y, sum=TRUE, ...) {
@@ -403,87 +383,6 @@ get_loglik_d2.lik <- function(object, f, y, eps=1e-6, ...) {
   grad2 <- (grad_eps-grad) / eps
   list(grad=grad, grad2=grad2)
 }
-
-
-
-
-# get_stanmodel functions
-
-get_stanmodel.lik_gaussian <- function(object, method = 'full', lik_only = FALSE, ...) {
-  if (method == 'full') 
-    return(stanmodels$gp_gaussian)
-  else if (method == 'rf') 
-    return(stanmodels$gpa_gaussian)
-  else
-    stop('No stan-model for method: ', method)
-}
-
-get_stanmodel.lik_bernoulli <- function(object, method = 'full', lik_only = FALSE, ...) {
-  get_stanmodel.lik_binomial(object, method=method, lik_only=lik_only, ...)
-}
-
-get_stanmodel.lik_binomial <- function(object, method = 'full', lik_only = FALSE, ...) {
-  if (lik_only)
-    return(stanmodels$lik_binomial)
-  if (method == 'full') {
-    return(stanmodels$gp_binomial)
-  } else if (method == 'rf') {
-    return(stanmodels$gpa_binomial)
-  } else if (method == 'fitc') {
-    return(stanmodels$gp_fitc_binomial)
-  } else
-    stop('No stan-model for method: ', method)
-}
-
-get_stanmodel.lik_betabinom <- function(object, method = 'full', lik_only = FALSE, ...) {
-  if (lik_only)
-    return(stanmodels$lik_betabinom)
-  if (method == 'full') {
-    return(stanmodels$gp_betabinom)
-  } else if (method == 'rf') {
-    return(stanmodels$gpa_betabinom)
-  } else if (method == 'fitc') {
-    return(stanmodels$gp_fitc_betabinom)
-  } else
-    stop('No stan-model for method: ', method)
-}
-
-
-
-# get_standata functions
-
-get_standata.lik_gaussian <- function(object, ...) {
-  list(sigma=object$sigma)
-}
-
-get_standata.lik_bernoulli <- function(object, ...) {
-  args <- list(...)
-  n <- args$n
-  get_standata.lik_binomial(object, trials=rep(1,n))
-}
-
-get_standata.lik_binomial <- function(object, ...) {
-  args <- list(...)
-  if (is.null(args$trials))
-    stop('trials must be provided for the binomial likelihood.')
-  if (object$link == 'logit')
-    link <- 0
-  else if (object$link == 'probit')
-    link <- 1
-  list(trials=as.array(args$trials), link=link)
-}
-
-get_standata.lik_betabinom <- function(object, ...) {
-  args <- list(...)
-  if (is.null(args$trials))
-    stop('trials must be provided for the beta binomial likelihood.')
-  if (object$link == 'logit')
-    link <- 0
-  else if (object$link == 'probit')
-    link <- 1
-  list(trials=as.array(args$trials), link=link, phi=object$phi)
-}
-
 
 
 

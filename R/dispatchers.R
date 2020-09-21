@@ -63,14 +63,6 @@ get_featuremap <- function(object, ...) {
   UseMethod("get_featuremap", object)
 }
 
-get_stanmodel <- function(object, ...) {
-  UseMethod("get_stanmodel", object)
-}
-
-get_standata <- function(object, ...) {
-  UseMethod("get_standata", object)
-}
-
 get_pseudodata <- function(object, ...) {
   UseMethod("get_pseudodata", object)
 }

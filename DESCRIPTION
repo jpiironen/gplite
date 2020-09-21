@@ -3,32 +3,23 @@ Title: Lightweight Implementation for the Most Common Gaussian Process Models
 Version: 0.4.0
 Authors@R: c(person("Juho", "Piironen", role = c("cre", "aut"), email = "juho.t.piironen@gmail.com"))
 Description: 
-  Implements the most common Gaussian process (GP) models using Laplace and EP approximations, 
-  maximum marginal likelihood inference for the hyperparameters, and sparse
-  approximations for larger datasets. In addition, provides also convenient 
-  interface to perform Markov chain Monte Carlo (MCMC) inference for the latent values with 
-  fixed hyperparameters using Stan probabilistic programming language. 
+  Implements the most common Gaussian process (GP) models using Laplace and 
+  EP approximations, maximum marginal likelihood (or posterior) inference for the 
+  hyperparameters, and sparse approximations for larger datasets. 
 Depends: 
   R (>= 3.4.0),
 Imports: 
   Matrix,
   methods,
-  Rcpp (>= 0.12.0),
-  rstan (>= 2.18.1),
-  rstantools (>= 2.0.0)
+  Rcpp
 LinkingTo: 
-    BH (>= 1.66.0),
-    Rcpp (>= 0.12.0),
-    RcppArmadillo,
-    RcppEigen,
-    rstan (>= 2.18.1),
-    StanHeaders (>= 2.18.0)
+  Rcpp,
+  RcppArmadillo
 License: GPL-3
 Encoding: UTF-8
 LazyData: TRUE
 Biarch: TRUE
 RoxygenNote: 7.1.1
-SystemRequirements: GNU make
 Suggests: 
     testthat,
     knitr,

@@ -10,8 +10,7 @@
 Gaussian process (GP) models. The package offers tools for integrating out
 the latent values analytically using Laplace or EP approximation and then estimating the 
 hyperparameters based on maximizing the (approximate) marginal likelihood or posterior. 
-It is also possible to run MCMC for the latent values conditioned on the estimated 
-values for the hyperparameters using Stan. The package also implements some common
+The package also implements some common
 sparse approximations for larger datasets.
 }
 \section{Functions}{
@@ -27,7 +26,7 @@ Here's a list of the most important functions:
  (full or some sparse approximation) and the latent function approximation method
  (Laplace, EP).
  }
- \item{\link{gp_optim}, \link{gp_fit}, \link{gp_mcmc}}{
+ \item{\link{gp_optim}, \link{gp_fit}}{
  Optimize the model hyperparameters, or just fit the model with the current
   hyperparameter values.
  }
@@ -41,6 +40,3 @@ Here's a list of the most important functions:
 }
 }
 
-\references{
-Stan Development Team. RStan: the R interface to Stan. \url{https://mc-stan.org}
-}

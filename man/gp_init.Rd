@@ -26,7 +26,7 @@ for the posterior of the latent values. See \code{\link{approx}}.}
 A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
 }
 \description{
-Initializes a GP model with given covariance function(s) and likelihood. The model can then be fitted using \code{\link{gp_fit}} or \code{\link{gp_mcmc}}. For hyperparameter optimization, see \code{\link{gp_optim}}
+Initializes a GP model with given covariance function(s) and likelihood. The model can then be fitted using \code{\link{gp_fit}}. For hyperparameter optimization, see \code{\link{gp_optim}}
 }
 \section{References}{
 
@@ -58,9 +58,6 @@ gp <- gp_optim(gp, x, y)
 gp <- gp_init(cf_sexp(), method=method_fitc(num_inducing=100))
 gp <- gp_optim(gp, x, y)
 
-# Bernoulli likelihood, use EP approximation + FITC
-gp <- gp_init(lik=lik_bernoulli(), approx=approx_ep(), method=method_fitc())
-gp <- gp_optim(gp, x, y)
 
 }
 

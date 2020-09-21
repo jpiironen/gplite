@@ -5,7 +5,7 @@
 
 #' Initialize a GP model
 #'
-#' Initializes a GP model with given covariance function(s) and likelihood. The model can then be fitted using \code{\link{gp_fit}} or \code{\link{gp_mcmc}}. For hyperparameter optimization, see \code{\link{gp_optim}}
+#' Initializes a GP model with given covariance function(s) and likelihood. The model can then be fitted using \code{\link{gp_fit}}. For hyperparameter optimization, see \code{\link{gp_optim}}
 #' 
 #' @param cfs The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.
 #' @param lik Likelihood (observation model). See \code{\link{lik}}.
@@ -48,9 +48,6 @@
 #' gp <- gp_init(cf_sexp(), method=method_fitc(num_inducing=100))
 #' gp <- gp_optim(gp, x, y)
 #' 
-#' # Bernoulli likelihood, use EP approximation + FITC
-#' gp <- gp_init(lik=lik_bernoulli(), approx=approx_ep(), method=method_fitc())
-#' gp <- gp_optim(gp, x, y)
 #' 
 #' }
 #'
@@ -160,12 +157,11 @@ is_fitted.gp <- function(object, type, ...) {
       fit_found <- object$fit$type == 'analytic'
     else if (type=='sampling')
       fit_found <- object$fit$type == 'mcmc'
-      #fit_found <- ifelse(is.null(object$fsample) && is.null(object$wsample), F, T)
   } else {
     fit_found <- FALSE
   }
   if (fit_found && object$fitted==FALSE)
-    stop('The GP object seems to contain a posterior fit, but is not refitted after setting new hyperparameter values. Please refit using gp_fit or gp_mcmc after calling set_param.')
+    stop('The GP object seems to contain a posterior fit, but is not refitted after setting new hyperparameter values. Please refit using gp_fit after calling set_param.')
   return(fit_found)
 }
 

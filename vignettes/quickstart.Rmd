@@ -162,31 +162,6 @@ ggplot() +
 
 The probabilities look much more what one would expect simply by looking at the data.
 
-It is also possible to run MCMC for the latent values with the optimized hyperparameters. To use more than one core for the computation, uncomment the first line.
-```{r, results='hide'}
-#options(mc.cores = parallel::detectCores())
-gpmc <- gp_mcmc(gp, x, y, chains=2, iter=1000)
-```
-
-Let's visualize the fit again
-```{r}
-# predict in a grid of points
-xt <- seq(-4,4,len=200)
-pred <- gp_draw(gpmc, xt)
-pred_mean <- rowMeans(pred)
-qt <- apply(pred, 1, quantile, c(0.05, 0.95))
-pred_lb <- qt[1,]
-pred_ub <- qt[2,]
-
-ggplot() + 
-  geom_ribbon(aes(x=xt,ymin=pred_lb,ymax=pred_ub), fill='lightgray') +
-  geom_line(aes(x=xt,y=pred_mean), color='black', size=1) +
-  geom_point(aes(x=x,y=y), color='black', size=0.5) +
-  xlab('x') + ylab('y')
-```
-
-As we see, the EP algorithm gives very accurate approximation and similar fit compared to the MCMC.
-
 
 
 
