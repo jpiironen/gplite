@@ -180,6 +180,7 @@ cf_periodic <- function(vars=NULL, period=1, cf_base=cf_sexp(), prior_period=pri
   cf$period <- period
   cf$base <- cf_base
   cf$base$normalize <- FALSE # ensure no normalization for the base kernel
+  cf$base$vars <- NULL # ensure base kernel uses both of the transformed features
   cf$priors <- list(period=prior_period)
   class(cf) <- c('cf_periodic', 'cf')
   cf
