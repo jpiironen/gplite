@@ -190,33 +190,37 @@ get_inducing <- function(gp, x) {
   
   if (!is.null(gp$x_inducing))
     return(gp$x_inducing)
-  xscaled <- scale(x)
+  
   binning <- gp$method$bin_inducing
   num_inducing <- gp$method$num_inducing
   
   if (!is.null(binning)) {
     varname <- names(binning)[1] # TODO: currently handles only one variable
     nbins <- binning[[varname]]
-    xscaled_binned <- bin(xscaled, nbins=nbins, var=varname)
-    bin_sizes <- sapply(xscaled_binned, function(bin) NROW(bin))
+    x_binned <- bin(x, nbins=nbins, var=varname)
+    bin_sizes <- sapply(x_binned, function(bin) NROW(bin))
     ordering <- order(bin_sizes, decreasing = T)
-    xscaled_binned <- xscaled_binned[ordering]
+    x_binned <- x_binned[ordering]
     bin_sizes <- bin_sizes[ordering]
     per_bin <- rep(floor(num_inducing/nbins), nbins)
     num_leftover <- num_inducing - sum(per_bin)
     if (num_leftover > 0)
       per_bin[1:num_leftover] <- per_bin[1:num_leftover] + 1
-    zscaled_binned <- lapply(1:nbins, function(i) {
-      stats::kmeans(xscaled_binned[[i]], per_bin[i])$centers
+    z_binned <- lapply(1:nbins, function(i) {
+      xi_scaled <- scale(x_binned[[i]])
+      zi_scaled <- stats::kmeans(xi_scaled, per_bin[i])$centers
+      t( t(zi_scaled)*attr(xi_scaled, 'scaled:scale') + attr(xi_scaled, 'scaled:center') )
     })
-    zscaled <- do.call(rbind, zscaled_binned)
-    rownames(zscaled) <- NULL
+    z <- do.call(rbind, z_binned)
+    rownames(z) <- NULL
   } else {
+    xscaled <- scale(x)
     cl <- stats::kmeans(xscaled, num_inducing)
     zscaled <- cl$centers
     rownames(zscaled) <- NULL
+    z <- t( t(zscaled)*attr(xscaled, 'scaled:scale') + attr(xscaled, 'scaled:center') )
   }
-  z <- t( t(zscaled)*attr(xscaled, 'scaled:scale') + attr(xscaled, 'scaled:center') )
+  
   return(z)
 }
 
