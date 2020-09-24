@@ -149,7 +149,7 @@ cf <- cf_sexp()
 lik <- lik_gaussian()
 gp <- gp_init(cf, lik)
 gp <- gp_optim(gp, x, y)
-plot(gp_pred(gp, x), y)
+plot(gp_pred(gp, x)$mean, y)
 
 # More than one covariance function; one for x1 and x2, and another one for x3
 cf1 <- cf_nn(c('x1','x2'), prior_sigma0 = prior_half_t(df=4, scale=2))
@@ -158,8 +158,8 @@ cfs <- list(cf1, cf2)
 lik <- lik_gaussian()
 gp <- gp_init(cfs, lik)
 gp <- gp_optim(gp, x, y, maxiter = 500)
-plot(gp_pred(gp, x), y)
-plot(x[,3], gp_pred(gp, x, cfind=2)) # plot effect w.r.t x3 only
+plot(gp_pred(gp, x)$mean, y)
+plot(x[,3], gp_pred(gp, x, cfind=2)$mean) # plot effect w.r.t x3 only
 
 }
 

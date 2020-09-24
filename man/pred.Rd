@@ -19,10 +19,19 @@ gp_draw(
   ...
 )
 
-gp_pred(gp, xnew, var = F, cfind = NULL, jitter = NULL)
+gp_pred(
+  gp,
+  xnew,
+  var = F,
+  quantiles = NULL,
+  transform = F,
+  cfind = NULL,
+  jitter = NULL,
+  quad_order = 15
+)
 }
 \arguments{
-\item{gp}{A fitted GP model object.}
+\item{gp}{A GP model object.}
 
 \item{xnew}{N-by-d matrix of input values (N is the number of test points and d 
 the input dimension). 
@@ -32,7 +41,7 @@ Can also be a vector of length N if the model has only a single input.}
 latent values.}
 
 \item{transform}{Whether to transform the draws of latent values to the same scale
-as the target y.}
+as the target y, that is, through the response (or inverse-link) function.}
 
 \item{target}{If TRUE, draws values for the target variable \code{y} instead of the latent
 function values.}
@@ -55,13 +64,17 @@ Default is 1e-6.}
 for binomial and beta-binomial likelihoods.}
 
 \item{var}{Whether to compute the predictive variances along with predictive mean.}
+
+\item{quantiles}{Vector of probabilities between 0 and 1 indicating which quantiles are to
+be predicted.}
+
+\item{quad_order}{Quadrature order in order to compute the mean and variance on 
+the transformed scale.}
 }
 \value{
-\code{gp_pred} returns a vector of predictive mean (one value for each row of
- \code{xnew}) for the latent mean, or a list with fields having both the 
- mean and variance for each 
- observation if \code{var = TRUE}. \code{gp_draw} returns an N-by-draws
-matrix of random draws from the predictive distribution.
+\code{gp_pred} returns a list with fields giving the predictive mean, variance and
+quantiles (the last two are computed only if requested). \code{gp_draw} returns an N-by-draws
+matrix of random draws from the predictive distribution, where N is the number of test points.
 }
 \description{
 Function \code{gp_pred} can be used to make analytic predictions for the latent function
@@ -94,9 +107,9 @@ lik <- lik_gaussian()
 gp <- gp_init(cfs, lik)
 gp <- gp_optim(gp, x, y, maxiter = 500)
 
-# plot the predictions w.r.t x1, when x2 = x3 = 0
+# plot the predictions with respect to x1, when x2 = x3 = 0
 xt <- cbind(x1=seq(-3,3,len=50), x2=0, x3=0)
-pred <- gp_pred(gp, xt, var=TRUE)
+pred <- gp_pred(gp, xt)
 plot(xt[,'x1'], pred$mean, type='l')
 
 # draw from the predictive distribution
@@ -107,9 +120,9 @@ for (i in 2:50) {
   lines(xt[,'x1'], draws[,i])
 }
 
-# plot effect w.r.t x3 only
+# plot effect with respect to x3 only
 xt <- cbind('x3'=seq(-3,3,len=50))
-pred <- gp_pred(gp, xt, cfind=2, var=TRUE)
+pred <- gp_pred(gp, xt, cfind=2)
 plot(xt, pred$mean, type='line') 
 
 }

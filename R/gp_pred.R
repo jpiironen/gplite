@@ -7,15 +7,17 @@
 #' 
 #' @name pred
 #' 
-#' @param gp A fitted GP model object.
+#' @param gp A GP model object.
 #' @param xnew N-by-d matrix of input values (N is the number of test points and d 
 #' the input dimension). 
 #' Can also be a vector of length N if the model has only a single input.
 #' @param var Whether to compute the predictive variances along with predictive mean.
+#' @param quantiles Vector of probabilities between 0 and 1 indicating which quantiles are to
+#' be predicted.
 #' @param draws Number of draws to generate from the predictive distribution for the 
 #' latent values. 
 #' @param transform Whether to transform the draws of latent values to the same scale
-#'  as the target y.
+#'  as the target y, that is, through the response (or inverse-link) function.
 #' @param target If TRUE, draws values for the target variable \code{y} instead of the latent
 #'  function values.
 #' @param marginal If TRUE, then draws for each test point are only marginally correct, but the
@@ -27,16 +29,16 @@
 #' all covariance functions.
 #' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
 #'  Default is 1e-6.
+#' @param quad_order Quadrature order in order to compute the mean and variance on 
+#' the transformed scale.
 #' @param seed Random seed for draws.
 #' @param ... Additional parameters that might be needed. For example keyword \code{trials}
 #' for binomial and beta-binomial likelihoods.
 #'
 #'
-#' @return \code{gp_pred} returns a vector of predictive mean (one value for each row of
-#'  \code{xnew}) for the latent mean, or a list with fields having both the 
-#'  mean and variance for each 
-#'  observation if \code{var = TRUE}. \code{gp_draw} returns an N-by-draws
-#' matrix of random draws from the predictive distribution. 
+#' @return \code{gp_pred} returns a list with fields giving the predictive mean, variance and
+#' quantiles (the last two are computed only if requested). \code{gp_draw} returns an N-by-draws
+#' matrix of random draws from the predictive distribution, where N is the number of test points.
 #'  
 #' @section References:
 #' 
@@ -61,9 +63,9 @@
 #' gp <- gp_init(cfs, lik)
 #' gp <- gp_optim(gp, x, y, maxiter = 500)
 #' 
-#' # plot the predictions w.r.t x1, when x2 = x3 = 0
+#' # plot the predictions with respect to x1, when x2 = x3 = 0
 #' xt <- cbind(x1=seq(-3,3,len=50), x2=0, x3=0)
-#' pred <- gp_pred(gp, xt, var=TRUE)
+#' pred <- gp_pred(gp, xt)
 #' plot(xt[,'x1'], pred$mean, type='l')
 #' 
 #' # draw from the predictive distribution
@@ -74,9 +76,9 @@
 #'   lines(xt[,'x1'], draws[,i])
 #' }
 #' 
-#' # plot effect w.r.t x3 only
+#' # plot effect with respect to x3 only
 #' xt <- cbind('x3'=seq(-3,3,len=50))
-#' pred <- gp_pred(gp, xt, cfind=2, var=TRUE)
+#' pred <- gp_pred(gp, xt, cfind=2)
 #' plot(xt, pred$mean, type='line') 
 #' 
 #' }
@@ -85,14 +87,35 @@ NULL
 
 #' @rdname pred
 #' @export
-gp_pred <- function(gp, xnew, var=F, cfind=NULL, jitter=NULL) {
+gp_pred <- function(gp, xnew, var=F, quantiles=NULL, transform=F, cfind=NULL, jitter=NULL,
+                    quad_order=15) {
 
+  if (!is.null(quantiles) || transform)
+    # we need variances in order to compute the quantiles, or to transform the mean
+    var <- T
+  
   if (!is_fitted(gp, 'analytic')) {
     # model not fitted, so predict based on the prior
     pred <- gp_pred_prior(gp, xnew, var=var, cfind=cfind, jitter=jitter)
   } else {
     # model fitted using analytical approximation
     pred <- gp_pred_post(gp, xnew, var=var, cfind=cfind, jitter=jitter)
+  }
+  if (!is.null(quantiles)) {
+    quantiles <- sapply(quantiles, function(q) qnorm(q, mean = pred$mean, sd = sqrt(pred$var)))
+    if (transform)
+      quantiles <- get_response(gp, quantiles)
+    pred$quantiles <- quantiles
+  }
+  if (transform) {
+    quadrature <- gauss_hermite_points_scaled(pred$mean, sqrt(pred$var), order=quad_order)
+    fgrid <- quadrature$x
+    weights <- quadrature$weights
+    fgrid_transf <- get_response(gp, fgrid)
+    mean_transf <- as.vector(fgrid_transf %*% weights)
+    var_transf <- as.vector((fgrid_transf-mean_transf)^2 %*% weights)
+    pred$mean <- mean_transf
+    pred$var <- var_transf
   }
   return(pred)
 }
@@ -128,7 +151,7 @@ gp_pred_prior.method_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, 
     else
       return(list(mean = pred_mean, var = diag(pred_cov)))
   }
-  return(pred_mean)
+  return(list(mean = pred_mean))
 }
 
 gp_pred_prior.method_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
@@ -155,7 +178,7 @@ gp_pred_prior.method_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, 
     else
       return(list(mean = pred_mean, var = diag(pred_cov)))
   }
-  return(pred_mean)
+  return(list(mean = pred_mean))
 }
 
 gp_pred_prior.method_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
@@ -171,7 +194,7 @@ gp_pred_prior.method_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NU
     pred_cov <- zt %*% t(zt) 
     return(list(mean=pred_mean, var=diag(pred_cov)))
   }
-  return(pred_mean)
+  return(list(mean = pred_mean))
 }
 
 gp_pred_post.method_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
@@ -201,7 +224,7 @@ gp_pred_post.method_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
     else
       return(list(mean = pred_mean, var = diag(pred_cov)))
   }
-  return(pred_mean)
+  return(list(mean = pred_mean))
 }
 
 gp_pred_post.method_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
@@ -238,7 +261,7 @@ gp_pred_post.method_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
       return(list(mean = pred_mean, var = as.vector(pred_var)))
     }
   }
-  return(pred_mean)
+  return(list(mean = pred_mean))
 }
 
 gp_pred_post.method_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
@@ -256,7 +279,7 @@ gp_pred_post.method_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NUL
     pred_cov <- zt %*% (wcov %*% t(zt))
     return(list(mean=pred_mean, var=diag(pred_cov)))
   }
-  return(pred_mean)
+  return(list(mean = pred_mean))
 }
 
 gp_pred_post.method_rbf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
