@@ -49,10 +49,10 @@ cf_nn(
   sigma0 = 1,
   sigma = 5,
   magn = 1,
-  prior_sigma0 = prior_logunif(),
-  prior_sigma = prior_logunif(),
+  prior_sigma0 = prior_half_t(),
+  prior_sigma = prior_half_t(),
   prior_magn = prior_logunif(),
-  normalize = F
+  normalize = T
 )
 
 cf_periodic(

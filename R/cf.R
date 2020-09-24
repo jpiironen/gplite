@@ -159,8 +159,8 @@ cf_matern52 <- function(vars=NULL, lscale=0.3, magn=1.0,
 #' @rdname cf
 #' @export
 cf_nn <- function(vars=NULL, sigma0=1.0, sigma=5.0, magn=1.0,
-                  prior_sigma0=prior_logunif(), prior_sigma=prior_logunif(), 
-                  prior_magn=prior_logunif(), normalize=F) {
+                  prior_sigma0=prior_half_t(), prior_sigma=prior_half_t(), 
+                  prior_magn=prior_logunif(), normalize=T) {
   cf <- list()
   cf$vars <- vars
   cf$sigma0 <- sigma0
