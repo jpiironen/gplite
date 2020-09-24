@@ -13,7 +13,8 @@ prepare_inputmat <- function(cf, x) {
   else
     x <- as.matrix(x)[,vars,drop=F]
   if (!is.null(cf$normalize) && cf$normalize)
-    x <- t((t(x) - cf$means) / cf$scales)
+    if (!is.null(cf$means) && !is.null(cf$scales))
+      x <- t((t(x) - cf$means) / cf$scales)
   return(x)
 }
 
