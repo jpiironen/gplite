@@ -109,7 +109,7 @@ fit_laplace.method_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, 
   D <- eval_cf(gp$cfs, x, x, diag_only=T) + jitter
   D <- D - colSums(forwardsolve(Kz_chol, t(Kxz))^2)
   gp$x <- x
-  gp$x_inducing <- z
+  gp$method$inducing <- z
   gp$fit <- tryCatch({
     laplace(object, gp, Kz, Kz_chol, Kxz, D, y, trials=trials)
   },
@@ -167,7 +167,7 @@ fit_ep.method_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) 
   K_diag <- eval_cf(gp$cfs, x, x, diag_only=T) + jitter
   D <- K_diag - colSums(forwardsolve(Kz_chol, t(Kxz))^2)
   gp$x <- x
-  gp$x_inducing <- z
+  gp$method$inducing <- z
   gp$fit <- tryCatch({
     ep(object, gp, Kz, Kz_chol, Kxz, K_diag, D, y, trials=trials, ...)
   },
@@ -188,25 +188,24 @@ get_inducing <- function(gp, x) {
   }
   set.seed(gp$method$seed)
   
-  if (!is.null(gp$x_inducing))
-    return(gp$x_inducing)
+  if (!is.null(gp$method$inducing))
+    return(gp$method$inducing)
   
-  binning <- gp$method$bin_inducing
+  bin_along <- gp$method$bin_along
   num_inducing <- gp$method$num_inducing
   
-  if (!is.null(binning)) {
-    varname <- names(binning)[1] # TODO: currently handles only one variable
-    nbins <- binning[[varname]]
-    x_binned <- bin(x, nbins=nbins, var=varname)
+  if (!is.null(bin_along)) {
+    bin_count <- gp$method$bin_count
+    x_binned <- bin(x, nbins=bin_count, var=bin_along)
     bin_sizes <- sapply(x_binned, function(bin) NROW(bin))
     ordering <- order(bin_sizes, decreasing = T)
     x_binned <- x_binned[ordering]
     bin_sizes <- bin_sizes[ordering]
-    per_bin <- rep(floor(num_inducing/nbins), nbins)
+    per_bin <- rep(floor(num_inducing/bin_count), bin_count)
     num_leftover <- num_inducing - sum(per_bin)
     if (num_leftover > 0)
       per_bin[1:num_leftover] <- per_bin[1:num_leftover] + 1
-    z_binned <- lapply(1:nbins, function(i) {
+    z_binned <- lapply(1:bin_count, function(i) {
       xi_scaled <- scale(x_binned[[i]])
       zi_scaled <- stats::kmeans(xi_scaled, per_bin[i])$centers
       t( t(zi_scaled)*attr(xi_scaled, 'scaled:scale') + attr(xi_scaled, 'scaled:center') )

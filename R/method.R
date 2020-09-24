@@ -38,9 +38,19 @@
 #'
 #' @name method
 #'
-#' @param num_inducing Number of inducing points for the approximation.
+#' @param inducing Inducing points to use. If not given, then \code{num_inducing} 
+#' points will be placed in the input space using a clustering algorithm.
+#' @param num_inducing Number of inducing points for the approximation. Will be ignored
+#' if the inducing points are given by the user.
+#' @param bin_along Either an index or a name of the input variable along which to bin the
+#' values before placing the inducing inputs. For example, if \code{bin_along=3}, then the
+#' input data is divided into \code{bin_count} bins along 3rd input variable, and each bin
+#' will have the same number inducing points (or as close as possible). This can sometimes 
+#' be useful to ensure that inducing points are spaced evenly with respect to some particular
+#' variable, for example time in spatio-temporal models.
+#' @param bin_count The number of bins to use if \code{bin_along} given. Has effect only if
+#' \code{bin_along} is given.
 #' @param num_basis Number of basis functions for the approximation.
-#' @param bin_inducing TODO: fill this in.
 #' @param seed Random seed for reproducible results.
 #' 
 #'
@@ -62,11 +72,14 @@
 #' \donttest{
 #' 
 #' # Basic usage 
+#' 
 #' gp <- gp_init(
 #'   cfs=cf_sexp(), 
 #'   lik=lik_gaussian(), 
 #'   method=method_fitc(num_inducing=100)
 #' )
+#' 
+#' 
 #' 
 #' }
 #'
@@ -84,8 +97,13 @@ method_full <- function() {
 
 #' @rdname method
 #' @export
-method_fitc <- function(num_inducing=100, bin_inducing=NULL, seed=12345) {
-  method <- list(name='fitc', seed=seed, num_inducing=num_inducing, bin_inducing=bin_inducing)
+method_fitc <- function(inducing=NULL, num_inducing=100, 
+                        bin_along=NULL, bin_count=10, seed=12345) {
+  if (!is.null(inducing))
+    num_inducing <- NROW(inducing)
+  bin_count <- min(bin_count, num_inducing)
+  method <- list(name='fitc', seed=seed, inducing=inducing,
+                 num_inducing=num_inducing, bin_along=bin_along, bin_count=bin_count)
   class(method) <- c('method_fitc', 'method')
   method
 }

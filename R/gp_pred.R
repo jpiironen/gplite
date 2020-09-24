@@ -162,9 +162,9 @@ gp_pred_prior.method_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, 
   if (var || cov) {
     jitter <- get_jitter(gp, jitter)
     # TODO: the code below is repeating a lot what is already written elsewhere
-    if (is.null(gp$x_inducing))
+    if (is.null(gp$method$inducing))
       stop('Inducing points not set yet.')
-    z <- gp$x_inducing
+    z <- gp$method$inducing
     Kz <- eval_cf(gp$cfs, z, z) + jitter*diag(gp$method$num_inducing)
     Kxz <- eval_cf(gp$cfs, xt, z)
     Kz_chol <- t(chol(Kz))
@@ -230,7 +230,8 @@ gp_pred_post.method_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
 gp_pred_post.method_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
-  Ktz <- eval_cf(gp$cfs, xt, gp$x_inducing, cfind)
+  z <- gp$method$inducing
+  Ktz <- eval_cf(gp$cfs, xt, z, cfind)
   Kxz <- gp$fit$Kxz
   Kz_chol <- gp$fit$Kz_chol
   Kt <- t(forwardsolve(Kz_chol, t(Ktz))) %*% forwardsolve(Kz_chol, t(Kxz))

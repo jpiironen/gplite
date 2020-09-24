@@ -9,14 +9,32 @@
 \usage{
 method_full()
 
-method_fitc(num_inducing = 100, bin_inducing = NULL, seed = 12345)
+method_fitc(
+  inducing = NULL,
+  num_inducing = 100,
+  bin_along = NULL,
+  bin_count = 10,
+  seed = 12345
+)
 
 method_rf(num_basis = 400, seed = 12345)
 }
 \arguments{
-\item{num_inducing}{Number of inducing points for the approximation.}
+\item{inducing}{Inducing points to use. If not given, then \code{num_inducing} 
+points will be placed in the input space using a clustering algorithm.}
 
-\item{bin_inducing}{TODO: fill this in.}
+\item{num_inducing}{Number of inducing points for the approximation. Will be ignored
+if the inducing points are given by the user.}
+
+\item{bin_along}{Either an index or a name of the input variable along which to bin the
+values before placing the inducing inputs. For example, if \code{bin_along=3}, then the
+input data is divided into \code{bin_count} bins along 3rd input variable, and each bin
+will have the same number inducing points (or as close as possible). This can sometimes 
+be useful to ensure that inducing points are spaced evenly with respect to some particular
+variable, for example time in spatio-temporal models.}
+
+\item{bin_count}{The number of bins to use if \code{bin_along} given. Has effect only if
+\code{bin_along} is given.}
 
 \item{seed}{Random seed for reproducible results.}
 
@@ -71,11 +89,14 @@ In Advances in Neural Information Processing Systems 18.
 \donttest{
 
 # Basic usage 
+
 gp <- gp_init(
   cfs=cf_sexp(), 
   lik=lik_gaussian(), 
   method=method_fitc(num_inducing=100)
 )
+
+
 
 }
 
