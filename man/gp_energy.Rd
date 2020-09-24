@@ -16,7 +16,9 @@ the result is -(log marginal likelihood + log prior))}
 The energy value (negative log marginal likelihood).
 }
 \description{
-Returns the energy (negative log marginal likelihood) of a fitted GP model with the current hyperparameters. The result is exact for the Gaussian likelihood and based on Laplace approximation for other cases.
+Returns the energy (negative log marginal likelihood) of a fitted GP model with the
+current hyperparameters. The result is exact for the Gaussian likelihood and 
+dependent on the \code{\link{approx}} for other cases.
 }
 \section{References}{
 

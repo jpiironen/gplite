@@ -72,7 +72,9 @@ gp_init <- function(cfs=cf_sexp(), lik=lik_gaussian(), method=method_full(),
 
 #' Energy of a GP model
 #'
-#' Returns the energy (negative log marginal likelihood) of a fitted GP model with the current hyperparameters. The result is exact for the Gaussian likelihood and based on Laplace approximation for other cases.
+#' Returns the energy (negative log marginal likelihood) of a fitted GP model with the
+#' current hyperparameters. The result is exact for the Gaussian likelihood and 
+#' dependent on the \code{\link{approx}} for other cases.
 #' 
 #' @param gp The fitted GP model.
 #' @param include_prior Whether to add log density of the prior to the result (in which case
