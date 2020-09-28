@@ -213,13 +213,13 @@ x1g <- seq(-4,4,len=ng)
 x2g <- seq(-2,4,len=ng)
 
 xnew <- cbind( rep(x1g,each=ng), rep(x2g,ng) )
-pred <- gp_draw(gp, xnew, draws=500)
-pr <- rowMeans(pred)
+pred <- gp_pred(gp, xnew, transform=T)
+prob <- pred$mean
 
 # visualize
 ggplot() + 
-  geom_contour(data=data.frame(x=xnew[,1], y=xnew[,2], pr=pr),
-                aes(x=x, y=y, z=pr, colour=..level..) ) +
+  geom_contour(data=data.frame(x=xnew[,1], y=xnew[,2], prob=prob),
+                aes(x=x, y=y, z=prob, colour=..level..) ) +
   scale_colour_gradient(low = "red", high = "green", guide='none') +
   geom_point(data=data.frame(x=x[,1],y=x[,2]), aes(x=x,y=y), color=y+2, size=1)
 
@@ -249,13 +249,13 @@ x1g <- seq(-4,4,len=ng)
 x2g <- seq(-2,4,len=ng)
 
 xnew <- cbind( rep(x1g,each=ng), rep(x2g,ng) )
-pred <- gp_draw(gp, xnew, draws=500)
-pr <- rowMeans(pred)
+pred <- gp_pred(gp, xnew, transform=T)
+prob <- pred$mean
 
 # visualize
 ggplot() + 
-  geom_contour(data=data.frame(x=xnew[,1], y=xnew[,2], pr=pr),
-                aes(x=x, y=y, z=pr, colour=..level..) ) +
+  geom_contour(data=data.frame(x=xnew[,1], y=xnew[,2], prob=prob),
+                aes(x=x, y=y, z=prob, colour=..level..) ) +
   scale_colour_gradient(low = "red", high = "green", guide='none') +
   geom_point(data=data.frame(x=x[,1],y=x[,2]), aes(x=x,y=y), color=y+2, size=1)
 
