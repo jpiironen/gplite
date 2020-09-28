@@ -266,6 +266,77 @@ The fit seems more or less reasonable, albeit the extrapolations outside the tra
 
 
 
+# Combining covariance functions
+
+This section shows an example of how to combine several covariance functions into the model. We use the AirPassengers dataset for demonstration.
+
+Let's first load and visualize the data. We shall use the last 24 months as a test set and compare our model predictions to that.
+
+```{r}
+y_all <- AirPassengers
+x_all <- seq_along(y_all)
+
+# hold out 2 years as a test set
+nt <- 24
+n <- length(x_all) - nt
+x <- x_all[1:n]
+y <- y_all[1:n]
+xt <- tail(x_all, nt)
+yt <- tail(y_all, nt)
+
+ggplot() + 
+  geom_line(aes(x=x,y=y), color='black') +
+  geom_line(aes(x=xt,y=yt), color='red') +
+  xlab('Time (months)') + ylab('Num. of passengers (thousands)')
+```
+
+
+
+```{r}
+
+# take a log transformation to get a more stationary process
+yscaled <- log(y)
+
+# set up the model
+cf0 <- cf_const()
+cf1 <- cf_lin(prior_magn = prior_half_t())
+cf2 <- cf_periodic(
+  period=12, 
+  prior_period = prior_fixed()
+) * cf_sexp(
+  lscale=100, 
+  magn=1, 
+  prior_magn=prior_fixed()
+)
+cfs <- list(cf0, cf1, cf2)
+gp <- gp_init(cfs)
+```
+
+```{r}
+gp <- gp_optim(gp, x, yscaled)
+```
+
+
+```{r}
+
+pred_scaled <- gp_pred(gp, xt, cfind = c(1,2,3), var=T)
+
+pred <- exp(pred_scaled$mean)
+pred_lb <- exp(pred_scaled$mean - 2*sqrt(pred_scaled$var))
+pred_ub <- exp(pred_scaled$mean + 2*sqrt(pred_scaled$var))
+
+
+plot(x, )
+ggplot() + 
+  geom_ribbon(aes(x=xt, ymin=pred_lb, ymax=pred_ub), fill='lightgray') +
+  geom_line(aes(x=xt, y=pred), color='black', alpha=0.5) +
+  geom_line(aes(x=x, y=y), color='black') +
+  geom_line(aes(x=xt, y=yt), color='red', alpha=0.5) +
+  xlab('Time (months)') + ylab('Num. of passengers (thousands)')
+```
+The model's predictions match very closely to the actual observations in the last two years we left out before model fitting.
+
+
 # References {-}
 
 
