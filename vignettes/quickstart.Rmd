@@ -120,15 +120,15 @@ Let us visualize the predictive fit. For a non-Gaussian likelihood, this is most
 ```{r}
 # predict in a grid of points
 xt <- seq(-4,4,len=200)
-pred <- gp_draw(gp, xt, draws=1000)
-pred_mean <- rowMeans(pred)
-qt <- apply(pred, 1, quantile, c(0.05, 0.95))
-pred_lb <- qt[1,]
-pred_ub <- qt[2,]
+pred <- gp_pred(gp, xt, quantiles=c(0.05, 0.95), transform=T)
+pred_mean <- pred$mean
+pred_lb <- pred$quantiles[,1]
+pred_ub <- pred$quantiles[,2]
+
 
 ggplot() + 
-  geom_ribbon(aes(x=xt,ymin=pred_lb,ymax=pred_ub), fill='lightgray') +
-  geom_line(aes(x=xt,y=pred_mean), color='black', size=1) +
+  geom_ribbon(aes(x=xt, ymin=pred_lb, ymax=pred_ub), fill='lightgray') +
+  geom_line(aes(x=xt, y=pred_mean), color='black', size=1) +
   geom_point(aes(x=x,y=y), color='black', size=0.5) +
   xlab('x') + ylab('y')
 
@@ -146,11 +146,10 @@ Let's visualize the fit again
 ```{r}
 # predict in a grid of points
 xt <- seq(-4,4,len=200)
-pred <- gp_draw(gp, xt, draws=1000)
-pred_mean <- rowMeans(pred)
-qt <- apply(pred, 1, quantile, c(0.05, 0.95))
-pred_lb <- qt[1,]
-pred_ub <- qt[2,]
+pred <- gp_pred(gp, xt, quantiles=c(0.05, 0.95), transform=T)
+pred_mean <- pred$mean
+pred_lb <- pred$quantiles[,1]
+pred_ub <- pred$quantiles[,2]
 
 ggplot() + 
   geom_ribbon(aes(x=xt,ymin=pred_lb,ymax=pred_ub), fill='lightgray') +
