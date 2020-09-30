@@ -10,7 +10,7 @@ gp_loo(
   x,
   y,
   quadrature = T,
-  quad_order = 15,
+  quad_order = 11,
   draws = 4000,
   jitter = NULL,
   seed = NULL,
