@@ -1,7 +1,7 @@
 
 
 laplace_iter <- function(object, ...) {
-  UseMethod("laplace_iter")
+  UseMethod("laplace_iter", object)
 }
 
 laplace <- function(object, ...) {
@@ -99,10 +99,10 @@ laplace_iter.method_full <- function(object, gp, K, y, fhat_old, pobs=NULL, ...)
     C_lu <- Matrix::expand(Matrix::lu(K+diag(V)))
     alpha <- solve(C_lu$U, solve(C_lu$L, solve(C_lu$P, z)))
     fhat_new <- K %*% alpha
-    return(list(fmean=fhat_new, C_lu=C_lu, alpha=alpha, log_evidence=log_evidence))
+    return(list(fmean=fhat_new, z=z, V=V, C_lu=C_lu, alpha=alpha, log_evidence=log_evidence))
   }
   
-  list(fmean=fhat_new, C_chol=C_chol, alpha=alpha, log_evidence=log_evidence)
+  list(fmean=fhat_new, z=z, V=V, C_chol=C_chol, alpha=alpha, log_evidence=log_evidence)
 }
 
 laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_old, 
@@ -199,7 +199,7 @@ laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
     
   }
   
-  list(fmean=fhat_new, Kz=Kz, Kxz=Kxz, Kz_chol=Kz_chol, C_inv=C_inv,
+  list(fmean=fhat_new, z=z, V=V, Kz=Kz, Kxz=Kxz, Kz_chol=Kz_chol, C_inv=C_inv,
        diag=D, alpha=alpha, log_evidence=log_evidence)
 }
 
@@ -224,7 +224,7 @@ laplace_iter.method_rf <- function(object, gp, Z, y, fhat_old, ...) {
   log_prior <- -0.5*d*log(2*pi) - 0.5*sum(what^2)
   log_lik <- get_loglik(gp$lik, fhat_new, y, ...) 
   log_evidence <- 0.5*n*log(2*pi) + 0.5*wcov_logdet + log_prior + log_lik
-  list(wmean=what, wcov=wcov, log_evidence=log_evidence)
+  list(fmean=fhat_new, wmean=what, wcov=wcov, z=z, V=V, log_evidence=log_evidence)
 }
 
 laplace_iter.method_rbf <- function(object, gp, Z, y, fhat_old, ...) {

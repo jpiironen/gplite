@@ -197,7 +197,8 @@ gp_pred_prior.method_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NU
   return(list(mean = pred_mean))
 }
 
-gp_pred_post.method_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+gp_pred_post.method_full <- function(object, gp, xt, var=F, cov=F, train=F, 
+                                     cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
   Kt <- eval_cf(gp$cfs, xt, gp$x, cfind)
@@ -227,16 +228,29 @@ gp_pred_post.method_full <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
   return(list(mean = pred_mean))
 }
 
-gp_pred_post.method_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, jitter=NULL) {
+gp_pred_post.method_fitc <- function(object, gp, xt, var=F, cov=F, train=F, 
+                                     cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
   z <- gp$method$inducing
+  alpha <- gp$fit$alpha
   Ktz <- eval_cf(gp$cfs, xt, z, cfind)
   Kxz <- gp$fit$Kxz
   Kz_chol <- gp$fit$Kz_chol
-  Kt <- t(forwardsolve(Kz_chol, t(Ktz))) %*% forwardsolve(Kz_chol, t(Kxz))
-  alpha <- gp$fit$alpha
-  pred_mean <- as.vector(Kt %*% alpha)
+  if (var || cov || train) {
+    # FITC diagonal correction
+    Dt <- eval_cf(gp$cfs, xt, xt, cfind, diag_only=T)
+    Dt <- Dt - colSums(forwardsolve(Kz_chol, t(Ktz))^2)
+  }
+  # with these auxiliary matrices, we have: Kt == t(Kt_aux2) %*% Kt_aux1
+  Kt_aux1 <- forwardsolve(Kz_chol, t(Kxz)) 
+  Kt_aux2 <- forwardsolve(Kz_chol, t(Ktz))
+  
+  pred_mean <- as.vector( t(Kt_aux2) %*% (Kt_aux1 %*% alpha) ) 
+  if (train) {
+    # need to take into account the diagonal correction, since training prediction
+    pred_mean <- pred_mean + Dt*alpha
+  }
   
   if (var || cov) {
     # (co)variance of the latent function
@@ -244,20 +258,36 @@ gp_pred_post.method_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
     jitter <- get_jitter(gp,jitter)
     Kz <- gp$fit$Kz
     xt <- as.matrix(xt)
-    Dt <- eval_cf(gp$cfs, xt, xt, cfind, diag_only=T)
-    Dt <- Dt - colSums(forwardsolve(Kz_chol, t(Ktz))^2)
-
+    
     if (cov) {
+      
       Linv_Ktz <- forwardsolve(Kz_chol, t(Ktz))
       prior_cov <- t(Linv_Ktz) %*% Linv_Ktz + diag(Dt)
       C_inv <- gp$fit$C_inv
-      pred_cov <- prior_cov - Kt %*% inv_lemma_solve(C_inv, t(Kt))
+      if (train) {
+        Kt <- t(Kt_aux2) %*% Kt_aux1 + diag(Dt)
+        pred_cov <- prior_cov - Kt %*% inv_lemma_solve(C_inv, t(Kt))
+      } else {
+        pred_cov <- prior_cov - t(Kt_aux2) %*% (Kt_aux1 %*% inv_lemma_solve(C_inv, t(Kt_aux1))) %*% Kt_aux2
+      }
       return(list(mean = pred_mean, cov = pred_cov + jitter*diag(nt)))
+      
     } else {
+      
       C_inv <- gp$fit$C_inv
       Kz_inv_Ktz <- backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Ktz)))
       prior_var <- rowSums(Ktz * t(Kz_inv_Ktz)) + Dt
-      var_reduction <- rowSums(Kt * t(inv_lemma_solve(C_inv, t(Kt))))
+      if (train) {
+        aux <- inv_lemma_solve(C_inv, t(Kt_aux1), Kt_aux1) %*% Kt_aux2 +
+          inv_lemma_solve(C_inv, Dt, Kt_aux1, rhs_diag=T)
+        diag1 <- colSums(Kt_aux2 * aux)
+        diag2 <- rowSums(inv_lemma_solve(C_inv, t(Kt_aux1), Dt, lhs_diag=T) * t(Kt_aux2))
+        diag3 <- inv_lemma_solve(C_inv, Dt, Dt, rhs_diag=T, lhs_diag=T, diag_only=T)
+        var_reduction <- diag1 + diag2 + diag3
+      } else {
+        aux <- inv_lemma_solve(C_inv, t(Kt_aux1), Kt_aux1) %*% Kt_aux2
+        var_reduction <- colSums(Kt_aux2 * aux)
+      }
       pred_var <- prior_var - var_reduction
       return(list(mean = pred_mean, var = as.vector(pred_var)))
     }
@@ -265,7 +295,7 @@ gp_pred_post.method_fitc <- function(object, gp, xt, var=F, cov=F, cfind=NULL, j
   return(list(mean = pred_mean))
 }
 
-gp_pred_post.method_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
+gp_pred_post.method_rf <- function(object, gp, xt, var=F, train=F, cfind=NULL, jitter=NULL) {
   
   # compute the latent mean first
   featuremap <- get_featuremap(gp, num_inputs = NCOL(xt))
@@ -283,8 +313,8 @@ gp_pred_post.method_rf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NUL
   return(list(mean = pred_mean))
 }
 
-gp_pred_post.method_rbf <- function(object, gp, xt, var=F, cfind=NULL, jitter=NULL) {
-  gp_pred_post.method_rf(object, gp, xt, var=var, cfind=cfind, jitter=jitter)
+gp_pred_post.method_rbf <- function(object, gp, xt, var=F, train=F, cfind=NULL, jitter=NULL) {
+  gp_pred_post.method_rf(object, gp, xt, var=var, train=train, cfind=cfind, jitter=jitter)
 }
 
 

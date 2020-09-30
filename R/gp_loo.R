@@ -68,8 +68,11 @@ NULL
 
 #' @rdname gp_loo
 #' @export
-gp_loo <- function(gp, x, y, quadrature=T, quad_order=15, draws=4000,
+gp_loo <- function(gp, x, y, quadrature=T, quad_order=11, draws=4000,
                    jitter=NULL, seed=NULL, ...) {
+  if (!is_fitted(gp, 'analytic'))
+    stop('The provied GP model is not fitted. Please call gp_fit (or gp_optim) first.')
+  
   # set random seed but ensure the old RNG state is restored on exit
   if (exists('.Random.seed')) {
     rng_state_old <- .Random.seed
@@ -113,12 +116,12 @@ loo_posteriors.gp <- function(object, ...) {
 
 loo_posteriors.approx_laplace <- function(object, gp, x, y, ...) {
   fhat <- as.vector(gp$fit$fmean)
-  pobs <- get_pseudodata(gp$lik, fhat, y, ...)
-  z <- pobs$z
-  V <- pobs$var
+  z <- gp$fit$z
+  V <- gp$fit$V
   grad <- (z - fhat)/V
-  pred_var <- gp_pred(gp, x, var=TRUE)$var
-  loo_var <- 1/(1/pred_var - 1/V)
+  post_pred <- gp_pred_post(gp$method, gp, x, var=TRUE, train=TRUE)
+  post_var <- post_pred$var
+  loo_var <- 1/(1/post_var - 1/V)
   loo_mean <- fhat - loo_var*grad
   return(list(mean=loo_mean, var=loo_var))
 }
