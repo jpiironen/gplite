@@ -47,7 +47,7 @@ cf_matern52(
 cf_nn(
   vars = NULL,
   sigma0 = 1,
-  sigma = 5,
+  sigma = 3,
   magn = 1,
   prior_sigma0 = prior_half_t(),
   prior_sigma = prior_half_t(),
