@@ -94,7 +94,7 @@ fit_laplace.method_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, 
   jitter <- get_jitter(gp,jitter)
   K <- eval_cf(gp$cfs, x, x) + jitter*diag(n)
   gp$x <- x
-  gp$fit <- laplace(object, gp, K, y, trials=trials)
+  gp$fit <- laplace(object, gp, K, y, trials=trials, maxiter=gp$approx$maxiter)
   return(gp)
 }
 
@@ -111,7 +111,7 @@ fit_laplace.method_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, 
   gp$x <- x
   gp$method$inducing <- z
   gp$fit <- tryCatch({
-    laplace(object, gp, Kz, Kz_chol, Kxz, D, y, trials=trials)
+    laplace(object, gp, Kz, Kz_chol, Kxz, D, y, trials=trials, maxiter=gp$approx$maxiter)
   },
   error = function(err) {
     print(err)
@@ -125,7 +125,7 @@ fit_laplace.method_rf <- function(object, gp, x, y, trials=NULL, jitter=NULL, ..
   featuremap <- get_featuremap(gp, num_inputs)
   gp$method$num_basis <- check_num_basis(gp$cfs, gp$method$num_basis, NCOL(x))
   z <- featuremap(x)
-  gp$fit <- laplace(object, gp, z, y, trials=trials)
+  gp$fit <- laplace(object, gp, z, y, trials=trials, maxiter=gp$approx$maxiter)
   return(gp)
 }
 
@@ -135,7 +135,7 @@ fit_laplace.method_rbf <- function(object, gp, x, y, trials=NULL, jitter=NULL, .
   featuremap <- get_featuremap(gp, num_inputs)
   gp$method$num_basis <- check_num_basis(gp$cfs, gp$method$num_basis, NCOL(x))
   z <- featuremap(x)
-  gp$fit <- laplace(object, gp, z, y, trials=trials)
+  gp$fit <- laplace(object, gp, z, y, trials=trials, maxiter=gp$approx$maxiter)
   return(gp)
 }
 
@@ -152,7 +152,7 @@ fit_ep.method_full <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) 
   K <- eval_cf(gp$cfs, x, x) + jitter*diag(n)
   gp$x <- x
   gp$fit <- ep(object, gp, K, y, trials=trials, quad_order=gp$approx$quad_order,
-               damping=gp$approx$damping, damping_min=0.1, ...)
+               damping=gp$approx$damping, damping_min=0.1, maxiter=gp$approx$maxiter, ...)
   return(gp)
 }
 
@@ -169,7 +169,8 @@ fit_ep.method_fitc <- function(object, gp, x, y, trials=NULL, jitter=NULL, ...) 
   gp$x <- x
   gp$method$inducing <- z
   gp$fit <- tryCatch({
-    ep(object, gp, Kz, Kz_chol, Kxz, K_diag, D, y, trials=trials, ...)
+    ep(object, gp, Kz, Kz_chol, Kxz, K_diag, D, y, trials=trials, quad_order=gp$approx$quad_order,
+       damping=gp$approx$damping, damping_min=0.1, maxiter=gp$approx$maxiter, ...)
   },
   error = function(err) {
     print(err)

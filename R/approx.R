@@ -22,7 +22,7 @@
 #' 
 #' @name approx
 #'
-#'
+#' @param maxiter Maximum number of iterations in the Laplace/EP iteration.
 #' @param damping Damping factor for EP. Should be between 0 and 1. Smaller values
 #' typically lead to more stable iterations, but also increase the number of iterations,
 #' and thus make the algorithm slower.
@@ -58,18 +58,18 @@ NULL
 
 #' @rdname approx
 #' @export
-approx_laplace <- function() {
-  approx <- list(name='laplace')
+approx_laplace <- function(maxiter=30) {
+  approx <- list(name='laplace', maxiter=maxiter)
   class(approx) <- c('approx_laplace', 'approx')
   approx
 }
 
 #' @rdname approx
 #' @export
-approx_ep <- function(damping=0.9, quad_order=11) {
+approx_ep <- function(damping=0.9, quad_order=11, maxiter=100) {
   if (damping <= 0 || damping >= 1)
     stop('Damping should be between 0 and 1 (exclusive)')
-  approx <- list(name='ep', damping=damping, quad_order=quad_order)
+  approx <- list(name='ep', damping=damping, quad_order=quad_order, maxiter=maxiter)
   class(approx) <- c('approx_ep', 'approx')
   approx
 }
