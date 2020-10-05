@@ -3,7 +3,7 @@
 # gplite
 
 
-An R package for fitting some of the most common Gaussian process (GP) models. Uses Laplace approximation for handling non-Gaussian observation models, performs hyperparameter optimization using maximum marginal likelihood (or posterior), and implements some common sparse approximations for handling larger datasets. Provides also interface for performing MCMC for the latent values using Stan.
+An R package for fitting some of the most common Gaussian process (GP) models. Implements Laplace and EP approximations for handling non-Gaussian observation models, performs hyperparameter optimization using maximum marginal likelihood (or posterior), and implements some common sparse approximations for handling larger datasets. Provides also tools for model assessment and comparison via leave-one-out (LOO) cross-validation.
 
 The syntax has taken a lot of inspiration from that of [GPstuff](https://github.com/gpstuff-dev/gpstuff) but the intention of the package is *not* to be a GPstuff clone for R.
 
