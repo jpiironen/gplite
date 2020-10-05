@@ -59,18 +59,18 @@ So let's first create he model. We'll use the squared exponential covariance fun
 ```{r}
 gp <- gp_init(cfs = cf_sexp(), lik = lik_gaussian())
 ```
-There's three hyperparameters in the model. We can see the initial values using ```get_param```. Notice that this function returns the parametes on log-scale, so we take the exponent to get the actual values
+There's three hyperparameters in the model. We can see the summary of the model by printing it.
 ```{r}
-exp(get_param(gp))
+print(gp)
 ```
 
 We can optimize the hyperparameters to the maximum marginal likelihood solution using ```gp_optim```.
 ```{r, results='hide'}
 gp <- gp_optim(gp, x, y)
 ```
-Let's print out the hyperparameters after optimization:
+Let's print out the model and the hyperparameters after optimization:
 ```{r}
-exp(get_param(gp))
+print(gp)
 ```
 
 
