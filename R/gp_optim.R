@@ -60,15 +60,42 @@ gp_optim <- function(gp, x, y, tol=1e-4, maxiter=500, verbose=T, warnings=T, ...
   
   optim_start_message(gp, verbose)
   param0 <- get_param(gp)
-  control <- list(reltol = tol, fnscale = length(y), maxit = maxiter, 
+  n <- length(y)
+  control <- list(reltol = tol, fnscale = n, maxit = maxiter, 
                   warn.1d.NelderMead = warnings)
   res <- stats::optim(param0, energy, method = 'Nelder-Mead', control = control)
   if (res$convergence == 1 && warnings)
-    warning('Maximum number of iterations reached, the optimization may not have converged.')
-  param <- res$par
-  gp <- set_param(gp, param)
-  gp <- gp_fit(gp,x,y, ...)
+    warning('Maximum number of iterations reached, optimization may not have converged.')
+  param_opt <- res$par
+  e_opt <- res$value
+  
+  if (warnings) {
+    check_convergence(energy, e_opt, param_opt, verbose=verbose)
+  }
+  
+  gp <- set_param(gp, param_opt)
+  gp <- gp_fit(gp, x, y, ...)
   gp
+}
+
+check_convergence <- function(lossfun, loss_opt, param_opt, verbose=F) {
+  
+  # check convergence
+  delta <- 1e-1
+  tol <- 1e-2
+  if (verbose)
+    cat('Assessing convergence...\n')
+  for (k in seq_along(param_opt)) {
+    dparam <- rep(0, length(param_opt))
+    dparam[k] <- delta
+    loss1 <- lossfun(param_opt + dparam)
+    loss2 <- lossfun(param_opt - dparam)
+    loss_diff <- loss_opt - min(loss1, loss2)
+    if (loss_diff > tol) {
+      warning(sprintf('Not all hyperparameters have reached convergence within tolerance %.2f. Try reoptimizing starting from the current hyperparameter values, or reduce tol.', delta))
+      break
+    }
+  }
 }
 
 optim_start_message <- function(gp, verbose=T) {
