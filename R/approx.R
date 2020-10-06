@@ -12,7 +12,8 @@
 #' The supported methods are:
 #' \describe{
 #'  \item{\code{approx_laplace}}{ Laplace's method, that is, based on local second
-#'   order appriximation to the log likelihood. Typically faster than EP, but also more inaccurate. For Gaussian likelihood, this means exact inference (no approximation). }
+#'   order approximation to the log likelihood. For Gaussian likelihood, this means exact inference
+#'    (no approximation). }
 #'  \item{\code{approx_ep}}{ Expectation propagation, EP. Approximates the likelihood by
 #'   introducing Gaussian pseudo-data so that the posterior marginals match to the so called
 #'    tilted distributions (leave-one-out posterior times the true likelihood factor) as
