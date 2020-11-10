@@ -290,43 +290,43 @@ ggplot() +
   xlab('Time (months)') + ylab('Num. of passengers (thousands)')
 ```
 
+The data clearly has some systematic variability related to a yearly cycle (period of 12 months). To account for this, we use a periodic kernel (with a fixed period of 12 months) multiplied by a squared exponential with a rather large length-scale to obtain a quasi-periodic covariance function. To account for the rising trend, we use a combination of linear and constant covariance functions. To obtain a better fit, we fit the model on logarithm of the target variable. 
 
-
+The following code sets up the model. Here we use initial values for the parameters that are rather close to the optimal ones to make the optimization faster, but in practice it is usually not necessary to have such precise initial guess (the intial values can have effect, though, if the hyperparameter posterior is multimodal).
 ```{r}
 
 # take a log transformation to get a more stationary process
 yscaled <- log(y)
 
 # set up the model
-cf0 <- cf_const()
-cf1 <- cf_lin(prior_magn = prior_half_t())
+cf0 <- cf_const(magn=5)
+cf1 <- cf_lin(magn=0.01)
 cf2 <- cf_periodic(
   period=12, 
-  prior_period = prior_fixed()
+  prior_period = prior_fixed(),
 ) * cf_sexp(
   lscale=100, 
-  magn=1, 
-  prior_magn=prior_fixed()
+  magn=1,
+  prior_magn = prior_fixed()
 )
 cfs <- list(cf0, cf1, cf2)
-gp <- gp_init(cfs)
+gp <- gp_init(cfs, lik=lik_gaussian(sigma=0.05))
 ```
 
-```{r}
+Optimize the hyperparameters
+```{r, results='hide'}
 gp <- gp_optim(gp, x, yscaled, tol=1e-5)
 ```
 
-
+Visualize the predictions
 ```{r}
 
-pred_scaled <- gp_pred(gp, xt, cfind = c(1,2,3), var=T)
+pred_scaled <- gp_pred(gp, xt, var=T)
 
 pred <- exp(pred_scaled$mean)
 pred_lb <- exp(pred_scaled$mean - 2*sqrt(pred_scaled$var))
 pred_ub <- exp(pred_scaled$mean + 2*sqrt(pred_scaled$var))
 
-
-plot(x, )
 ggplot() + 
   geom_ribbon(aes(x=xt, ymin=pred_lb, ymax=pred_ub), fill='lightgray') +
   geom_line(aes(x=xt, y=pred), color='black', alpha=0.5) +
@@ -334,6 +334,7 @@ ggplot() +
   geom_line(aes(x=xt, y=yt), color='red', alpha=0.5) +
   xlab('Time (months)') + ylab('Num. of passengers (thousands)')
 ```
+
 The model's predictions match very closely to the actual observations in the last two years we left out before model fitting.
 
 
