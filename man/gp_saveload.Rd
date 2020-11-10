@@ -30,12 +30,11 @@ gp <- gp_init()
 # fit the model (skipped here)
 
 # save the model
-gp_save(gp, 'gp.rda')
+gp_save(gp, "gp.rda")
 
 # load the model and remove the file
-gp <- gp_load('gp.rda')
-file.remove('gp.rda')
-
+gp <- gp_load("gp.rda")
+file.remove("gp.rda")
 }
 
 }

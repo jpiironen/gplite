@@ -22,13 +22,13 @@ prior_half_t(df = 1, scale = 1)
 The hyperprior object.
 }
 \description{
-Functions for initializing hyperparameter priors which can then be passed 
+Functions for initializing hyperparameter priors which can then be passed
 to \code{\link{gp_init}}. See section Details for the prior explanations.
 }
 \details{
 The supported priors are:
 \describe{
- \item{\code{prior_fixed}}{ The hyperparameter is fixed to its initial value, 
+ \item{\code{prior_fixed}}{ The hyperparameter is fixed to its initial value,
  and is not optimized by \code{gp_optim}. }
  \item{\code{prior_logunif}}{ Improper uniform prior on the log of the parameter. }
  \item{\code{prior_half_t}}{ Half Student-t prior for a positive parameter. }
@@ -46,19 +46,17 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 # Quasi-periodic covariance function, with fixed period
 cf1 <- cf_periodic(
   period = 5,
-  prior_period = prior_fixed(), 
-  cf_base = cf_sexp(lscale=2)
+  prior_period = prior_fixed(),
+  cf_base = cf_sexp(lscale = 2)
 )
-cf2 <- cf_sexp(lscale=40)
+cf2 <- cf_sexp(lscale = 40)
 cf <- cf1 * cf2
 gp <- gp_init(cf)
 
 # draw from the prior
 set.seed(104930)
-xt <- seq(-10,10,len=500)
-plot(xt, gp_draw(gp, xt), type='l')
-
-
+xt <- seq(-10, 10, len = 500)
+plot(xt, gp_draw(gp, xt), type = "l")
 }
 
 }

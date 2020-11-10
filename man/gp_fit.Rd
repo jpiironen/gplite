@@ -9,12 +9,12 @@ gp_fit(gp, x, y, trials = NULL, jitter = NULL, ...)
 \arguments{
 \item{gp}{The gp model object to be fitted.}
 
-\item{x}{n-by-d matrix of input values (n is the number of observations and d the input dimension). 
+\item{x}{n-by-d matrix of input values (n is the number of observations and d the input dimension).
 Can also be a vector of length n if the model has only a single input.}
 
 \item{y}{Vector of n output (target) values.}
 
-\item{trials}{Vector of length n giving the number of trials for each observation in binomial 
+\item{trials}{Vector of length n giving the number of trials for each observation in binomial
 (and beta binomial) model.}
 
 \item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability.
@@ -26,10 +26,10 @@ Default is 1e-6.}
 An updated GP model object.
 }
 \description{
-Function \code{gp_fit} fits a GP model with the current hyperparameters. 
-Notice that this function does not optimize the hyperparameters in any way, 
+Function \code{gp_fit} fits a GP model with the current hyperparameters.
+Notice that this function does not optimize the hyperparameters in any way,
 but only finds the analytical posterior approximation (depending on chosen
- \code{\link{approx}}) for the latent values with the current hyperparameters. 
+ \code{\link{approx}}) for the latent values with the current hyperparameters.
 For optimizing the hyperparameter
 values, see \code{gp_optim}.
 }
@@ -48,16 +48,15 @@ set.seed(32004)
 n <- 150
 sigma <- 0.1
 x <- rnorm(n)
-ycont <- sin(3*x)*exp(-abs(x)) +  rnorm(n)*sigma
-y <- rep(0,n)
+ycont <- sin(3 * x) * exp(-abs(x)) + rnorm(n) * sigma
+y <- rep(0, n)
 y[ycont > 0] <- 1
-trials <- rep(1,n)
+trials <- rep(1, n)
 
 # Fit the model using Laplace approximation
-cf <- cf_sexp(lscale=0.3, magn=3)
+cf <- cf_sexp(lscale = 0.3, magn = 3)
 gp <- gp_init(cf, lik_binomial())
-gp <- gp_fit(gp, x, y, trials=trials)
-
+gp <- gp_fit(gp, x, y, trials = trials)
 }
 
 }

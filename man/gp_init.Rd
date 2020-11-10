@@ -16,10 +16,10 @@ gp_init(
 
 \item{lik}{Likelihood (observation model). See \code{\link{lik}}.}
 
-\item{method}{Method for approximating the covariance function. 
+\item{method}{Method for approximating the covariance function.
 See \code{\link{method}}.}
 
-\item{approx}{Approximate inference method for Gaussian approximation 
+\item{approx}{Approximate inference method for Gaussian approximation
 for the posterior of the latent values. See \code{\link{approx}}.}
 }
 \value{
@@ -41,24 +41,22 @@ MIT Press.
 # Generate some toy data
 set.seed(1242)
 n <- 500
-x <- matrix(rnorm(n*3), nrow=n)
-f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
-y <- f + 0.5*rnorm(n)
-x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
+x <- matrix(rnorm(n * 3), nrow = n)
+f <- sin(x[, 1]) + 0.5 * x[, 2]^2 + x[, 3]
+y <- f + 0.5 * rnorm(n)
+x <- data.frame(x1 = x[, 1], x2 = x[, 2], x3 = x[, 3])
 
 # Full exact GP with Gaussian likelihood
 gp <- gp_init(cf_sexp())
 gp <- gp_optim(gp, x, y)
 
 # Approximate solution using random features
-gp <- gp_init(cf_sexp(), method=method_rf(num_basis=300))
+gp <- gp_init(cf_sexp(), method = method_rf(num_basis = 300))
 gp <- gp_optim(gp, x, y)
 
 # Approximate solution using FITC
-gp <- gp_init(cf_sexp(), method=method_fitc(num_inducing=100))
+gp <- gp_init(cf_sexp(), method = method_fitc(num_inducing = 100))
 gp <- gp_optim(gp, x, y)
-
-
 }
 
 }

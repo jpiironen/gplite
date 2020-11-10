@@ -17,7 +17,7 @@ The energy value (negative log marginal likelihood).
 }
 \description{
 Returns the energy (negative log marginal likelihood) of a fitted GP model with the
-current hyperparameters. The result is exact for the Gaussian likelihood and 
+current hyperparameters. The result is exact for the Gaussian likelihood and
 dependent on the \code{\link{approx}} for other cases.
 }
 \section{References}{
@@ -32,16 +32,15 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 # Generate some toy data
 set.seed(1242)
 n <- 500
-x <- matrix(rnorm(n*3), nrow=n)
-f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
-y <- f + 0.5*rnorm(n)
-x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
+x <- matrix(rnorm(n * 3), nrow = n)
+f <- sin(x[, 1]) + 0.5 * x[, 2]^2 + x[, 3]
+y <- f + 0.5 * rnorm(n)
+x <- data.frame(x1 = x[, 1], x2 = x[, 2], x3 = x[, 3])
 
 # Basic usage
 gp <- gp_init(cf_sexp(), lik_gaussian())
 gp <- gp_fit(gp, x, y)
 e <- gp_energy(gp)
-
 }
 
 }

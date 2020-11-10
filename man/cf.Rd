@@ -67,7 +67,7 @@ cf_prod(...)
 \method{*}{cf}(cf1, cf2)
 }
 \arguments{
-\item{magn}{Initial value for the magnitude hyperparameter (depicts the magnitude of 
+\item{magn}{Initial value for the magnitude hyperparameter (depicts the magnitude of
 the variation captured by the given covariance function).}
 
 \item{prior_magn}{Prior for hypeparameter \code{magn}. See \code{\link{priors}}.}
@@ -76,7 +76,7 @@ the variation captured by the given covariance function).}
 covariance. If the input matrix has named columns, can also be a vector of column names.
 Default is all the inputs.}
 
-\item{normalize}{Whether to automatically scale and center the inputs for the given 
+\item{normalize}{Whether to automatically scale and center the inputs for the given
 covariance function. Can be useful for inputs with mean and variance far from 0 and 1, respectively.}
 
 \item{lscale}{Initial value for the length-scale hyperparameter.}
@@ -85,7 +85,7 @@ covariance function. Can be useful for inputs with mean and variance far from 0 
 
 \item{sigma0}{Prior std for the bias in the neural network covariance function.}
 
-\item{sigma}{Prior std for the weights in the hidden layers of the neural network 
+\item{sigma}{Prior std for the weights in the hidden layers of the neural network
 covariance function.}
 
 \item{prior_sigma0}{Prior for hyperparameter \code{sigma0}. See \code{\link{priors}}.}
@@ -94,7 +94,7 @@ covariance function.}
 
 \item{period}{Period length for the periodic covariance function.}
 
-\item{cf_base}{Base covariance function that is used to model the variability within each period 
+\item{cf_base}{Base covariance function that is used to model the variability within each period
 in periodic covariance function.}
 
 \item{prior_period}{Prior for hyperparameter \code{period}. See \code{\link{priors}}.}
@@ -109,8 +109,8 @@ in periodic covariance function.}
 The covariance function object.
 }
 \description{
-Functions for initializing the covariance functions which can then be passed 
-to \code{\link{gp_init}}. See section Details for explanation of what covariance 
+Functions for initializing the covariance functions which can then be passed
+to \code{\link{gp_init}}. See section Details for explanation of what covariance
 function is what.
 }
 \details{
@@ -139,10 +139,10 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 # Generate some toy data
 set.seed(1242)
 n <- 300
-x <- matrix(rnorm(n*3), nrow=n)
-f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
-y <- f + 0.5*rnorm(n)
-x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
+x <- matrix(rnorm(n * 3), nrow = n)
+f <- sin(x[, 1]) + 0.5 * x[, 2]^2 + x[, 3]
+y <- f + 0.5 * rnorm(n)
+x <- data.frame(x1 = x[, 1], x2 = x[, 2], x3 = x[, 3])
 
 # Basic usage (single covariance function)
 cf <- cf_sexp()
@@ -152,15 +152,14 @@ gp <- gp_optim(gp, x, y)
 plot(gp_pred(gp, x)$mean, y)
 
 # More than one covariance function; one for x1 and x2, and another one for x3
-cf1 <- cf_nn(c('x1','x2'), prior_sigma0 = prior_half_t(df=4, scale=2))
-cf2 <- cf_sexp('x3')
+cf1 <- cf_nn(c("x1", "x2"), prior_sigma0 = prior_half_t(df = 4, scale = 2))
+cf2 <- cf_sexp("x3")
 cfs <- list(cf1, cf2)
 lik <- lik_gaussian()
 gp <- gp_init(cfs, lik)
 gp <- gp_optim(gp, x, y, maxiter = 500)
 plot(gp_pred(gp, x)$mean, y)
-plot(x[,3], gp_pred(gp, x, cfind=2)$mean) # plot effect w.r.t x3 only
-
+plot(x[, 3], gp_pred(gp, x, cfind = 2)$mean) # plot effect w.r.t x3 only
 }
 
 }

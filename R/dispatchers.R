@@ -6,35 +6,33 @@
 #' are intended mainly for internal usage, and there is typically
 #' no need to use these functions directly but instead create a new GP model using
 #' \code{gp_init}.
-#' 
+#'
 #' @name param
-#' 
+#'
 #' @param object The model object.
 #' @param param The parameters to be set. Call first \code{get_param} to see the order in which the parameters should be given for a particular model. Notice that all positive parameters should be given in a log-scale.
 #' @param ... Ignored currently.
-#' 
+#'
 #' @return \code{get_param} returns the current hyperparameters and \code{set_param} the GP model structure with the new parameter values.
-#' 
+#'
 #'
 #' @examples
 #' \donttest{
 #'
 #' # Set up some model
-#' gp <- gp_init(cf=cf_sexp(), lik=lik_gaussian())
-#' 
+#' gp <- gp_init(cf = cf_sexp(), lik = lik_gaussian())
+#'
 #' # print out to see the parameter ordering
 #' param <- get_param(gp)
 #' print(param)
 #'
 #' # set some new values
-#' param_new <- log(c(0.1,0.8,0.3))
+#' param_new <- log(c(0.1, 0.8, 0.3))
 #' names(param_new) <- names(param)
 #' gp <- set_param(gp, param_new)
 #'
 #' # check the result
 #' print(get_param(gp))
-#'
-#'
 #' }
 #'
 NULL
@@ -95,15 +93,15 @@ generate_target <- function(object, ...) {
   UseMethod("generate_target", object)
 }
 
-eval_cf <- function (object, ...) {
+eval_cf <- function(object, ...) {
   UseMethod("eval_cf", object)
 }
 
-rf_featmap <- function (object, ...) {
+rf_featmap <- function(object, ...) {
   UseMethod("rf_featmap", object)
 }
 
-rbf_featmap <- function (object, ...) {
+rbf_featmap <- function(object, ...) {
   UseMethod("rbf_featmap", object)
 }
 

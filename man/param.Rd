@@ -31,21 +31,19 @@ no need to use these functions directly but instead create a new GP model using
 \donttest{
 
 # Set up some model
-gp <- gp_init(cf=cf_sexp(), lik=lik_gaussian())
+gp <- gp_init(cf = cf_sexp(), lik = lik_gaussian())
 
 # print out to see the parameter ordering
 param <- get_param(gp)
 print(param)
 
 # set some new values
-param_new <- log(c(0.1,0.8,0.3))
+param_new <- log(c(0.1, 0.8, 0.3))
 names(param_new) <- names(param)
 gp <- set_param(gp, param_new)
 
 # check the result
 print(get_param(gp))
-
-
 }
 
 }

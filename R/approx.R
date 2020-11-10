@@ -7,7 +7,7 @@
 
 #' Approximations to the posterior of the latent values
 #'
-#' Functions for initializing the approximation for the latent values, which can 
+#' Functions for initializing the approximation for the latent values, which can
 #' then be passed to \code{\link{gp_init}}.
 #' The supported methods are:
 #' \describe{
@@ -20,7 +20,7 @@
 #'     closely as possible.  Typically more accurate than
 #'   Laplace, but slower. }
 #' }
-#' 
+#'
 #' @name approx
 #'
 #' @param maxiter Maximum number of iterations in the Laplace/EP iteration.
@@ -29,28 +29,27 @@
 #' and thus make the algorithm slower.
 #' @param quad_order Order of the Gauss-Hermite quadrature used to evaluate the required
 #'  tilted moments in EP.
-#'  
+#'
 #'
 #' @return The approximation object.
-#' 
-#' 
+#'
+#'
 #' @section References:
-#' 
+#'
 #' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning.
 #' MIT Press.
-#' 
-#' 
+#'
+#'
 #' @examples
 #' \donttest{
-#' 
-#' # Basic usage 
+#'
+#' # Basic usage
 #' gp <- gp_init(
-#'   cfs=cf_sexp(), 
-#'   lik=lik_bernoulli(), 
-#'   method=method_fitc(num_inducing=100),
-#'   approx=approx_ep()
+#'   cfs = cf_sexp(),
+#'   lik = lik_bernoulli(),
+#'   method = method_fitc(num_inducing = 100),
+#'   approx = approx_ep()
 #' )
-#' 
 #' }
 #'
 NULL
@@ -59,26 +58,28 @@ NULL
 
 #' @rdname approx
 #' @export
-approx_laplace <- function(maxiter=30) {
-  approx <- list(name='laplace', maxiter=maxiter)
-  class(approx) <- c('approx_laplace', 'approx')
+approx_laplace <- function(maxiter = 30) {
+  approx <- list(name = "laplace", maxiter = maxiter)
+  class(approx) <- c("approx_laplace", "approx")
   approx
 }
 
 #' @rdname approx
 #' @export
-approx_ep <- function(damping=0.9, quad_order=11, maxiter=100) {
-  if (damping <= 0 || damping >= 1)
-    stop('Damping should be between 0 and 1 (exclusive)')
-  approx <- list(name='ep', damping=damping, quad_order=quad_order, maxiter=maxiter)
-  class(approx) <- c('approx_ep', 'approx')
+approx_ep <- function(damping = 0.9, quad_order = 11, maxiter = 100) {
+  if (damping <= 0 || damping >= 1) {
+    stop("Damping should be between 0 and 1 (exclusive)")
+  }
+  approx <- list(name = "ep", damping = damping, quad_order = quad_order, maxiter = maxiter)
+  class(approx) <- c("approx_ep", "approx")
   approx
 }
 
 #' @export
-print.approx <- function(object, quiet=F, ...) {
+print.approx <- function(object, quiet = F, ...) {
   str <- class(object)[1]
-  if (!quiet)
+  if (!quiet) {
     cat(str)
+  }
   invisible(str)
 }

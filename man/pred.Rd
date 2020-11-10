@@ -33,11 +33,11 @@ gp_pred(
 \arguments{
 \item{gp}{A GP model object.}
 
-\item{xnew}{N-by-d matrix of input values (N is the number of test points and d 
-the input dimension). 
+\item{xnew}{N-by-d matrix of input values (N is the number of test points and d
+the input dimension).
 Can also be a vector of length N if the model has only a single input.}
 
-\item{draws}{Number of draws to generate from the predictive distribution for the 
+\item{draws}{Number of draws to generate from the predictive distribution for the
 latent values.}
 
 \item{transform}{Whether to transform the draws of latent values to the same scale
@@ -48,8 +48,8 @@ function values.}
 
 \item{marginal}{If TRUE, then draws for each test point are only marginally correct, but the
 covariance structure between test points is not retained. However, this will make the sampling
-considerably faster in some cases, and can be useful if one is interested only in looking 
-at the marginal predictive distributions for a large number of test locations 
+considerably faster in some cases, and can be useful if one is interested only in looking
+at the marginal predictive distributions for a large number of test locations
 (for example, in posterior predictive checking).}
 
 \item{cfind}{Indices of covariance functions to be used in the prediction. By default uses
@@ -68,7 +68,7 @@ for binomial and beta-binomial likelihoods.}
 \item{quantiles}{Vector of probabilities between 0 and 1 indicating which quantiles are to
 be predicted.}
 
-\item{quad_order}{Quadrature order in order to compute the mean and variance on 
+\item{quad_order}{Quadrature order in order to compute the mean and variance on
 the transformed scale.}
 }
 \value{
@@ -94,37 +94,36 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 # Generate some toy data
 set.seed(1242)
 n <- 500
-x <- matrix(rnorm(n*3), nrow=n)
-f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
-y <- f + 0.5*rnorm(n)
-x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
+x <- matrix(rnorm(n * 3), nrow = n)
+f <- sin(x[, 1]) + 0.5 * x[, 2]^2 + x[, 3]
+y <- f + 0.5 * rnorm(n)
+x <- data.frame(x1 = x[, 1], x2 = x[, 2], x3 = x[, 3])
 
 # More than one covariance function; one for x1 and x2, and another one for x3
-cf1 <- cf_nn(c('x1','x2'), prior_sigma0 = prior_half_t(df=4, scale=2))
-cf2 <- cf_sexp('x3')
+cf1 <- cf_nn(c("x1", "x2"), prior_sigma0 = prior_half_t(df = 4, scale = 2))
+cf2 <- cf_sexp("x3")
 cfs <- list(cf1, cf2)
 lik <- lik_gaussian()
 gp <- gp_init(cfs, lik)
 gp <- gp_optim(gp, x, y, maxiter = 500)
 
 # plot the predictions with respect to x1, when x2 = x3 = 0
-xt <- cbind(x1=seq(-3,3,len=50), x2=0, x3=0)
+xt <- cbind(x1 = seq(-3, 3, len = 50), x2 = 0, x3 = 0)
 pred <- gp_pred(gp, xt)
-plot(xt[,'x1'], pred$mean, type='l')
+plot(xt[, "x1"], pred$mean, type = "l")
 
 # draw from the predictive distribution
-xt <- cbind(x1=seq(-3,3,len=50), x2=0, x3=0)
-draws <- gp_draw(gp, xt, draws=100)
-plot(xt[,'x1'], draws[,1], type='l')
+xt <- cbind(x1 = seq(-3, 3, len = 50), x2 = 0, x3 = 0)
+draws <- gp_draw(gp, xt, draws = 100)
+plot(xt[, "x1"], draws[, 1], type = "l")
 for (i in 2:50) {
-  lines(xt[,'x1'], draws[,i])
+  lines(xt[, "x1"], draws[, i])
 }
 
 # plot effect with respect to x3 only
-xt <- cbind('x3'=seq(-3,3,len=50))
-pred <- gp_pred(gp, xt, cfind=2)
-plot(xt, pred$mean, type='line') 
-
+xt <- cbind("x3" = seq(-3, 3, len = 50))
+pred <- gp_pred(gp, xt, cfind = 2)
+plot(xt, pred$mean, type = "line")
 }
 
 }

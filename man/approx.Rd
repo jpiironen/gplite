@@ -24,7 +24,7 @@ tilted moments in EP.}
 The approximation object.
 }
 \description{
-Functions for initializing the approximation for the latent values, which can 
+Functions for initializing the approximation for the latent values, which can
 then be passed to \code{\link{gp_init}}.
 The supported methods are:
 \describe{
@@ -48,14 +48,13 @@ MIT Press.
 \examples{
 \donttest{
 
-# Basic usage 
+# Basic usage
 gp <- gp_init(
-  cfs=cf_sexp(), 
-  lik=lik_bernoulli(), 
-  method=method_fitc(num_inducing=100),
-  approx=approx_ep()
+  cfs = cf_sexp(),
+  lik = lik_bernoulli(),
+  method = method_fitc(num_inducing = 100),
+  approx = approx_ep()
 )
-
 }
 
 }

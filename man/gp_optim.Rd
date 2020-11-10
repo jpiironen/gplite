@@ -22,10 +22,10 @@ terminated.}
 \item{verbose}{If TRUE, then some information about the progress of the optimization is
 printed to the console.}
 
-\item{warnings}{Whether to print out some potential warnings (such as maximum number of 
+\item{warnings}{Whether to print out some potential warnings (such as maximum number of
 iterations reached) during the optimization.}
 
-\item{...}{Further arguments to be passed to \code{\link{gp_fit}} that are needed 
+\item{...}{Further arguments to be passed to \code{\link{gp_fit}} that are needed
 in the fitting process, for example \code{trials} in the case of binomial likelihood.}
 }
 \value{
@@ -48,19 +48,16 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 # Generate some toy data
 set.seed(1242)
 n <- 500
-x <- matrix(rnorm(n*3), nrow=n)
-f <- sin(x[,1]) + 0.5*x[,2]^2 + x[,3]
-y <- f + 0.5*rnorm(n)
-x <- data.frame(x1=x[,1], x2=x[,2], x3=x[,3])
+x <- matrix(rnorm(n * 3), nrow = n)
+f <- sin(x[, 1]) + 0.5 * x[, 2]^2 + x[, 3]
+y <- f + 0.5 * rnorm(n)
+x <- data.frame(x1 = x[, 1], x2 = x[, 2], x3 = x[, 3])
 
-# Basic usage 
+# Basic usage
 cf <- cf_sexp()
 lik <- lik_gaussian()
 gp <- gp_init(cf, lik)
 gp <- gp_optim(gp, x, y)
-
 }
-
-
 
 }

@@ -20,7 +20,7 @@ method_fitc(
 method_rf(num_basis = 400, seed = 12345)
 }
 \arguments{
-\item{inducing}{Inducing points to use. If not given, then \code{num_inducing} 
+\item{inducing}{Inducing points to use. If not given, then \code{num_inducing}
 points will be placed in the input space using a clustering algorithm.}
 
 \item{num_inducing}{Number of inducing points for the approximation. Will be ignored
@@ -29,7 +29,7 @@ if the inducing points are given by the user.}
 \item{bin_along}{Either an index or a name of the input variable along which to bin the
 values before placing the inducing inputs. For example, if \code{bin_along=3}, then the
 input data is divided into \code{bin_count} bins along 3rd input variable, and each bin
-will have the same number inducing points (or as close as possible). This can sometimes 
+will have the same number inducing points (or as close as possible). This can sometimes
 be useful to ensure that inducing points are spaced evenly with respect to some particular
 variable, for example time in spatio-temporal models.}
 
@@ -51,10 +51,10 @@ The supported methods are:
  \item{\code{method_full}}{ Full GP, so full exact covariance function is used, meaning
 that the inference will be for the \code{n} latent
 function values (fitting time scales cubicly in \code{n}).}
- \item{\code{method_fitc}}{ Fully independent training (and test) conditional, 
- or FITC, approximation (see Quiñonero-Candela and Rasmussen, 2005; 
- Snelson and Ghahramani, 2006). 
- The fitting time scales \code{O(n*m^2)}, where n is the number of data points and 
+ \item{\code{method_fitc}}{ Fully independent training (and test) conditional,
+ or FITC, approximation (see Quiñonero-Candela and Rasmussen, 2005;
+ Snelson and Ghahramani, 2006).
+ The fitting time scales \code{O(n*m^2)}, where n is the number of data points and
  m the number of inducing points \code{num_inducing}.
  The inducing point locations are chosen using the k-means algorithm.
  }
@@ -63,7 +63,7 @@ function values (fitting time scales cubicly in \code{n}).}
  which means the inference
 time scales cubicly in the number of approximating basis functions \code{num_basis}.
 For stationary covariance functions random Fourier features (Rahimi and Recht, 2007)
-is used, and for non-stationary kernels using case specific method when possible 
+is used, and for non-stationary kernels using case specific method when possible
 (for example, drawing the hidden layer parameters randomly for \code{cf_nn}). For
 \code{cf_const} and \code{cf_lin} this means using standard linear model, and the
 inference is performed on the weight space (not in the function space). Thus if
@@ -75,29 +75,26 @@ the number of data points.}
 \section{References}{
 
 
-Rahimi, A. and Recht, B. (2008). Random features for large-scale kernel machines. 
+Rahimi, A. and Recht, B. (2008). Random features for large-scale kernel machines.
 In Advances in Neural Information Processing Systems 20.
 
-Quiñonero-Candela, J. and Rasmussen, C. E (2005). A unifying view of sparse approximate 
+Quiñonero-Candela, J. and Rasmussen, C. E (2005). A unifying view of sparse approximate
 Gaussian process regression. Journal of Machine Learning Research 6:1939-1959.
 
-Snelson, E. and Ghahramani, Z. (2006). Sparse Gaussian processes using pseudo-inputs. 
+Snelson, E. and Ghahramani, Z. (2006). Sparse Gaussian processes using pseudo-inputs.
 In Advances in Neural Information Processing Systems 18.
 }
 
 \examples{
 \donttest{
 
-# Basic usage 
+# Basic usage
 
 gp <- gp_init(
-  cfs=cf_sexp(), 
-  lik=lik_gaussian(), 
-  method=method_fitc(num_inducing=100)
+  cfs = cf_sexp(),
+  lik = lik_gaussian(),
+  method = method_fitc(num_inducing = 100)
 )
-
-
-
 }
 
 }

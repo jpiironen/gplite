@@ -21,7 +21,7 @@ lik_betabinom(link = "logit", phi = 1, prior_phi = prior_logunif())
 
 \item{prior_sigma}{Prior for hyperparameter \code{sigma}. See \code{\link{priors}}.}
 
-\item{link}{Link function if the likelihood supports non-identity links. See Details for 
+\item{link}{Link function if the likelihood supports non-identity links. See Details for
 information about possible links for each likelihood.}
 
 \item{phi}{The over dispersion parameter for beta binomial likelihood.}
@@ -46,11 +46,10 @@ The supported likelihoods are:
 \examples{
 \donttest{
 
-# Basic usage 
+# Basic usage
 cf <- cf_sexp()
 lik <- lik_binomial()
 gp <- gp_init(cf, lik)
-
 }
 
 }
