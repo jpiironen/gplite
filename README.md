@@ -16,13 +16,7 @@ The syntax has taken a lot of inspiration from that of [GPstuff](https://github.
 
 ### Installation
 
-* Install the latest release from CRAN:
-
-```r
-install.packages('gplite')
-```
-
-* Install latest development version from GitHub (requires [devtools](https://github.com/r-lib/devtools) package):
+The package is still in beta development phase, and is not yet available in CRAN. You can install the latest development version from GitHub with the following commands (requires [devtools](https://github.com/r-lib/devtools) package):
 
 ```r
 if (!require(devtools)) {
