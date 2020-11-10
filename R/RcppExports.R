@@ -2,17 +2,18 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 cf_sexp_c <- function(x1, x2, lscale, magn, diag_only = FALSE) {
-  .Call(`_gplite_cf_sexp_c`, x1, x2, lscale, magn, diag_only)
+    .Call(`_gplite_cf_sexp_c`, x1, x2, lscale, magn, diag_only)
 }
 
 cf_matern32_c <- function(x1, x2, lscale, magn, diag_only = FALSE) {
-  .Call(`_gplite_cf_matern32_c`, x1, x2, lscale, magn, diag_only)
+    .Call(`_gplite_cf_matern32_c`, x1, x2, lscale, magn, diag_only)
 }
 
 cf_matern52_c <- function(x1, x2, lscale, magn, diag_only = FALSE) {
-  .Call(`_gplite_cf_matern52_c`, x1, x2, lscale, magn, diag_only)
+    .Call(`_gplite_cf_matern52_c`, x1, x2, lscale, magn, diag_only)
 }
 
 cf_nn_c <- function(x1, x2, sigma0, sigma, magn, diag_only = FALSE) {
-  .Call(`_gplite_cf_nn_c`, x1, x2, sigma0, sigma, magn, diag_only)
+    .Call(`_gplite_cf_nn_c`, x1, x2, sigma0, sigma, magn, diag_only)
 }
+
