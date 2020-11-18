@@ -91,10 +91,27 @@ ggplot() +
   xlab('x') + ylab('y')
 ```
 
+For prediction, it is sometimes convenient to be able to draw samples from the posterior process. We can do this using the  ```gp_draw``` function as follows.
+```{r}
+# predict in a grid of points
+xt <- seq(-4,4,len=200)
+ndraws <- 30
+draws <- gp_draw(gp, xt, draws=ndraws)
+
+
+pp <- ggplot() + xlab('x') + ylab('y')
+for (i in 1:ndraws) {
+  pp <- pp + geom_line(data=data.frame(x=xt, y=draws[,i]), aes(x=x,y=y), color='darkgray')
+}
+pp <- pp + geom_point(aes(x=x,y=y), color='black', size=0.5)
+pp
+  
+```
+
 
 # Binary classification
 
-
+Let's illustrate the binary classification with a simple toy example, similar to the regression example.
 ```{r}
 # create 1d toy binary classification data
 set.seed(32004)
@@ -116,7 +133,7 @@ gp <- gp_init(cfs = cf_sexp(), lik = lik_bernoulli())
 gp <- gp_optim(gp, x, y)
 ```
 
-Let us visualize the predictive fit. For a non-Gaussian likelihood, this is most conveniently done by drawing from the predictive distribution using ```gp_draw```, and then computing the intervals from the obtained draws.
+Let us visualize the predictive fit. We can again use the function `gp_pred` for this task. To get the predictive uncertainties, we can use the argument `quantiles` argument.
 ```{r}
 # predict in a grid of points
 xt <- seq(-4,4,len=200)
@@ -160,6 +177,7 @@ ggplot() +
 ```
 
 The probabilities look much more what one would expect simply by looking at the data.
+
 
 
 
