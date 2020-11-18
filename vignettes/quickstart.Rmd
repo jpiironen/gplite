@@ -170,15 +170,14 @@ The probabilities look much more what one would expect simply by looking at the 
 The package provides a few methods for handling bigger datasets for which the full GP inference is infeasible. This section illustrates with a synthetic toy example.
 
 ```{r}
-# 2d data, version 2
+# create some simple synthetic 2d data
 set.seed(2)
 n <- 6000
 n_per_cluster <- n/3
 d <- 2
-drel <- 2
-x <- 0.5*cbind( matrix(rnorm(n_per_cluster*drel), nrow=drel) + 3*rep(1,drel), 
-                matrix(rnorm(n_per_cluster*drel), nrow=drel) - 0*rep(1,drel),
-                matrix(rnorm(n_per_cluster*drel), nrow=drel) + c(-3,3))
+x <- 0.5*cbind( matrix(rnorm(n_per_cluster*d), nrow=d) + c(3,3), 
+                matrix(rnorm(n_per_cluster*d), nrow=d) - c(0,0),
+                matrix(rnorm(n_per_cluster*d), nrow=d) + c(-3,3))
 x <- t(x)
 y <- c(rep(0,n_per_cluster), rep(1,n_per_cluster), rep(0,n_per_cluster))
 
