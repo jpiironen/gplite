@@ -63,7 +63,7 @@ laplace_iter.method_full <- function(object, gp, K, y, fhat_old, pobs = NULL, ..
     log_evidence1 <- fit1$log_evidence
 
     # compute predictive mean and covariance for f2, given posterior for y1, and
-    # then use these as 'prior' mean and covariance to computer marginal likelihood
+    # then use these as 'prior' mean and covariance to compute marginal likelihood
     # of y2
     K21 <- K[bad, good, drop = F]
     K22 <- K[bad, bad, drop = F]
@@ -174,7 +174,7 @@ laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
     log_evidence1 <- fit1$log_evidence
 
     # compute predictive mean and covariance for f2, given posterior for y1, and
-    # then use these as 'prior' mean and covariance to computer marginal likelihood
+    # then use these as 'prior' mean and covariance to compute marginal likelihood
     # of y2
     K21 <- t(forwardsolve(Kz_chol, t(Kxz[bad, , drop = F]))) %*%
       forwardsolve(Kz_chol, t(Kxz[good, , drop = F]))
