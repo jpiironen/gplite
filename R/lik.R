@@ -170,39 +170,21 @@ lpdf_prior.lik <- function(object, ...) {
 
 # get_pseudodata functions
 
-get_pseudodata.lik <- function(object, f, y, eps = 1e-6, ...) {
-  stop(paste("No implementation for class", class(object)[1], "yet."))
-}
-
 get_pseudodata.lik_gaussian <- function(object, f, y, ...) {
   n <- length(y)
   loglik <- sum(stats::dnorm(y, mean = f, sd = object$sigma, log = T))
   list(z = y, var = object$sigma^2 * rep(1, n), loglik = loglik)
 }
 
-get_pseudodata.lik_bernoulli <- function(object, f, y, ...) {
+get_pseudodata.lik <- function(object, f, y, min_abs_curvature=1e-12, ...) {
   f <- as.vector(f)
   out <- get_loglik_d2(object, f, y, ...)
   grad <- out$grad
   grad2 <- out$grad2
+  grad2 <- sign(grad2) * pmax(abs(grad2), min_abs_curvature)
   list(z = f - grad / grad2, var = -1 / grad2)
 }
 
-get_pseudodata.lik_binomial <- function(object, f, y, ...) {
-  f <- as.vector(f)
-  out <- get_loglik_d2(object, f, y, ...)
-  grad <- out$grad
-  grad2 <- out$grad2
-  list(z = f - grad / grad2, var = -1 / grad2)
-}
-
-get_pseudodata.lik_betabinom <- function(object, f, y, ...) {
-  f <- as.vector(f)
-  out <- get_loglik_d2(object, f, y, ...)
-  grad <- out$grad
-  grad2 <- out$grad2
-  list(z = f - grad / grad2, var = -1 / grad2)
-}
 
 
 # get_pseudodata_ep functions
