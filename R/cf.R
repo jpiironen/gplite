@@ -213,7 +213,8 @@ cf_prod <- function(...) {
 
 
 #' @export
-print.cf_prod <- function(object, quiet = F, ...) {
+print.cf_prod <- function(x, quiet = F, ...) {
+  object <- x
   indent <- "  "
   str <- paste0(get_name(object), ":\n")
   for (i in seq_along(object$cfs)) {
@@ -226,7 +227,8 @@ print.cf_prod <- function(object, quiet = F, ...) {
 }
 
 #' @export
-print.cf_periodic <- function(object, quiet = F, ...) {
+print.cf_periodic <- function(x, quiet = F, ...) {
+  object <- x
   str <- print.cf(object, quiet = T)
   str <- strsplit(str, ")")[[1]][1] # remove ')' and newline in the end
 
@@ -242,7 +244,8 @@ print.cf_periodic <- function(object, quiet = F, ...) {
 }
 
 #' @export
-print.cf <- function(object, quiet = F, ...) {
+print.cf <- function(x, quiet = F, ...) {
+  object <- x
   param_names <- get_param_names(object)
   param <- unlist(object[param_names])
   digits <- 3

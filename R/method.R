@@ -124,7 +124,8 @@ method_rbf <- function(num_basis = 400, seed = 12345) {
 
 
 #' @export
-print.method <- function(object, quiet = F, ...) {
+print.method <- function(x, quiet = F, ...) {
+  object <- x
   str <- class(object)[1]
   if (!quiet) {
     cat(str)

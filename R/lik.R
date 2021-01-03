@@ -82,7 +82,8 @@ lik_betabinom <- function(link = "logit", phi = 1.0, prior_phi = prior_logunif()
 
 
 #' @export
-print.lik <- function(object, quiet = F, ...) {
+print.lik <- function(x, quiet = F, ...) {
+  object <- x
   param_names <- get_param_names(object)
   param <- unlist(object[param_names])
   digits <- 3

@@ -70,7 +70,8 @@ gp_init <- function(cfs = cf_sexp(), lik = lik_gaussian(), method = method_full(
 
 
 #' @export
-print.gp <- function(object, ...) {
+print.gp <- function(x, ...) {
+  object <- x
   indent <- "  "
   indent_str <- function(s) paste(indent, strsplit(s, "\n")[[1]], "\n", sep = " ", collapse = "")
 
