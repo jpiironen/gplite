@@ -36,6 +36,7 @@ laplace_iter.method_full <- function(object, gp, K, y, fhat_old, pobs = NULL, ..
     log_lik <- get_loglik(gp$lik, fhat_new, y, ...)
     log_evidence <- log_lik - 0.5 * f_invK_f - 0.5 * (C_logdet - V_logdet)
     log_evidence <- as.numeric(log_evidence)
+    
   } else {
 
     # non log-concave likelihood; needs special treatment.
@@ -147,6 +148,8 @@ laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
     log_lik <- get_loglik(gp$lik, fhat_new, y, ...)
     log_evidence <- log_lik - 0.5 * f_invK_f + 0.5 * invC_V_logdet
     log_evidence <- as.numeric(log_evidence)
+    log_post_unnorm <- as.numeric(log_lik - 0.5 * f_invK_f)
+    
   } else {
 
     # non log-concave likelihood; needs special treatment.
@@ -171,6 +174,7 @@ laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
       args[[argname]] <- args[[argname]][good]
     }
     fit1 <- do.call(laplace_iter, args)
+    log_post_unnorm1 <- fit1$log_post_unnorm
     log_evidence1 <- fit1$log_evidence
 
     # compute predictive mean and covariance for f2, given posterior for y1, and
@@ -213,9 +217,12 @@ laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
       args[[argname]] <- args[[argname]][bad]
     }
     log_lik2 <- do.call(get_loglik, args)
+    log_post_unnorm2 <- as.numeric(log_lik2 - 0.5 * df2_invK2_df2)
     log_evidence2 <- log_lik2 - 0.5 * df2_invK2_df2 + 0.5 * invC2_V2_logdet
     log_evidence2 <- as.numeric(log_evidence2)
-
+    
+    
+    log_post_unnorm <- log_post_unnorm1 + log_post_unnorm2
     log_evidence <- log_evidence1 + log_evidence2
 
     # finally, fit the model using all the observations
@@ -226,7 +233,7 @@ laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
 
   list(
     fmean = fhat_new, z = z, V = V, Kz = Kz, Kxz = Kxz, Kz_chol = Kz_chol, C_inv = C_inv,
-    diag = D, alpha = alpha, log_evidence = log_evidence
+    diag = D, alpha = alpha, log_evidence = log_evidence, log_post_unnorm = log_post_unnorm
   )
 }
 
@@ -289,25 +296,43 @@ laplace.method_full <- function(object, gp, K, y, maxiter = 100, tol = 1e-4, ...
   return(fit)
 }
 
-laplace.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, maxiter = 100, tol = 1e-3, ...) {
+laplace.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, 
+                                maxiter = 100, tol = 1e-4, step_size=1,
+                                step_size_min=0.001, ...) {
   n <- length(y)
   fhat <- rep(0, n)
   if ("lik_gaussian" %in% class(gp$lik)) {
     maxiter <- 1
   }
+  
+  log_post_old <- -Inf
+  fit_best <- NULL
 
   for (iter in 1:maxiter) {
+    
     fit <- laplace_iter(object, gp, Kz, Kz_chol, Kxz, D, y, fhat, ...)
-    diff <- max(abs(fhat - fit$fmean))
-    fhat <- fit$fmean
-    if (diff < tol) {
+    diff_log_post <- fit$log_post_unnorm - log_post_old
+    
+    if (diff_log_post < 0) {
+      step_size <- 0.5*step_size
+    } else {
+      step_size <- 1
+      fit_best <- fit
+      log_post_old <- fit_best$log_post_unnorm
+    }
+    
+    step_size <- max(step_size, step_size_min)
+    fhat <- fit_best$fmean + step_size*(fit$fmean - fit_best$fmean)
+    
+    if (abs(diff_log_post) < tol) {
       break
     }
   }
+  
   if (maxiter > 1 && iter == maxiter) {
-    warning("Maximum number of iterations in Laplace reached, max delta f = ", diff)
+    warning("Maximum number of iterations in Laplace reached, delta log post = ", diff_log_post)
   }
-  return(fit)
+  return(fit_best)
 }
 
 laplace.method_rf <- function(object, gp, Z, y, maxiter = 100, tol = 1e-4, ...) {
