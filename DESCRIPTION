@@ -1,6 +1,6 @@
 Package: gplite
 Title: Lightweight Implementation for the Most Common Gaussian Process Models
-Version: 0.8.0
+Version: 0.9.0
 Authors@R: c(person("Juho", "Piironen", role = c("cre", "aut"), email = "juho.t.piironen@gmail.com"))
 Description: 
   Implements the most common Gaussian process (GP) models using Laplace and 
