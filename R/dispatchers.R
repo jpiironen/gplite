@@ -61,8 +61,8 @@ get_featuremap <- function(object, ...) {
   UseMethod("get_featuremap", object)
 }
 
-get_pseudodata <- function(object, ...) {
-  UseMethod("get_pseudodata", object)
+get_pseudodata_la <- function(object, ...) {
+  UseMethod("get_pseudodata_la", object)
 }
 
 get_pseudodata_ep <- function(object, ...) {

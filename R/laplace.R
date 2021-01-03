@@ -14,7 +14,7 @@ laplace_iter.method_full <- function(object, gp, K, y, fhat_old, pobs = NULL, ..
 
   # get the pseudo data first
   if (is.null(pobs)) {
-    pobs <- get_pseudodata(gp$lik, fhat_old, y, ...)
+    pobs <- get_pseudodata_la(gp$lik, fhat_old, y, ...)
   }
   z <- pobs$z
   V <- pobs$var
@@ -124,7 +124,7 @@ laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
 
   # get the pseudo data first
   if (is.null(pobs)) {
-    pobs <- get_pseudodata(gp$lik, fhat_old, y, ...)
+    pobs <- get_pseudodata_la(gp$lik, fhat_old, y, ...)
   }
   z <- pobs$z
   V <- pobs$var
@@ -241,7 +241,7 @@ laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
 laplace_iter.method_rf <- function(object, gp, Z, y, fhat_old, ...) {
 
   # calculate first the new estimate for posterior mean for f
-  pobs <- get_pseudodata(gp$lik, fhat_old, y, ...)
+  pobs <- get_pseudodata_la(gp$lik, fhat_old, y, ...)
   z <- pobs$z
   V <- pobs$var
   n <- length(z)

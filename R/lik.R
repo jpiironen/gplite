@@ -168,15 +168,15 @@ lpdf_prior.lik <- function(object, ...) {
 
 
 
-# get_pseudodata functions
+# get_pseudodata_la functions
 
-get_pseudodata.lik_gaussian <- function(object, f, y, ...) {
+get_pseudodata_la.lik_gaussian <- function(object, f, y, ...) {
   n <- length(y)
   loglik <- sum(stats::dnorm(y, mean = f, sd = object$sigma, log = T))
   list(z = y, var = object$sigma^2 * rep(1, n), loglik = loglik)
 }
 
-get_pseudodata.lik <- function(object, f, y, min_abs_curvature=1e-12, ...) {
+get_pseudodata_la.lik <- function(object, f, y, min_abs_curvature=1e-12, ...) {
   f <- as.vector(f)
   out <- get_loglik_d2(object, f, y, ...)
   grad <- out$grad
