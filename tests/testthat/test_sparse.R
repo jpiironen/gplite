@@ -150,7 +150,7 @@ test_that("gp_pred: analytic prediction gives the same result as the sampling
     pred <- gp_pred(gp,xt, var=T)
     
     # sampling based prediction
-    draws <- gp_draw(gp,xt,draws=1e5, transform=F)
+    draws <- gp_draw(gp,xt,draws=1e5, transform=F, seed=4321)
     
     expect_equal(rowMeans(draws), pred$mean, tol=1e-2)
     expect_equal(apply(draws, 1, sd),  sqrt(pred$var), tol=1e-2)
