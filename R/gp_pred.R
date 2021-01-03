@@ -101,7 +101,7 @@ gp_pred <- function(gp, xnew, var = F, quantiles = NULL, transform = F, cfind = 
     pred <- gp_pred_post(gp, xnew, var = var, cfind = cfind, jitter = jitter)
   }
   if (!is.null(quantiles)) {
-    quantiles <- sapply(quantiles, function(q) qnorm(q, mean = pred$mean, sd = sqrt(pred$var)))
+    quantiles <- sapply(quantiles, function(q) stats::qnorm(q, mean = pred$mean, sd = sqrt(pred$var)))
     if (transform) {
       quantiles <- get_response(gp, quantiles)
     }
