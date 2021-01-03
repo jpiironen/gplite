@@ -279,6 +279,14 @@ get_loglik.lik <- function(object, f, y, ...) {
   stop(paste("No implementation for class", class(object)[1], "yet."))
 }
 
+get_loglik.lik_gaussian <- function(object, f, y, sum = TRUE, ...) {
+  loglik <- stats::dnorm(y, mean = f, sd = object$sigma, log = T)
+  if (sum) {
+    return(sum(loglik))
+  }
+  return(loglik)
+}
+
 get_loglik.lik_bernoulli <- function(object, f, y, sum = TRUE, ...) {
   get_loglik.lik_binomial(object, f, y, sum = sum, trials = rep(1, length(y)), ...)
 }
@@ -317,14 +325,6 @@ get_loglik.lik_betabinom <- function(object, f, y, sum = TRUE, ...) {
   term3 <- lgamma(a + b) - lgamma(a) - lgamma(b)
   loglik <- term1 + term2 + term3
 
-  if (sum) {
-    return(sum(loglik))
-  }
-  return(loglik)
-}
-
-get_loglik.lik_gaussian <- function(object, f, y, sum = TRUE, ...) {
-  loglik <- stats::dnorm(y, mean = f, sd = object$sigma, log = T)
   if (sum) {
     return(sum(loglik))
   }
