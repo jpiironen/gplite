@@ -6,6 +6,7 @@
 \alias{lik_bernoulli}
 \alias{lik_binomial}
 \alias{lik_betabinom}
+\alias{lik_poisson}
 \title{Initialize likelihood}
 \usage{
 lik_gaussian(sigma = 0.5, prior_sigma = prior_logunif())
@@ -15,6 +16,8 @@ lik_bernoulli(link = "logit")
 lik_binomial(link = "logit")
 
 lik_betabinom(link = "logit", phi = 1, prior_phi = prior_logunif())
+
+lik_poisson(link = "log")
 }
 \arguments{
 \item{sigma}{Initial value for the noise standard deviation.}
@@ -41,6 +44,7 @@ The supported likelihoods are:
  \item{\code{lik_bernoulli}}{Bernoulli likelihood. Possible links: 'logit' or 'probit'.}
  \item{\code{lik_binomial}}{Binomial likelihood. Possible links: 'logit' or 'probit'.}
  \item{\code{lik_betabinom}}{Beta binomial likelihood. Possible links: 'logit' or 'probit'.}
+ \item{\code{lik_poisson}}{Poisson likelihood. Possible links: 'log'.}
 }
 }
 \examples{

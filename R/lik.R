@@ -13,6 +13,7 @@
 #'  \item{\code{lik_bernoulli}}{Bernoulli likelihood. Possible links: 'logit' or 'probit'.}
 #'  \item{\code{lik_binomial}}{Binomial likelihood. Possible links: 'logit' or 'probit'.}
 #'  \item{\code{lik_betabinom}}{Beta binomial likelihood. Possible links: 'logit' or 'probit'.}
+#'  \item{\code{lik_poisson}}{Poisson likelihood. Possible links: 'log'.}
 #' }
 #'
 #'
@@ -80,6 +81,16 @@ lik_betabinom <- function(link = "logit", phi = 1.0, prior_phi = prior_logunif()
   lik
 }
 
+#' @rdname lik
+#' @export
+lik_poisson <- function(link = "log") {
+  lik <- list()
+  lik$link <- link
+  class(lik) <- c("lik_poisson", "lik")
+  lik
+}
+
+
 
 #' @export
 print.lik <- function(x, quiet = F, ...) {
@@ -123,6 +134,10 @@ get_param_names.lik_binomial <- function(object) {
 
 get_param_names.lik_betabinom <- function(object) {
   c("phi")
+}
+
+get_param_names.lik_poisson <- function(object) {
+  c()
 }
 
 
@@ -272,6 +287,11 @@ required_extra_args.lik_betabinom <- function(object, ...) {
   c("trials")
 }
 
+required_extra_args.lik_poisson <- function(object, ...) {
+  c()
+}
+
+
 
 # get_loglik functions
 
@@ -328,6 +348,18 @@ get_loglik.lik_betabinom <- function(object, f, y, sum = TRUE, ...) {
   term3 <- lgamma(a + b) - lgamma(a) - lgamma(b)
   loglik <- term1 + term2 + term3
 
+  if (sum) {
+    return(sum(loglik))
+  }
+  return(loglik)
+}
+
+get_loglik.lik_poisson <- function(object, f, y, sum = TRUE, ...) {
+  
+  f <- add_offset(f, ...)
+  mu <- get_response(object, f)
+  loglik <- stats::dpois(y, mu, log=T)
+  
   if (sum) {
     return(sum(loglik))
   }
@@ -393,6 +425,24 @@ get_loglik_d.lik_betabinom <- function(object, f, y, ...) {
   return(term2 + term3)
 }
 
+get_loglik_d.lik_poisson <- function(object, f, y, ...) {
+  
+  f <- add_offset(f, ...)
+  mu <- get_response(object, f)
+  
+  if (object$link == "log") {
+    dmu_df <- mu
+  } else {
+    stop("Unknown link: ", object$link)
+  }
+  
+  # loglik = y*log(mu) - mu - log(y!)
+  # mu = exp(f+offset)
+  # dmu_df = mu
+  grad <- (y/mu - 1)*dmu_df
+  return(grad)
+}
+
 
 
 # get_loglik_d2 functions (second derivative of the log likelihood w.r.t f_i)
@@ -440,6 +490,15 @@ get_response.lik_betabinom <- function(object, f, ...) {
   }
 }
 
+get_response.lik_poisson <- function(object, f, ...) {
+  if (object$link == "log") {
+    return(exp(f))
+  } else {
+    stop("Unknown link: ", object$link)
+  }
+}
+
+
 
 # generate_target functions
 
@@ -472,3 +531,11 @@ generate_target.lik_betabinom <- function(object, f, trials, ...) {
   pr <- stats::rbeta(length(f), a, b)
   stats::rbinom(length(f), trials, prob = pr)
 }
+
+generate_target.lik_poisson <- function(object, f, ...) {
+  mu <- get_response(object, f)
+  stats::rpois(length(f), mu)
+}
+
+
+
