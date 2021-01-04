@@ -180,6 +180,45 @@ The probabilities look much more what one would expect simply by looking at the 
 
 
 
+# Count data
+
+
+This section illustrates how to model count data with Poisson observation model. We use the  discoveries dataset (part of standard R), which contains the number of "great" inventions
+during each year from 1860 to 1959. Let's first load and visualize the data.
+```{r}
+x <- as.numeric(time(datasets::discoveries))
+y <- as.numeric(datasets::discoveries)
+
+ggplot() + 
+  geom_point(aes(x=x,y=y), size=0.5) + 
+  xlab('Year') + ylab('Number of discoveries')
+```
+
+Set up the model and optimize the hyperparameters. Here we use Matérn covariance function and Poisson observation model.
+```{r, results='hide'}
+gp <- gp_init(cfs = cf_matern32(), lik = lik_poisson())
+gp <- gp_optim(gp, x, y)
+```
+
+Let us again compute the predictions in a grid, and visualize the mean estimate for the expected number of discoveries and the related posterior uncertainty as a function of time.
+```{r}
+
+# predict in a grid of points
+xt <- seq(1860, 1968, len=200)
+pred <- gp_pred(gp, xt, quantiles=c(0.05, 0.95), transform=T)
+pred_mean <- pred$mean
+pred_lb <- pred$quantiles[,1]
+pred_ub <- pred$quantiles[,2]
+
+ggplot() + 
+  geom_ribbon(aes(x=xt,ymin=pred_lb,ymax=pred_ub), fill='lightgray') +
+  geom_line(aes(x=xt,y=pred_mean), color='black', size=1) +
+  geom_point(aes(x=x,y=y), color='black', size=0.5) +
+  xlab('Year') + ylab('Number of discoveries')
+
+```
+
+
 
 
 
