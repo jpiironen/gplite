@@ -8,19 +8,19 @@ n <- 30
 nt <- 5
 x <- runif(n)*6-3
 xt <- runif(nt)*6-3
-f <- x^2 - 2 
+f <- 2*x - 2 
 trials <- sample(10, n, replace = T)
 
 
 
 # 
 cfs <- list(
-  cf_const(), 
-  cf_lin(), 
-  cf_sexp(),
-  cf_matern32(), 
-  cf_matern52(), 
-  cf_nn(),
+  cf_const(magn=0.1), 
+  cf_lin(magn=0.1), 
+  cf_sexp(magn=0.1),
+  cf_matern32(magn=0.1), 
+  cf_matern52(magn=0.1), 
+  cf_nn(magn=0.1),
   cf_periodic()
 )
 
@@ -31,7 +31,8 @@ liks <- list(
   lik_binomial('logit'),
   lik_binomial('probit'),
   lik_betabinom('logit'),
-  lik_betabinom('probit')
+  lik_betabinom('probit'),
+  lik_poisson()
 )
 
 

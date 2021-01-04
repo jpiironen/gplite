@@ -8,17 +8,17 @@ n <- 30
 nt <- 5
 x <- runif(n)*6-3
 xt <- runif(nt)*6-3
-f <- x^2 - 2 
+f <- 2*x - 4
 trials <- sample(10, n, replace = T)
 
 
 
 # 
 cfs <- list(
-  cf_const(), 
-  cf_lin(), 
-  cf_sexp(),
-  cf_nn(),
+  cf_const(magn=0.1), 
+  cf_lin(magn=0.1), 
+  cf_sexp(magn=0.1),
+  cf_nn(magn=0.1),
   cf_periodic()
 ) 
 
@@ -29,7 +29,8 @@ liks <- list(
   lik_binomial('logit'),
   lik_binomial('probit'),
   lik_betabinom('logit'),
-  lik_betabinom('probit')
+  lik_betabinom('probit'),
+  lik_poisson()
 )
 
 methods <- list(
@@ -115,7 +116,7 @@ test_that("gp_pred: error is raised (only) if model has not been refitted after
     
     # reset one of the hyperparameters
     param <- get_param(gp)
-    param[1] <- 0.0
+    param[1] <- -2.0
     gp <- set_param(gp, param)
     
     # these should raise an error

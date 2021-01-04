@@ -6,7 +6,7 @@ source(file.path('helpers', 'helpers.R'))
 set.seed(1234)
 n <- 30
 x <- runif(n)*6-3
-f <- x^2 - 2 
+f <- 2*x - 4
 trials <- sample(10, n, replace = T)
 
 
@@ -29,7 +29,8 @@ liks <- list(
   lik_binomial('logit'),
   lik_binomial('probit'),
   lik_betabinom('logit'),
-  lik_betabinom('probit')
+  lik_betabinom('probit'),
+  lik_poisson()
 )
 
 methods <- list(
