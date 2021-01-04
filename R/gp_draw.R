@@ -61,6 +61,7 @@ gp_draw_analytic.gp <- function(object, ...) {
 gp_draw_prior.method_full <- function(object, gp, xt, draws = NULL, transform = T, target = F,
                                       cfind = NULL, jitter = NULL, ...) {
   pred <- gp_pred_prior(object, gp, xt, cov = T, cfind = cfind, jitter = jitter)
+  pred$mean <- add_offset(pred$mean, ...)
   sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
   if (target) {
     sample <- generate_target(gp, sample, ...)
@@ -73,6 +74,7 @@ gp_draw_prior.method_full <- function(object, gp, xt, draws = NULL, transform = 
 gp_draw_prior.method_fitc <- function(object, gp, xt, draws = NULL, transform = T, target = F,
                                       cfind = NULL, jitter = NULL, ...) {
   pred <- gp_pred_prior(object, gp, xt, cov = T, cfind = cfind, jitter = jitter)
+  pred$mean <- add_offset(pred$mean, ...)
   sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
   if (target) {
     sample <- generate_target(gp, sample, ...)
@@ -92,6 +94,7 @@ gp_draw_prior.method_rf <- function(object, gp, xt, var = F, draws = NULL, trans
   num_feat <- NCOL(zt)
   w <- matrix(stats::rnorm(num_feat * draws), nrow = num_feat) # draw from the prior (standard Gaussian)
   sample <- zt %*% w
+  sample <- add_offset(sample, ...)
   if (target) {
     sample <- generate_target(gp, sample, ...)
   } else if (transform) {
@@ -105,9 +108,11 @@ gp_draw_analytic.method_full <- function(object, gp, xt, draws = NULL, transform
                                          marginal = F, cfind = NULL, jitter = NULL, ...) {
   if (marginal) {
     pred <- gp_pred_post(object, gp, xt, cov = F, var = T, cfind = cfind, jitter = jitter)
+    pred$mean <- add_offset(pred$mean, ...)
     sample <- mvnrnd(draws, pred$mean, chol_cov = sqrt(pred$var))
   } else {
     pred <- gp_pred_post(object, gp, xt, cov = T, cfind = cfind, jitter = jitter)
+    pred$mean <- add_offset(pred$mean, ...)
     sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
   }
   if (target) {
@@ -122,9 +127,11 @@ gp_draw_analytic.method_fitc <- function(object, gp, xt, draws = NULL, transform
                                          marginal = F, cfind = NULL, jitter = NULL, ...) {
   if (marginal) {
     pred <- gp_pred_post(object, gp, xt, cov = F, var = T, cfind = cfind, jitter = jitter)
+    pred$mean <- add_offset(pred$mean, ...)
     sample <- mvnrnd(draws, pred$mean, chol_cov = sqrt(pred$var))
   } else {
     pred <- gp_pred_post(object, gp, xt, cov = T, cfind = cfind, jitter = jitter)
+    pred$mean <- add_offset(pred$mean, ...)
     sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
   }
   if (target) {
@@ -146,6 +153,7 @@ gp_draw_analytic.method_rf <- function(object, gp, xt, draws = NULL, transform =
   wcov <- get_w_cov(gp, cfind)
   w <- mvnrnd(draws, wmean, chol_cov = t(chol(wcov)))
   sample <- zt %*% w
+  sample <- add_offset(sample, ...)
   if (target) {
     sample <- generate_target(gp, sample, ...)
   } else if (transform) {

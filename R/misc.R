@@ -3,7 +3,16 @@
   packageStartupMessage("This is gplite version ", ver)
 }
 
-
+add_offset <- function(f, ...) {
+  # add offset to the vector of latent values if offset was given
+  # in the additional arguments
+  args <- list(...)
+  offset <- args$offset
+  if (is.null(offset)) {
+    offset <- 0
+  }
+  return(f + offset)
+}
 
 prepare_inputmat <- function(cf, x) {
   # ensure x is a matrix, and pick the correct columns

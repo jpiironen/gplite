@@ -32,8 +32,8 @@
 #' @param quad_order Quadrature order in order to compute the mean and variance on
 #' the transformed scale.
 #' @param seed Random seed for draws.
-#' @param ... Additional parameters that might be needed. For example keyword \code{trials}
-#' for binomial and beta-binomial likelihoods.
+#' @param ... Additional parameters that might be needed. For example \code{offset} or 
+#' keyword \code{trials} for binomial and beta-binomial likelihoods.
 #'
 #'
 #' @return \code{gp_pred} returns a list with fields giving the predictive mean, variance and
@@ -86,8 +86,8 @@ NULL
 
 #' @rdname pred
 #' @export
-gp_pred <- function(gp, xnew, var = F, quantiles = NULL, transform = F, cfind = NULL, jitter = NULL,
-                    quad_order = 15) {
+gp_pred <- function(gp, xnew, var = F, quantiles = NULL, transform = F, cfind = NULL, 
+                    jitter = NULL, quad_order = 15, ...) {
   if (!is.null(quantiles) || transform) {
     # we need variances in order to compute the quantiles, or to transform the mean
     var <- T
@@ -100,6 +100,8 @@ gp_pred <- function(gp, xnew, var = F, quantiles = NULL, transform = F, cfind = 
     # model fitted using analytical approximation
     pred <- gp_pred_post(gp, xnew, var = var, cfind = cfind, jitter = jitter)
   }
+  pred$mean <- add_offset(pred$mean, ...)
+  
   if (!is.null(quantiles)) {
     quantiles <- sapply(quantiles, function(q) stats::qnorm(q, mean = pred$mean, sd = sqrt(pred$var)))
     if (transform) {

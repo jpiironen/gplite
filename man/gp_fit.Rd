@@ -4,7 +4,7 @@
 \alias{gp_fit}
 \title{Fit a GP model}
 \usage{
-gp_fit(gp, x, y, trials = NULL, jitter = NULL, ...)
+gp_fit(gp, x, y, trials = NULL, offset = NULL, jitter = NULL, ...)
 }
 \arguments{
 \item{gp}{The gp model object to be fitted.}
@@ -16,6 +16,9 @@ Can also be a vector of length n if the model has only a single input.}
 
 \item{trials}{Vector of length n giving the number of trials for each observation in binomial
 (and beta binomial) model.}
+
+\item{offset}{Vector of constant values added to the latent values f_i (i = 1,...,n).
+For Poisson models, this is the logarithm of the exposure time in each observation.}
 
 \item{jitter}{Magnitude of diagonal jitter for covariance matrices for numerical stability.
 Default is 1e-6.}

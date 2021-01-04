@@ -15,6 +15,8 @@
 #' @param y Vector of n output (target) values.
 #' @param trials Vector of length n giving the number of trials for each observation in binomial
 #' (and beta binomial) model.
+#' @param offset Vector of constant values added to the latent values f_i (i = 1,...,n).
+#' For Poisson models, this is the logarithm of the exposure time in each observation.
 #' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
 #'  Default is 1e-6.
 #' @param ... Currently ignored
@@ -50,9 +52,9 @@ NULL
 
 #' @rdname gp_fit
 #' @export
-gp_fit <- function(gp, x, y, trials = NULL, jitter = NULL, ...) {
+gp_fit <- function(gp, x, y, trials = NULL, offset = NULL, jitter = NULL, ...) {
   gp <- learn_scales(gp, x)
-  gp <- fit_model(gp, x, y, trials = trials, jitter = jitter, ...)
+  gp <- fit_model(gp, x, y, trials = trials, offset = offset, jitter = jitter, ...)
   gp$fit$type <- "analytic"
   gp$fitted <- TRUE
   return(gp)
@@ -87,17 +89,17 @@ fit_ep.gp <- function(object, ...) {
 }
 
 
-fit_laplace.method_full <- function(object, gp, x, y, trials = NULL, jitter = NULL, ...) {
+fit_laplace.method_full <- function(object, gp, x, y, jitter = NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp, jitter)
   K <- eval_cf(gp$cfs, x, x) + jitter * diag(n)
   gp$x <- x
-  gp$fit <- laplace(object, gp, K, y, trials = trials, maxiter = gp$approx$maxiter)
+  gp$fit <- laplace(object, gp, K, y, maxiter = gp$approx$maxiter, ...)
   return(gp)
 }
 
-fit_laplace.method_fitc <- function(object, gp, x, y, trials = NULL, jitter = NULL, ...) {
+fit_laplace.method_fitc <- function(object, gp, x, y, jitter = NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp, jitter)
@@ -111,7 +113,7 @@ fit_laplace.method_fitc <- function(object, gp, x, y, trials = NULL, jitter = NU
   gp$method$inducing <- z
   gp$fit <- tryCatch(
     {
-      laplace(object, gp, Kz, Kz_chol, Kxz, D, y, trials = trials, maxiter = gp$approx$maxiter)
+      laplace(object, gp, Kz, Kz_chol, Kxz, D, y, maxiter = gp$approx$maxiter, ...)
     },
     error = function(err) {
       print(err)
@@ -121,22 +123,22 @@ fit_laplace.method_fitc <- function(object, gp, x, y, trials = NULL, jitter = NU
   return(gp)
 }
 
-fit_laplace.method_rf <- function(object, gp, x, y, trials = NULL, jitter = NULL, ...) {
+fit_laplace.method_rf <- function(object, gp, x, y, jitter = NULL, ...) {
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)
   gp$method$num_basis <- check_num_basis(gp$cfs, gp$method$num_basis, NCOL(x))
   z <- featuremap(x)
-  gp$fit <- laplace(object, gp, z, y, trials = trials, maxiter = gp$approx$maxiter)
+  gp$fit <- laplace(object, gp, z, y, maxiter = gp$approx$maxiter, ...)
   return(gp)
 }
 
-fit_laplace.method_rbf <- function(object, gp, x, y, trials = NULL, jitter = NULL, ...) {
+fit_laplace.method_rbf <- function(object, gp, x, y, jitter = NULL, ...) {
   gp$x <- x
   num_inputs <- NCOL(x)
   featuremap <- get_featuremap(gp, num_inputs)
   gp$method$num_basis <- check_num_basis(gp$cfs, gp$method$num_basis, NCOL(x))
   z <- featuremap(x)
-  gp$fit <- laplace(object, gp, z, y, trials = trials, maxiter = gp$approx$maxiter)
+  gp$fit <- laplace(object, gp, z, y, maxiter = gp$approx$maxiter, ...)
   return(gp)
 }
 
@@ -146,20 +148,20 @@ fit_ep.method <- function(object, ...) {
   stop(paste("No EP implementation for", class(object)[1], "yet."))
 }
 
-fit_ep.method_full <- function(object, gp, x, y, trials = NULL, jitter = NULL, ...) {
+fit_ep.method_full <- function(object, gp, x, y, jitter = NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp, jitter)
   K <- eval_cf(gp$cfs, x, x) + jitter * diag(n)
   gp$x <- x
   gp$fit <- ep(object, gp, K, y,
-    trials = trials, quad_order = gp$approx$quad_order,
+    quad_order = gp$approx$quad_order,
     damping = gp$approx$damping, damping_min = 0.1, maxiter = gp$approx$maxiter, ...
   )
   return(gp)
 }
 
-fit_ep.method_fitc <- function(object, gp, x, y, trials = NULL, jitter = NULL, ...) {
+fit_ep.method_fitc <- function(object, gp, x, y, jitter = NULL, ...) {
   x <- as.matrix(x)
   n <- length(y)
   jitter <- get_jitter(gp, jitter)
@@ -174,7 +176,7 @@ fit_ep.method_fitc <- function(object, gp, x, y, trials = NULL, jitter = NULL, .
   gp$fit <- tryCatch(
     {
       ep(object, gp, Kz, Kz_chol, Kxz, K_diag, D, y,
-        trials = trials, quad_order = gp$approx$quad_order,
+        quad_order = gp$approx$quad_order,
         damping = gp$approx$damping, damping_min = 0.1, maxiter = gp$approx$maxiter, ...
       )
     },

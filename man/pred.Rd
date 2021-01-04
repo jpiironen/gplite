@@ -27,7 +27,8 @@ gp_pred(
   transform = F,
   cfind = NULL,
   jitter = NULL,
-  quad_order = 15
+  quad_order = 15,
+  ...
 )
 }
 \arguments{
@@ -60,8 +61,8 @@ Default is 1e-6.}
 
 \item{seed}{Random seed for draws.}
 
-\item{...}{Additional parameters that might be needed. For example keyword \code{trials}
-for binomial and beta-binomial likelihoods.}
+\item{...}{Additional parameters that might be needed. For example \code{offset} or 
+keyword \code{trials} for binomial and beta-binomial likelihoods.}
 
 \item{var}{Whether to compute the predictive variances along with predictive mean.}
 

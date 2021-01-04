@@ -280,6 +280,7 @@ get_loglik.lik <- function(object, f, y, ...) {
 }
 
 get_loglik.lik_gaussian <- function(object, f, y, sum = TRUE, ...) {
+  f <- add_offset(f, ...)
   loglik <- stats::dnorm(y, mean = f, sd = object$sigma, log = T)
   if (sum) {
     return(sum(loglik))
@@ -297,6 +298,7 @@ get_loglik.lik_binomial <- function(object, f, y, sum = TRUE, ...) {
     stop("trials must be provided for the binomial likelihood.")
   }
 
+  f <- add_offset(f, ...)
   mu <- get_response(object, f)
   successes <- y
   trials <- args$trials
@@ -314,6 +316,7 @@ get_loglik.lik_betabinom <- function(object, f, y, sum = TRUE, ...) {
     stop("trials must be provided for the beta binomial likelihood.")
   }
 
+  f <- add_offset(f, ...)
   mu <- get_response(object, f)
   a <- mu / object$phi
   b <- (1 - mu) / object$phi
@@ -345,6 +348,7 @@ get_loglik_d.lik_binomial <- function(object, f, y, ...) {
     stop("trials must be provided for the binomial likelihood.")
   }
 
+  f <- add_offset(f, ...)
   mu <- get_response(object, f)
   trials <- args$trials
 
@@ -368,6 +372,7 @@ get_loglik_d.lik_betabinom <- function(object, f, y, ...) {
     stop("trials must be provided for the beta binomial likelihood.")
   }
 
+  f <- add_offset(f, ...)
   mu <- get_response(object, f)
   phi <- object$phi
   a <- mu / phi
