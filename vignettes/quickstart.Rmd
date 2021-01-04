@@ -224,10 +224,10 @@ ggplot() +
 
 # Sparse approximations
 
-The package provides a few methods for handling bigger datasets for which the full GP inference is infeasible. This section illustrates with a synthetic toy example.
+The package provides a few methods for handling bigger datasets for which the full GP inference is infeasible. This section illustrates with a synthetic 2d classification example.
 
 ```{r}
-# create some simple synthetic 2d data
+# create synthetic 2d binary classification data
 set.seed(2)
 n <- 6000
 n_per_cluster <- n/3
@@ -329,7 +329,7 @@ This section shows an example of how to combine several covariance functions int
 Let's first load and visualize the data. We shall use the last 24 months as a test set and compare our model predictions to that.
 
 ```{r}
-y_all <- AirPassengers
+y_all <- datasets::AirPassengers
 x_all <- seq_along(y_all)
 
 # hold out 2 years as a test set
