@@ -10,7 +10,7 @@ The syntax has taken a lot of inspiration from that of [GPstuff](https://github.
 
 ### Resources
 
-* [Quickstart tutorial](http://jpiironen.github.io/material/gplite/quickstart.html) (notebook)
+* [Quickstart tutorial](https://jpiironen.github.io/material/gplite/quickstart.html) (notebook)
 * [Open an issue / ask question](https://github.com/jpiironen/gplite/issues) (GitHub issues for bug reports, questions, and feature requests)
 
 
