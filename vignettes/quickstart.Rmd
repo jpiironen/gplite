@@ -10,9 +10,9 @@ output:
     toc_depth: 3
     number_sections: TRUE
     toc_float:
-      smooth_scroll: TRUE
+      smooth_scroll: FALSE
 vignette: >
-  %\VignetteIndexEntry{quickstart}
+  %\VignetteIndexEntry{gplite Quickstart}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
   #collapse = TRUE,
   fig.width = 6,
   fig.height = 4,
-  fig.retina = 8
+  fig.retina = 2
 #  #comment = "#>"
 )
 ```
