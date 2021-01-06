@@ -1,7 +1,7 @@
 ---
 title: "gplite Quickstart"
 date: "`r Sys.Date()`"
-bibliography: ../references.bib
+bibliography: references.bib
 link-citations: yes
 linkcolor: blue
 output: 
