@@ -1,7 +1,6 @@
 ---
 title: "gplite Quickstart"
 date: "`r Sys.Date()`"
-bibliography: references.bib
 link-citations: yes
 linkcolor: blue
 output: 
@@ -11,6 +10,7 @@ output:
     number_sections: TRUE
     toc_float:
       smooth_scroll: FALSE
+bibliography: quickstart.bib
 vignette: >
   %\VignetteIndexEntry{gplite Quickstart}
   %\VignetteEngine{knitr::rmarkdown}
