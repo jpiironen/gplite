@@ -25,13 +25,20 @@ cfs <- list(
 liks <- list(
   lik_gaussian(),
   lik_bernoulli('logit'),
-  lik_bernoulli('probit'),
   lik_binomial('logit'),
-  lik_binomial('probit'),
   lik_betabinom('logit'),
-  lik_betabinom('probit'),
   lik_poisson()
 )
+
+if (exists('GPLITE_TEST_EXTENSIVE') && GPLITE_TEST_EXTENSIVE) {
+  extra_liks <- list(
+    lik_bernoulli('probit'),
+    lik_binomial('probit'),
+    lik_betabinom('probit')
+  )
+  liks <- c(liks, extra_liks)
+}
+
 
 methods <- list(
   method_rf(num_basis = 20),
@@ -57,27 +64,31 @@ for (m in seq_along(methods)) {
       k <- k+1
     }
     
-    # all pairs of covariance functions
-    cf_comb <- combn(cfs,2)
-    for (i in 1:NCOL(cf_comb)) {
-      gps[[k]] <- gp_init(cfs=cf_comb[,i], lik=liks[[j]], method=methods[[m]])
-      yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
-      k <- k+1
-    }
-    
-    ## add products of kernels
-    cf_comb <- combn(cfs,3)
-    for (i in 1:NCOL(cf_comb)) {
-      cf <- cf_comb[[1,i]] * cf_comb[[2,i]] * cf_comb[[3,i]]
-      if ('cf_const' %in% sapply(cf$cfs, class) ||
-          'cf_lin' %in% sapply(cf$cfs, class) )
-        next
-      gps[[k]] <- gp_init(cfs=cf, lik=liks[[j]], method=methods[[m]])
-      yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
-      k <- k+1
+    if (exists('GPLITE_TEST_EXTENSIVE') && GPLITE_TEST_EXTENSIVE) {
+      
+      # additional combinations if extensive tests are desired
+      
+      # all pairs of covariance functions
+      cf_comb <- combn(cfs,2)
+      for (i in 1:NCOL(cf_comb)) {
+        gps[[k]] <- gp_init(cfs=cf_comb[,i], lik=liks[[j]], method=methods[[m]])
+        yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
+        k <- k+1
+      }
+      
+      ## add products of kernels
+      cf_comb <- combn(cfs,3)
+      for (i in 1:NCOL(cf_comb)) {
+        cf <- cf_comb[[1,i]] * cf_comb[[2,i]] * cf_comb[[3,i]]
+        if ('cf_const' %in% sapply(cf$cfs, class) ||
+            'cf_lin' %in% sapply(cf$cfs, class) )
+          next
+        gps[[k]] <- gp_init(cfs=cf, lik=liks[[j]], method=methods[[m]])
+        yval[[k]] <- generate_target(gps[[k]], f, trials=trials)
+        k <- k+1
+      }
     }
   }
-  
 }
 
 
