@@ -10,12 +10,11 @@
 #'
 #' @description
 #'
-#' \pkg{gplite} provides tools for fitting some of the most common
-#' Gaussian process (GP) models. The package offers tools for integrating out
-#' the latent values analytically using Laplace or EP approximation and then estimating the
+#' \pkg{gplite} implements some of the most common Gaussian process (GP) models. 
+#' The package offers tools for integrating out the latent values analytically 
+#' using Laplace or expectation propagation (EP) approximation and for estimating the
 #' hyperparameters based on maximizing the (approximate) marginal likelihood or posterior.
-#' The package also implements some common
-#' sparse approximations for larger datasets.
+#' The package also implements some common sparse approximations for larger datasets.
 #'
 #' @section Functions:
 #'
