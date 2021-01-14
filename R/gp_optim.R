@@ -26,11 +26,10 @@
 #' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
 #'
 #' @examples
-#' \donttest{
 #'
 #' # Generate some toy data
 #' set.seed(1242)
-#' n <- 500
+#' n <- 50
 #' x <- matrix(rnorm(n * 3), nrow = n)
 #' f <- sin(x[, 1]) + 0.5 * x[, 2]^2 + x[, 3]
 #' y <- f + 0.5 * rnorm(n)
@@ -41,7 +40,7 @@
 #' lik <- lik_gaussian()
 #' gp <- gp_init(cf, lik)
 #' gp <- gp_optim(gp, x, y)
-#' }
+#' 
 #'
 #' @export
 gp_optim <- function(gp, x, y, tol = 1e-4, maxiter = 500, verbose = TRUE, warnings = TRUE, ...) {

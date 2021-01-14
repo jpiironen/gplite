@@ -30,13 +30,12 @@
 #' @return The likelihood object.
 #'
 #' @examples
-#' \donttest{
 #'
 #' # Basic usage
 #' cf <- cf_sexp()
 #' lik <- lik_binomial()
 #' gp <- gp_init(cf, lik)
-#' }
+#' 
 #'
 NULL
 

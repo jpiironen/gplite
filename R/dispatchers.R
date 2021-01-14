@@ -17,7 +17,6 @@
 #'
 #'
 #' @examples
-#' \donttest{
 #'
 #' # Set up some model
 #' gp <- gp_init(cf = cf_sexp(), lik = lik_gaussian())
@@ -33,7 +32,7 @@
 #'
 #' # check the result
 #' print(get_param(gp))
-#' }
+#' 
 #'
 NULL
 

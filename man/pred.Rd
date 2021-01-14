@@ -10,9 +10,9 @@ gp_draw(
   gp,
   xnew,
   draws = NULL,
-  transform = T,
-  target = F,
-  marginal = F,
+  transform = TRUE,
+  target = FALSE,
+  marginal = FALSE,
   cfind = NULL,
   jitter = NULL,
   seed = NULL,
@@ -22,9 +22,9 @@ gp_draw(
 gp_pred(
   gp,
   xnew,
-  var = F,
+  var = FALSE,
   quantiles = NULL,
-  transform = F,
+  transform = FALSE,
   cfind = NULL,
   jitter = NULL,
   quad_order = 15,
@@ -90,11 +90,10 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 }
 
 \examples{
-\donttest{
 
 # Generate some toy data
 set.seed(1242)
-n <- 500
+n <- 50
 x <- matrix(rnorm(n * 3), nrow = n)
 f <- sin(x[, 1]) + 0.5 * x[, 2]^2 + x[, 3]
 y <- f + 0.5 * rnorm(n)
@@ -124,7 +123,7 @@ for (i in 2:50) {
 # plot effect with respect to x3 only
 xt <- cbind("x3" = seq(-3, 3, len = 50))
 pred <- gp_pred(gp, xt, cfind = 2)
-plot(xt, pred$mean, type = "line")
-}
+plot(xt, pred$mean, type = "l")
+
 
 }

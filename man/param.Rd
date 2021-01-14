@@ -28,7 +28,6 @@ no need to use these functions directly but instead create a new GP model using
 \code{gp_init}.
 }
 \examples{
-\donttest{
 
 # Set up some model
 gp <- gp_init(cf = cf_sexp(), lik = lik_gaussian())
@@ -44,6 +43,6 @@ gp <- set_param(gp, param_new)
 
 # check the result
 print(get_param(gp))
-}
+
 
 }

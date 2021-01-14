@@ -46,7 +46,6 @@ MIT Press.
 }
 
 \examples{
-\donttest{
 
 # Basic usage
 gp <- gp_init(
@@ -55,6 +54,5 @@ gp <- gp_init(
   method = method_fitc(num_inducing = 100),
   approx = approx_ep()
 )
-}
 
 }

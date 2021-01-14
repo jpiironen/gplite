@@ -15,7 +15,7 @@
 \usage{
 cf_const(magn = 1, prior_magn = prior_logunif())
 
-cf_lin(vars = NULL, magn = 1, prior_magn = prior_logunif(), normalize = F)
+cf_lin(vars = NULL, magn = 1, prior_magn = prior_logunif(), normalize = FALSE)
 
 cf_sexp(
   vars = NULL,
@@ -23,7 +23,7 @@ cf_sexp(
   magn = 1,
   prior_lscale = prior_logunif(),
   prior_magn = prior_logunif(),
-  normalize = F
+  normalize = FALSE
 )
 
 cf_matern32(
@@ -32,7 +32,7 @@ cf_matern32(
   magn = 1,
   prior_lscale = prior_logunif(),
   prior_magn = prior_logunif(),
-  normalize = F
+  normalize = FALSE
 )
 
 cf_matern52(
@@ -41,7 +41,7 @@ cf_matern52(
   magn = 1,
   prior_lscale = prior_logunif(),
   prior_magn = prior_logunif(),
-  normalize = F
+  normalize = FALSE
 )
 
 cf_nn(
@@ -52,7 +52,7 @@ cf_nn(
   prior_sigma0 = prior_half_t(),
   prior_sigma = prior_half_t(),
   prior_magn = prior_logunif(),
-  normalize = T
+  normalize = TRUE
 )
 
 cf_periodic(
@@ -134,11 +134,10 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 }
 
 \examples{
-\donttest{
 
 # Generate some toy data
 set.seed(1242)
-n <- 300
+n <- 50
 x <- matrix(rnorm(n * 3), nrow = n)
 f <- sin(x[, 1]) + 0.5 * x[, 2]^2 + x[, 3]
 y <- f + 0.5 * rnorm(n)
@@ -152,14 +151,14 @@ gp <- gp_optim(gp, x, y)
 plot(gp_pred(gp, x)$mean, y)
 
 # More than one covariance function; one for x1 and x2, and another one for x3
-cf1 <- cf_nn(c("x1", "x2"), prior_sigma0 = prior_half_t(df = 4, scale = 2))
-cf2 <- cf_sexp("x3")
+cf1 <- cf_sexp(c("x1", "x2"))
+cf2 <- cf_lin("x3")
 cfs <- list(cf1, cf2)
 lik <- lik_gaussian()
 gp <- gp_init(cfs, lik)
 gp <- gp_optim(gp, x, y, maxiter = 500)
 plot(gp_pred(gp, x)$mean, y)
 plot(x[, 3], gp_pred(gp, x, cfind = 2)$mean) # plot effect w.r.t x3 only
-}
+
 
 }

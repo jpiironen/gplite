@@ -4,7 +4,16 @@
 \alias{gp_optim}
 \title{Optimize hyperparameters of a GP model}
 \usage{
-gp_optim(gp, x, y, tol = 1e-04, maxiter = 500, verbose = T, warnings = T, ...)
+gp_optim(
+  gp,
+  x,
+  y,
+  tol = 1e-04,
+  maxiter = 500,
+  verbose = TRUE,
+  warnings = TRUE,
+  ...
+)
 }
 \arguments{
 \item{gp}{The gp model object to be fitted.}
@@ -43,11 +52,10 @@ Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine l
 }
 
 \examples{
-\donttest{
 
 # Generate some toy data
 set.seed(1242)
-n <- 500
+n <- 50
 x <- matrix(rnorm(n * 3), nrow = n)
 f <- sin(x[, 1]) + 0.5 * x[, 2]^2 + x[, 3]
 y <- f + 0.5 * rnorm(n)
@@ -58,6 +66,6 @@ cf <- cf_sexp()
 lik <- lik_gaussian()
 gp <- gp_init(cf, lik)
 gp <- gp_optim(gp, x, y)
-}
+
 
 }

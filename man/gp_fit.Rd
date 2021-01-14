@@ -44,7 +44,6 @@ MIT Press.
 }
 
 \examples{
-\donttest{
 
 # Generate some toy data
 set.seed(32004)
@@ -56,10 +55,10 @@ y <- rep(0, n)
 y[ycont > 0] <- 1
 trials <- rep(1, n)
 
-# Fit the model using Laplace approximation
+# Fit the model using Laplace approximation (with the specified hyperparameters)
 cf <- cf_sexp(lscale = 0.3, magn = 3)
 gp <- gp_init(cf, lik_binomial())
 gp <- gp_fit(gp, x, y, trials = trials)
-}
+
 
 }

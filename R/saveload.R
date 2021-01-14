@@ -10,20 +10,20 @@
 #' @return \code{gp_load} returns the loaded GP model object.
 #'
 #' @examples
-#' \donttest{
 #'
-#' # init the model
+#  # init the model
 #' gp <- gp_init()
-#'
+#' 
 #' # fit the model (skipped here)
-#'
+#' 
 #' # save the model
-#' gp_save(gp, "gp.rda")
-#'
+#' filename <- file.path(tempdir(), 'gp.rda')
+#' gp_save(gp, filename)
+#' 
 #' # load the model and remove the file
-#' gp <- gp_load("gp.rda")
-#' file.remove("gp.rda")
-#' }
+#' gp <- gp_load(filename)
+#' file.remove(filename)
+#' 
 #'
 NULL
 

@@ -27,7 +27,6 @@
 #' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
 #'
 #' @examples
-#' \donttest{
 #'
 #' # Quasi-periodic covariance function, with fixed period
 #' cf1 <- cf_periodic(
@@ -43,7 +42,7 @@
 #' set.seed(104930)
 #' xt <- seq(-10, 10, len = 500)
 #' plot(xt, gp_draw(gp, xt), type = "l")
-#' }
+#' 
 #'
 NULL
 

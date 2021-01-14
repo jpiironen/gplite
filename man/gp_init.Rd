@@ -12,7 +12,8 @@ gp_init(
 )
 }
 \arguments{
-\item{cfs}{The covariance function(s). Either a single covariance function or a list of them. See \code{\link{cf}}.}
+\item{cfs}{The covariance function(s). Either a single covariance function 
+or a list of them. See \code{\link{cf}}.}
 
 \item{lik}{Likelihood (observation model). See \code{\link{lik}}.}
 
@@ -23,10 +24,13 @@ See \code{\link{method}}.}
 for the posterior of the latent values. See \code{\link{approx}}.}
 }
 \value{
-A GP model object that can be passed to other functions, for example when optimizing the hyperparameters or making predictions.
+A GP model object that can be passed to other functions, for example 
+when optimizing the hyperparameters or making predictions.
 }
 \description{
-Initializes a GP model with given covariance function(s) and likelihood. The model can then be fitted using \code{\link{gp_fit}}. For hyperparameter optimization, see \code{\link{gp_optim}}
+Initializes a GP model with given covariance function(s) and likelihood. 
+The model can then be fitted using \code{\link{gp_fit}}. For hyperparameter 
+optimization, see \code{\link{gp_optim}}
 }
 \section{References}{
 
@@ -36,27 +40,22 @@ MIT Press.
 }
 
 \examples{
-\donttest{
-
-# Generate some toy data
-set.seed(1242)
-n <- 500
-x <- matrix(rnorm(n * 3), nrow = n)
-f <- sin(x[, 1]) + 0.5 * x[, 2]^2 + x[, 3]
-y <- f + 0.5 * rnorm(n)
-x <- data.frame(x1 = x[, 1], x2 = x[, 2], x3 = x[, 3])
 
 # Full exact GP with Gaussian likelihood
-gp <- gp_init(cf_sexp())
-gp <- gp_optim(gp, x, y)
+gp <- gp_init(
+  cfs = cf_sexp(),
+  lik = lik_gaussian(),
+  method = method_full()
+)
 
-# Approximate solution using random features
-gp <- gp_init(cf_sexp(), method = method_rf(num_basis = 300))
-gp <- gp_optim(gp, x, y)
+# Binary classification model with EP approximation for the latent values
+# and FITC sparse approximation to facilitate large datasets
+gp <- gp_init(
+  cfs = cf_sexp(),
+  lik = lik_bernoulli(),
+  approx = approx_ep(),
+  method = method_fitc(num_inducing = 100)
+)
 
-# Approximate solution using FITC
-gp <- gp_init(cf_sexp(), method = method_fitc(num_inducing = 100))
-gp <- gp_optim(gp, x, y)
-}
 
 }

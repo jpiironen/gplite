@@ -45,11 +45,10 @@
 #' Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. MIT Press.
 #'
 #' @examples
-#' \donttest{
 #'
 #' # Generate some toy data
 #' set.seed(1242)
-#' n <- 500
+#' n <- 50
 #' x <- matrix(rnorm(n * 3), nrow = n)
 #' f <- sin(x[, 1]) + 0.5 * x[, 2]^2 + x[, 3]
 #' y <- f + 0.5 * rnorm(n)
@@ -79,8 +78,8 @@
 #' # plot effect with respect to x3 only
 #' xt <- cbind("x3" = seq(-3, 3, len = 50))
 #' pred <- gp_pred(gp, xt, cfind = 2)
-#' plot(xt, pred$mean, type = "line")
-#' }
+#' plot(xt, pred$mean, type = "l")
+#' 
 #'
 NULL
 

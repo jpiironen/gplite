@@ -9,7 +9,7 @@ gp_loo(
   gp,
   x,
   y,
-  quadrature = T,
+  quadrature = TRUE,
   quad_order = 11,
   draws = 4000,
   jitter = NULL,
@@ -65,11 +65,10 @@ Variable Models. Journal of Machine Learning Research 17(103):1-38.
 }
 
 \examples{
-\donttest{
 
 # Generate some toy data
 set.seed(32004)
-n <- 150
+n <- 50
 sigma <- 0.1
 x <- rnorm(n)
 ycont <- sin(3 * x) * exp(-abs(x)) + rnorm(n) * sigma
@@ -89,6 +88,6 @@ gp2 <- gp_optim(gp2, x, y, trials = trials)
 loo1 <- gp_loo(gp1, x, y, trials = trials)
 loo2 <- gp_loo(gp2, x, y, trials = trials)
 gp_compare(loo1, loo2)
-}
+
 
 }

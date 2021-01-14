@@ -86,15 +86,31 @@ In Advances in Neural Information Processing Systems 18.
 }
 
 \examples{
-\donttest{
 
-# Basic usage
 
-gp <- gp_init(
-  cfs = cf_sexp(),
-  lik = lik_gaussian(),
-  method = method_fitc(num_inducing = 100)
-)
-}
+#' # Generate some toy data
+# NOTE: this is so small dataset that in reality there would be no point
+# use sparse approximation here; we use this small dataset only to make this
+# example run fast
+set.seed(1242)
+n <- 50
+x <- matrix(rnorm(n * 3), nrow = n)
+f <- sin(x[, 1]) + 0.5 * x[, 2]^2 + x[, 3]
+y <- f + 0.5 * rnorm(n)
+x <- data.frame(x1 = x[, 1], x2 = x[, 2], x3 = x[, 3])
+
+# Full exact GP with Gaussian likelihood
+gp <- gp_init(cf_sexp())
+gp <- gp_optim(gp, x, y)
+
+# Approximate solution using random features (here we use a very small 
+# number of random features only to make this example run fast)
+gp <- gp_init(cf_sexp(), method = method_rf(num_basis = 30))
+gp <- gp_optim(gp, x, y)
+
+# Approximate solution using FITC (here we use a very small 
+# number of incuding points only to make this example run fast)
+gp <- gp_init(cf_sexp(), method = method_fitc(num_inducing = 10))
+gp <- gp_optim(gp, x, y)
 
 }
