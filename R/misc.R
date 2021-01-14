@@ -20,7 +20,7 @@ prepare_inputmat <- function(cf, x) {
   if (is.null(vars)) {
     x <- as.matrix(x)
   } else {
-    x <- as.matrix(x)[, vars, drop = F]
+    x <- as.matrix(x)[, vars, drop = FALSE]
   }
   if (!is.null(cf$normalize) && cf$normalize) {
     if (!is.null(cf$means) && !is.null(cf$scales)) {
@@ -51,6 +51,6 @@ add_obj_name <- function(object, param_names) {
 rm_obj_name <- function(object, param_names) {
   # remove the object name from parameter names
   sapply(param_names, function(name) {
-    unlist(strsplit(name, ".", fixed = T))[2]
+    unlist(strsplit(name, ".", fixed = TRUE))[2]
   })
 }

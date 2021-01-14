@@ -24,7 +24,7 @@ laplace_iter.method_full <- function(object, gp, K, y, fhat_old, pobs = NULL, ..
 
     # normal case; all pseudo-variances are positive (log-concave likelihood)
 
-    B <- diag(n) + diag_times_dense(sqrt(1 / V), diag_times_dense(K, sqrt(1 / V), diag_right = T))
+    B <- diag(n) + diag_times_dense(sqrt(1 / V), diag_times_dense(K, sqrt(1 / V), diag_right = TRUE))
     C_chol <- diag_times_dense(sqrt(V), t(chol(B)))
     alpha <- backsolve(t(C_chol), forwardsolve(C_chol, z))
     fhat_new <- K %*% alpha
@@ -52,7 +52,7 @@ laplace_iter.method_full <- function(object, gp, K, y, fhat_old, pobs = NULL, ..
 
     args <- c(
       list(
-        object = object, gp = gp, K = K[good, good, drop = F], y = y[good], fhat_old = NULL,
+        object = object, gp = gp, K = K[good, good, drop = FALSE], y = y[good], fhat_old = NULL,
         pobs = list(z = z[good], var = V[good])
       ),
       list(...)
@@ -66,8 +66,8 @@ laplace_iter.method_full <- function(object, gp, K, y, fhat_old, pobs = NULL, ..
     # compute predictive mean and covariance for f2, given posterior for y1, and
     # then use these as 'prior' mean and covariance to compute marginal likelihood
     # of y2
-    K21 <- K[bad, good, drop = F]
-    K22 <- K[bad, bad, drop = F]
+    K21 <- K[bad, good, drop = FALSE]
+    K22 <- K[bad, bad, drop = FALSE]
     pred_mean <- as.vector(K21 %*% fit1$alpha)
     aux <- forwardsolve(fit1$C_chol, t(K21))
     pred_cov <- K22 - t(aux) %*% aux
@@ -165,7 +165,7 @@ laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
 
     args <- c(
       list(
-        object = object, gp = gp, Kz = Kz, Kz_chol = Kz_chol, Kxz = Kxz[good, , drop = F],
+        object = object, gp = gp, Kz = Kz, Kz_chol = Kz_chol, Kxz = Kxz[good, , drop = FALSE],
         D = D[good], y = y[good], fhat_old = NULL, pobs = list(z = z[good], var = V[good])
       ),
       list(...)
@@ -180,9 +180,9 @@ laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
     # compute predictive mean and covariance for f2, given posterior for y1, and
     # then use these as 'prior' mean and covariance to compute marginal likelihood
     # of y2
-    K21 <- t(forwardsolve(Kz_chol, t(Kxz[bad, , drop = F]))) %*%
-      forwardsolve(Kz_chol, t(Kxz[good, , drop = F]))
-    Linv_K2z <- forwardsolve(Kz_chol, t(Kxz[bad, , drop = F]))
+    K21 <- t(forwardsolve(Kz_chol, t(Kxz[bad, , drop = FALSE]))) %*%
+      forwardsolve(Kz_chol, t(Kxz[good, , drop = FALSE]))
+    Linv_K2z <- forwardsolve(Kz_chol, t(Kxz[bad, , drop = FALSE]))
     prior_cov <- t(Linv_K2z) %*% Linv_K2z + diag(D[bad], nrow = nbad)
     pred_mean <- as.vector(K21 %*% fit1$alpha)
     pred_cov <- prior_cov - K21 %*% inv_lemma_solve(fit1$C_inv, t(K21))
@@ -226,7 +226,7 @@ laplace_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, fhat_ol
     log_evidence <- log_evidence1 + log_evidence2
 
     # finally, fit the model using all the observations
-    C_inv <- inv_lemma_get(Kz, Kxz, S, logdet = F)
+    C_inv <- inv_lemma_get(Kz, Kxz, S, logdet = FALSE)
     alpha <- inv_lemma_solve(C_inv, z)
     fhat_new <- Kxz %*% backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Kxz) %*% alpha)) + D * alpha
   }

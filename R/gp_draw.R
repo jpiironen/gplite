@@ -5,7 +5,7 @@
 
 #' @rdname pred
 #' @export
-gp_draw <- function(gp, xnew, draws = NULL, transform = T, target = F, marginal = F,
+gp_draw <- function(gp, xnew, draws = NULL, transform = TRUE, target = FALSE, marginal = FALSE,
                     cfind = NULL, jitter = NULL, seed = NULL, ...) {
 
   # set random seed but ensure the old RNG state is restored on exit
@@ -58,9 +58,9 @@ gp_draw_analytic.gp <- function(object, ...) {
 
 
 
-gp_draw_prior.method_full <- function(object, gp, xt, draws = NULL, transform = T, target = F,
+gp_draw_prior.method_full <- function(object, gp, xt, draws = NULL, transform = TRUE, target = FALSE,
                                       cfind = NULL, jitter = NULL, ...) {
-  pred <- gp_pred_prior(object, gp, xt, cov = T, cfind = cfind, jitter = jitter)
+  pred <- gp_pred_prior(object, gp, xt, cov = TRUE, cfind = cfind, jitter = jitter)
   pred$mean <- add_offset(pred$mean, ...)
   sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
   if (target) {
@@ -71,9 +71,9 @@ gp_draw_prior.method_full <- function(object, gp, xt, draws = NULL, transform = 
   return(sample)
 }
 
-gp_draw_prior.method_fitc <- function(object, gp, xt, draws = NULL, transform = T, target = F,
+gp_draw_prior.method_fitc <- function(object, gp, xt, draws = NULL, transform = TRUE, target = FALSE,
                                       cfind = NULL, jitter = NULL, ...) {
-  pred <- gp_pred_prior(object, gp, xt, cov = T, cfind = cfind, jitter = jitter)
+  pred <- gp_pred_prior(object, gp, xt, cov = TRUE, cfind = cfind, jitter = jitter)
   pred$mean <- add_offset(pred$mean, ...)
   sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
   if (target) {
@@ -84,7 +84,7 @@ gp_draw_prior.method_fitc <- function(object, gp, xt, draws = NULL, transform = 
   return(sample)
 }
 
-gp_draw_prior.method_rf <- function(object, gp, xt, var = F, draws = NULL, transform = T, target = F,
+gp_draw_prior.method_rf <- function(object, gp, xt, var = FALSE, draws = NULL, transform = TRUE, target = FALSE,
                                     cfind = NULL, ...) {
 
   # draw from the prior of w
@@ -104,14 +104,14 @@ gp_draw_prior.method_rf <- function(object, gp, xt, var = F, draws = NULL, trans
 }
 
 
-gp_draw_analytic.method_full <- function(object, gp, xt, draws = NULL, transform = T, target = F,
-                                         marginal = F, cfind = NULL, jitter = NULL, ...) {
+gp_draw_analytic.method_full <- function(object, gp, xt, draws = NULL, transform = TRUE, target = FALSE,
+                                         marginal = FALSE, cfind = NULL, jitter = NULL, ...) {
   if (marginal) {
-    pred <- gp_pred_post(object, gp, xt, cov = F, var = T, cfind = cfind, jitter = jitter)
+    pred <- gp_pred_post(object, gp, xt, cov = FALSE, var = TRUE, cfind = cfind, jitter = jitter)
     pred$mean <- add_offset(pred$mean, ...)
     sample <- mvnrnd(draws, pred$mean, chol_cov = sqrt(pred$var))
   } else {
-    pred <- gp_pred_post(object, gp, xt, cov = T, cfind = cfind, jitter = jitter)
+    pred <- gp_pred_post(object, gp, xt, cov = TRUE, cfind = cfind, jitter = jitter)
     pred$mean <- add_offset(pred$mean, ...)
     sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
   }
@@ -123,14 +123,14 @@ gp_draw_analytic.method_full <- function(object, gp, xt, draws = NULL, transform
   return(sample)
 }
 
-gp_draw_analytic.method_fitc <- function(object, gp, xt, draws = NULL, transform = T, target = F,
-                                         marginal = F, cfind = NULL, jitter = NULL, ...) {
+gp_draw_analytic.method_fitc <- function(object, gp, xt, draws = NULL, transform = TRUE, target = FALSE,
+                                         marginal = FALSE, cfind = NULL, jitter = NULL, ...) {
   if (marginal) {
-    pred <- gp_pred_post(object, gp, xt, cov = F, var = T, cfind = cfind, jitter = jitter)
+    pred <- gp_pred_post(object, gp, xt, cov = FALSE, var = TRUE, cfind = cfind, jitter = jitter)
     pred$mean <- add_offset(pred$mean, ...)
     sample <- mvnrnd(draws, pred$mean, chol_cov = sqrt(pred$var))
   } else {
-    pred <- gp_pred_post(object, gp, xt, cov = T, cfind = cfind, jitter = jitter)
+    pred <- gp_pred_post(object, gp, xt, cov = TRUE, cfind = cfind, jitter = jitter)
     pred$mean <- add_offset(pred$mean, ...)
     sample <- mvnrnd(draws, pred$mean, chol_cov = t(chol(pred$cov)))
   }
@@ -142,7 +142,7 @@ gp_draw_analytic.method_fitc <- function(object, gp, xt, draws = NULL, transform
   return(sample)
 }
 
-gp_draw_analytic.method_rf <- function(object, gp, xt, draws = NULL, transform = T, target = F,
+gp_draw_analytic.method_rf <- function(object, gp, xt, draws = NULL, transform = TRUE, target = FALSE,
                                        cfind = NULL, ...) {
 
   # draw from the posterior of w
@@ -162,7 +162,7 @@ gp_draw_analytic.method_rf <- function(object, gp, xt, draws = NULL, transform =
   return(sample)
 }
 
-gp_draw_analytic.method_rbf <- function(object, gp, xt, draws = NULL, transform = T, target = F,
+gp_draw_analytic.method_rbf <- function(object, gp, xt, draws = NULL, transform = TRUE, target = FALSE,
                                         cfind = NULL, ...) {
   gp_draw_analytic.method_rf(object, gp, xt,
     draws = draws, transform = transform, target = target,

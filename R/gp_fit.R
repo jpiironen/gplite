@@ -107,7 +107,7 @@ fit_laplace.method_fitc <- function(object, gp, x, y, jitter = NULL, ...) {
   Kz <- eval_cf(gp$cfs, z, z) + jitter * diag(gp$method$num_inducing)
   Kxz <- eval_cf(gp$cfs, x, z)
   Kz_chol <- t(chol(Kz))
-  D <- eval_cf(gp$cfs, x, x, diag_only = T) + jitter
+  D <- eval_cf(gp$cfs, x, x, diag_only = TRUE) + jitter
   D <- D - colSums(forwardsolve(Kz_chol, t(Kxz))^2)
   gp$x <- x
   gp$method$inducing <- z
@@ -169,7 +169,7 @@ fit_ep.method_fitc <- function(object, gp, x, y, jitter = NULL, ...) {
   Kz <- eval_cf(gp$cfs, z, z) + jitter * diag(gp$method$num_inducing)
   Kxz <- eval_cf(gp$cfs, x, z)
   Kz_chol <- t(chol(Kz))
-  K_diag <- eval_cf(gp$cfs, x, x, diag_only = T) + jitter
+  K_diag <- eval_cf(gp$cfs, x, x, diag_only = TRUE) + jitter
   D <- K_diag - colSums(forwardsolve(Kz_chol, t(Kxz))^2)
   gp$x <- x
   gp$method$inducing <- z
@@ -209,7 +209,7 @@ get_inducing <- function(gp, x) {
     bin_count <- gp$method$bin_count
     x_binned <- bin(x, nbins = bin_count, var = bin_along)
     bin_sizes <- sapply(x_binned, function(bin) NROW(bin))
-    ordering <- order(bin_sizes, decreasing = T)
+    ordering <- order(bin_sizes, decreasing = TRUE)
     x_binned <- x_binned[ordering]
     bin_sizes <- bin_sizes[ordering]
     per_bin <- rep(floor(num_inducing / bin_count), bin_count)
@@ -254,7 +254,7 @@ bin <- function(x, nbins = NULL, cutpoints = NULL, var = 1) {
   nbins <- length(cutpoints) - 1
   xbinned <- lapply(1:nbins, function(i) {
     ind <- x[, var] > cutpoints[i] & x[, var] < cutpoints[i + 1]
-    x[ind, , drop = F]
+    x[ind, , drop = FALSE]
   })
   xbinned
 }

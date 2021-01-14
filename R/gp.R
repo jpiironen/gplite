@@ -76,23 +76,23 @@ print.gp <- function(x, ...) {
   indent_str <- function(s) paste(indent, strsplit(s, "\n")[[1]], "\n", sep = " ", collapse = "")
 
   # likelihood
-  str_lik <- indent_str(print(object$lik, quiet = T))
+  str_lik <- indent_str(print(object$lik, quiet = TRUE))
   str <- paste0("Likelihood:\n", str_lik)
 
   # cfs
   str <- paste0(str, "Covariance functions:\n")
   for (i in seq_along(object$cfs)) {
-    str_cf <- indent_str(print(object$cfs[[i]], quiet = T))
+    str_cf <- indent_str(print(object$cfs[[i]], quiet = TRUE))
     str <- paste0(str, str_cf)
   }
 
   # method
   str <- paste0(str, "Method:\n")
-  str <- paste0(str, indent_str(print(object$method, quiet = T)))
+  str <- paste0(str, indent_str(print(object$method, quiet = TRUE)))
 
   # approx
   str <- paste0(str, "Latent approximation:\n")
-  str <- paste0(str, indent_str(print(object$approx, quiet = T)))
+  str <- paste0(str, indent_str(print(object$approx, quiet = TRUE)))
 
   cat(str)
   invisible(str)
@@ -133,7 +133,7 @@ print.gp <- function(x, ...) {
 #' }
 #'
 #' @export
-gp_energy <- function(gp, include_prior = T) {
+gp_energy <- function(gp, include_prior = TRUE) {
   if (!is_fitted(gp, type = "analytic")) {
     stop("The GP must be fitted. Call gp_fit first.")
   }
@@ -265,7 +265,7 @@ get_w_sample <- function(gp, cfind = NULL) {
     cfind <- seq_along(gp$cfs)
   }
   inds <- get_weight_inds(gp, cfind)
-  return(gp$fit$wsample[inds, , drop = F])
+  return(gp$fit$wsample[inds, , drop = FALSE])
 }
 
 

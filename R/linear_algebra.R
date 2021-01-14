@@ -1,6 +1,6 @@
 
 
-inv_lemma_get <- function(K, U, D, V = NULL, logdet = T) {
+inv_lemma_get <- function(K, U, D, V = NULL, logdet = TRUE) {
   # Return an object that can be used to compute inv(U * inv(K) * V + D)
   # using inversion lemma. D should be a vector giving only the diagonal.
   # If V is not given, then V = t(U).
@@ -42,7 +42,7 @@ inv_lemma_get <- function(K, U, D, V = NULL, logdet = T) {
   ))
 }
 
-inv_lemma_solve <- function(lemma_obj, rhs, lhs = NULL, rhs_diag = F, lhs_diag = F, diag_only = F) {
+inv_lemma_solve <- function(lemma_obj, rhs, lhs = NULL, rhs_diag = FALSE, lhs_diag = FALSE, diag_only = FALSE) {
   D <- lemma_obj$D
   inv_D_U <- lemma_obj$inv_D_U
   L <- lemma_obj$chol
@@ -56,7 +56,7 @@ inv_lemma_solve <- function(lemma_obj, rhs, lhs = NULL, rhs_diag = F, lhs_diag =
 
   if (!is.null(lhs)) {
     if (rhs_diag) {
-      aux_right <- diag_times_dense(t(inv_D_U), rhs, diag_right = T)
+      aux_right <- diag_times_dense(t(inv_D_U), rhs, diag_right = TRUE)
 
       if (lhs_diag) {
         # both rhs and lhs diagonal
@@ -75,7 +75,7 @@ inv_lemma_solve <- function(lemma_obj, rhs, lhs = NULL, rhs_diag = F, lhs_diag =
           stop("not implmented yet.")
         }
         solution <-
-          diag_times_dense(lhs, rhs / D, diag_right = T) -
+          diag_times_dense(lhs, rhs / D, diag_right = TRUE) -
           (lhs %*% inv_D_U) %*% backsolve(t(L), forwardsolve(L, aux_right))
       }
     } else {
@@ -105,7 +105,7 @@ inv_lemma_solve <- function(lemma_obj, rhs, lhs = NULL, rhs_diag = F, lhs_diag =
       if (diag_only) {
         stop("not implmented yet.")
       }
-      aux_right <- diag_times_dense(t(inv_D_U), rhs, diag_right = T)
+      aux_right <- diag_times_dense(t(inv_D_U), rhs, diag_right = TRUE)
       solution <- diag(rhs / D) - inv_D_U %*% backsolve(t(L), forwardsolve(L, aux_right))
     } else {
       # rhs either vector or matrix (but dense)
@@ -128,7 +128,7 @@ inv_lemma_solve <- function(lemma_obj, rhs, lhs = NULL, rhs_diag = F, lhs_diag =
 
 
 
-diag_times_dense <- function(A, B, diag_right = F) {
+diag_times_dense <- function(A, B, diag_right = FALSE) {
   if (diag_right) {
     if (!is.vector(B)) {
       stop("B should be a vector if diag_right=TRUE")
@@ -151,7 +151,7 @@ is_upper_tri <- function(A, tol = 1e-12) {
 }
 
 
-chol_update <- function(L, x, downdate = F) {
+chol_update <- function(L, x, downdate = FALSE) {
   # rank one update of lower Cholesky
   n <- length(x)
   sgn <- ifelse(downdate, -1, 1)

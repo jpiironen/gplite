@@ -67,7 +67,7 @@ NULL
 
 #' @rdname gp_loo
 #' @export
-gp_loo <- function(gp, x, y, quadrature = T, quad_order = 11, draws = 4000,
+gp_loo <- function(gp, x, y, quadrature = TRUE, quad_order = 11, draws = 4000,
                    jitter = NULL, seed = NULL, ...) {
   if (!is_fitted(gp, "analytic")) {
     stop("The provied GP model is not fitted. Please call gp_fit (or gp_optim) first.")

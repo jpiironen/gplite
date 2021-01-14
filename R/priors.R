@@ -93,5 +93,5 @@ lpdf_prior.prior_logunif <- function(object, param) {
 lpdf_prior.prior_half_t <- function(object, param) {
   theta <- exp(param) # actual parameter, positively constrained
   logdet_jacobian <- param
-  log(2) - log(object$scale) + stats::dt(theta / object$scale, df = object$df, log = T) + logdet_jacobian
+  log(2) - log(object$scale) + stats::dt(theta / object$scale, df = object$df, log = TRUE) + logdet_jacobian
 }

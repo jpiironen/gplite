@@ -44,7 +44,7 @@
 #' }
 #'
 #' @export
-gp_optim <- function(gp, x, y, tol = 1e-4, maxiter = 500, verbose = T, warnings = T, ...) {
+gp_optim <- function(gp, x, y, tol = 1e-4, maxiter = 500, verbose = TRUE, warnings = TRUE, ...) {
   iter <- 0
   energy <- function(param) {
     gp <- set_param(gp, param)
@@ -77,7 +77,7 @@ gp_optim <- function(gp, x, y, tol = 1e-4, maxiter = 500, verbose = T, warnings 
   gp
 }
 
-check_convergence <- function(lossfun, loss_opt, param_opt, verbose = F) {
+check_convergence <- function(lossfun, loss_opt, param_opt, verbose = FALSE) {
 
   # check convergence
   delta <- 1e-1
@@ -98,7 +98,7 @@ check_convergence <- function(lossfun, loss_opt, param_opt, verbose = F) {
   }
 }
 
-optim_start_message <- function(gp, verbose = T) {
+optim_start_message <- function(gp, verbose = TRUE) {
   if (!verbose) {
     return()
   }
@@ -113,7 +113,7 @@ optim_start_message <- function(gp, verbose = T) {
   cat(paste0(row_items, collapse = " "))
 }
 
-optim_iter_message <- function(gp, iter, verbose = T) {
+optim_iter_message <- function(gp, iter, verbose = TRUE) {
   if (!verbose) {
     return()
   }

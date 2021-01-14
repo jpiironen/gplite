@@ -35,7 +35,7 @@ ep_iter.method_full <- function(object, gp, K, y, fmean_old, fvar_old, z_old, P_
 
     # normal case; all pseudo-variances are positive (log-concave likelihood)
 
-    B <- diag(n) + diag_times_dense(sqrt(1 / V), diag_times_dense(K, sqrt(1 / V), diag_right = T))
+    B <- diag(n) + diag_times_dense(sqrt(1 / V), diag_times_dense(K, sqrt(1 / V), diag_right = TRUE))
     C_chol <- diag_times_dense(sqrt(V), t(chol(B)))
     alpha <- backsolve(t(C_chol), forwardsolve(C_chol, z))
     fmean_new <- as.vector(K %*% alpha)
@@ -62,7 +62,7 @@ ep_iter.method_full <- function(object, gp, K, y, fmean_old, fvar_old, z_old, P_
 
     args <- c(
       list(
-        object = object, gp = gp, K = K[good, good, drop = F], y = y[good],
+        object = object, gp = gp, K = K[good, good, drop = FALSE], y = y[good],
         fmean_old = NULL, fvar_old = NULL, z_old = NULL, P_old = NULL,
         pobs = list(
           z = z[good], var = V[good], log_normalizing_const = log_Z[good],
@@ -80,8 +80,8 @@ ep_iter.method_full <- function(object, gp, K, y, fmean_old, fvar_old, z_old, P_
     # compute predictive mean and covariance for f2, given posterior for y1, and
     # then use these as 'prior' mean and covariance to computer marginal likelihood
     # of y2
-    K21 <- K[bad, good, drop = F]
-    K22 <- K[bad, bad, drop = F]
+    K21 <- K[bad, good, drop = FALSE]
+    K22 <- K[bad, bad, drop = FALSE]
     pred_mean <- as.vector(K21 %*% fit1$alpha)
     aux <- forwardsolve(fit1$C_chol, t(K21))
     pred_cov <- K22 - t(aux) %*% aux
@@ -171,9 +171,9 @@ ep_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
     C_inv <- inv_lemma_get(Kz, Kxz, S)
     alpha <- inv_lemma_solve(C_inv, z)
     inv_Kz_Kzx <- backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Kxz)))
-    aux <- inv_lemma_solve(C_inv, V, inv_Kz_Kzx, rhs_diag = T)
+    aux <- inv_lemma_solve(C_inv, V, inv_Kz_Kzx, rhs_diag = TRUE)
     diag1 <- colSums(t(Kxz) * aux)
-    diag2 <- inv_lemma_solve(C_inv, V, D, rhs_diag = T, lhs_diag = T, diag_only = T)
+    diag2 <- inv_lemma_solve(C_inv, V, D, rhs_diag = TRUE, lhs_diag = TRUE, diag_only = TRUE)
     fvar_new <- diag1 + diag2
     fmean_new <- Kxz %*% backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Kxz) %*% alpha)) + D * alpha
 
@@ -199,7 +199,7 @@ ep_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
     args <- c(
       list(
         object = object, gp = gp,
-        Kz = Kz, Kz_chol = Kz_chol, Kxz = Kxz[good, , drop = F], D[good], y[good],
+        Kz = Kz, Kz_chol = Kz_chol, Kxz = Kxz[good, , drop = FALSE], D[good], y[good],
         fmean_old = NULL, fvar_old = NULL, z_old = NULL, P_old = NULL,
         pobs = list(
           z = z[good], var = V[good], log_normalizing_const = log_Z[good],
@@ -217,9 +217,9 @@ ep_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
     # compute predictive mean and covariance for f2, given posterior for y1, and
     # then use these as 'prior' mean and covariance to computer marginal likelihood
     # of y2
-    K21 <- t(forwardsolve(Kz_chol, t(Kxz[bad, , drop = F]))) %*%
-      forwardsolve(Kz_chol, t(Kxz[good, , drop = F]))
-    Linv_K2z <- forwardsolve(Kz_chol, t(Kxz[bad, , drop = F]))
+    K21 <- t(forwardsolve(Kz_chol, t(Kxz[bad, , drop = FALSE]))) %*%
+      forwardsolve(Kz_chol, t(Kxz[good, , drop = FALSE]))
+    Linv_K2z <- forwardsolve(Kz_chol, t(Kxz[bad, , drop = FALSE]))
     prior_cov <- t(Linv_K2z) %*% Linv_K2z + diag(D[bad], nrow = nbad)
     pred_mean <- as.vector(K21 %*% fit1$alpha)
     pred_cov <- prior_cov - K21 %*% inv_lemma_solve(fit1$C_inv, t(K21))
@@ -261,12 +261,12 @@ ep_iter.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
     log_evidence <- log_evidence1 + log_evidence2
 
     # finally, fit the model using all the observations
-    C_inv <- inv_lemma_get(Kz, Kxz, S, logdet = F)
+    C_inv <- inv_lemma_get(Kz, Kxz, S, logdet = FALSE)
     alpha <- inv_lemma_solve(C_inv, z)
     inv_Kz_Kzx <- backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Kxz)))
-    aux <- inv_lemma_solve(C_inv, V, inv_Kz_Kzx, rhs_diag = T)
+    aux <- inv_lemma_solve(C_inv, V, inv_Kz_Kzx, rhs_diag = TRUE)
     diag1 <- colSums(t(Kxz) * aux)
-    diag2 <- inv_lemma_solve(C_inv, V, D, rhs_diag = T, lhs_diag = T, diag_only = T)
+    diag2 <- inv_lemma_solve(C_inv, V, D, rhs_diag = TRUE, lhs_diag = TRUE, diag_only = TRUE)
     fvar_new <- diag1 + diag2
     fmean_new <- Kxz %*% backsolve(t(Kz_chol), forwardsolve(Kz_chol, t(Kxz) %*% alpha)) + D * alpha
   }

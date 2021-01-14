@@ -20,7 +20,7 @@ polyeval <- function(c, x) {
   # p(x) = c[1] + c[2]*x + c[3]*x^2 + ... + c[p+1]*x^p
   #
   p <- length(c) - 1
-  v <- cbind(1, stats::poly(x, degree = p, raw = T, simple = T)) %*% c
+  v <- cbind(1, stats::poly(x, degree = p, raw = TRUE, simple = TRUE)) %*% c
   as.vector(v)
 }
 

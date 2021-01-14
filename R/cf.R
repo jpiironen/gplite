@@ -100,7 +100,7 @@ cf_const <- function(magn = 1.0, prior_magn = prior_logunif()) {
 
 #' @rdname cf
 #' @export
-cf_lin <- function(vars = NULL, magn = 1.0, prior_magn = prior_logunif(), normalize = F) {
+cf_lin <- function(vars = NULL, magn = 1.0, prior_magn = prior_logunif(), normalize = FALSE) {
   cf <- list()
   cf$vars <- vars
   cf$magn <- magn
@@ -114,7 +114,7 @@ cf_lin <- function(vars = NULL, magn = 1.0, prior_magn = prior_logunif(), normal
 #' @export
 cf_sexp <- function(vars = NULL, lscale = 0.3, magn = 1.0,
                     prior_lscale = prior_logunif(), prior_magn = prior_logunif(),
-                    normalize = F) {
+                    normalize = FALSE) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
@@ -129,7 +129,7 @@ cf_sexp <- function(vars = NULL, lscale = 0.3, magn = 1.0,
 #' @export
 cf_matern32 <- function(vars = NULL, lscale = 0.3, magn = 1.0,
                         prior_lscale = prior_logunif(), prior_magn = prior_logunif(),
-                        normalize = F) {
+                        normalize = FALSE) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
@@ -144,7 +144,7 @@ cf_matern32 <- function(vars = NULL, lscale = 0.3, magn = 1.0,
 #' @export
 cf_matern52 <- function(vars = NULL, lscale = 0.3, magn = 1.0,
                         prior_lscale = prior_logunif(), prior_magn = prior_logunif(),
-                        normalize = F) {
+                        normalize = FALSE) {
   cf <- list()
   cf$vars <- vars
   cf$lscale <- lscale
@@ -159,7 +159,7 @@ cf_matern52 <- function(vars = NULL, lscale = 0.3, magn = 1.0,
 #' @export
 cf_nn <- function(vars = NULL, sigma0 = 1.0, sigma = 3.0, magn = 1.0,
                   prior_sigma0 = prior_half_t(), prior_sigma = prior_half_t(),
-                  prior_magn = prior_logunif(), normalize = T) {
+                  prior_magn = prior_logunif(), normalize = TRUE) {
   cf <- list()
   cf$vars <- vars
   cf$sigma0 <- sigma0
@@ -213,12 +213,12 @@ cf_prod <- function(...) {
 
 
 #' @export
-print.cf_prod <- function(x, quiet = F, ...) {
+print.cf_prod <- function(x, quiet = FALSE, ...) {
   object <- x
   indent <- "  "
   str <- paste0(get_name(object), ":\n")
   for (i in seq_along(object$cfs)) {
-    str <- paste0(str, indent, "cf", i, ": ", print(object$cfs[[i]], quiet = T))
+    str <- paste0(str, indent, "cf", i, ": ", print(object$cfs[[i]], quiet = TRUE))
   }
   if (!quiet) {
     cat(str)
@@ -227,12 +227,12 @@ print.cf_prod <- function(x, quiet = F, ...) {
 }
 
 #' @export
-print.cf_periodic <- function(x, quiet = F, ...) {
+print.cf_periodic <- function(x, quiet = FALSE, ...) {
   object <- x
-  str <- print.cf(object, quiet = T)
+  str <- print.cf(object, quiet = TRUE)
   str <- strsplit(str, ")")[[1]][1] # remove ')' and newline in the end
 
-  str_base <- print(object$base, quiet = T)
+  str_base <- print(object$base, quiet = TRUE)
   str_base <- strsplit(str_base, ")")[[1]][1] # remove ')' and newline in the end
 
   str <- paste(str, "; cf_base = ", str_base, "))\n", sep = "")
@@ -244,7 +244,7 @@ print.cf_periodic <- function(x, quiet = F, ...) {
 }
 
 #' @export
-print.cf <- function(x, quiet = F, ...) {
+print.cf <- function(x, quiet = FALSE, ...) {
   object <- x
   param_names <- get_param_names(object)
   param <- unlist(object[param_names])
@@ -398,7 +398,7 @@ set_param.cf_prod <- function(object, param, ...) {
 
 # eval_cf functions
 
-eval_cf.list <- function(object, x1, x2, cfind = NULL, diag_only = F, ...) {
+eval_cf.list <- function(object, x1, x2, cfind = NULL, diag_only = FALSE, ...) {
   if (is.null(cfind)) {
     cfind <- seq_along(object)
   }
@@ -409,7 +409,7 @@ eval_cf.list <- function(object, x1, x2, cfind = NULL, diag_only = F, ...) {
   K
 }
 
-eval_cf.cf_const <- function(object, x1, x2, diag_only = F, ...) {
+eval_cf.cf_const <- function(object, x1, x2, diag_only = FALSE, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   n1 <- NROW(x1)
@@ -422,7 +422,7 @@ eval_cf.cf_const <- function(object, x1, x2, diag_only = F, ...) {
   return(K)
 }
 
-eval_cf.cf_lin <- function(object, x1, x2, diag_only = F, ...) {
+eval_cf.cf_lin <- function(object, x1, x2, diag_only = FALSE, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   K <- object$magn^2 * x1 %*% t(x2)
@@ -433,7 +433,7 @@ eval_cf.cf_lin <- function(object, x1, x2, diag_only = F, ...) {
   return(K)
 }
 
-eval_cf.cf_sexp <- function(object, x1, x2, diag_only = F, ...) {
+eval_cf.cf_sexp <- function(object, x1, x2, diag_only = FALSE, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   K <- cf_sexp_c(x1, x2, object$lscale, object$magn, diag_only = diag_only)
@@ -443,7 +443,7 @@ eval_cf.cf_sexp <- function(object, x1, x2, diag_only = F, ...) {
   return(K)
 }
 
-eval_cf.cf_matern32 <- function(object, x1, x2, diag_only = F, ...) {
+eval_cf.cf_matern32 <- function(object, x1, x2, diag_only = FALSE, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   K <- cf_matern32_c(x1, x2, object$lscale, object$magn, diag_only = diag_only)
@@ -453,7 +453,7 @@ eval_cf.cf_matern32 <- function(object, x1, x2, diag_only = F, ...) {
   return(K)
 }
 
-eval_cf.cf_matern52 <- function(object, x1, x2, diag_only = F, ...) {
+eval_cf.cf_matern52 <- function(object, x1, x2, diag_only = FALSE, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   K <- cf_matern52_c(x1, x2, object$lscale, object$magn, diag_only = diag_only)
@@ -463,7 +463,7 @@ eval_cf.cf_matern52 <- function(object, x1, x2, diag_only = F, ...) {
   return(K)
 }
 
-eval_cf.cf_nn <- function(object, x1, x2, diag_only = F, ...) {
+eval_cf.cf_nn <- function(object, x1, x2, diag_only = FALSE, ...) {
   d <- NCOL(x1)
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
@@ -474,7 +474,7 @@ eval_cf.cf_nn <- function(object, x1, x2, diag_only = F, ...) {
   return(K)
 }
 
-eval_cf.cf_periodic <- function(object, x1, x2, diag_only = F, ...) {
+eval_cf.cf_periodic <- function(object, x1, x2, diag_only = FALSE, ...) {
   x1 <- prepare_inputmat(object, x1)
   x2 <- prepare_inputmat(object, x2)
   period <- object$period
@@ -487,7 +487,7 @@ eval_cf.cf_periodic <- function(object, x1, x2, diag_only = F, ...) {
   return(K)
 }
 
-eval_cf.cf_prod <- function(object, x1, x2, diag_only = F, ...) {
+eval_cf.cf_prod <- function(object, x1, x2, diag_only = FALSE, ...) {
   K <- 1
   for (k in seq_along(object$cfs)) {
     K <- K * eval_cf(object$cfs[[k]], x1, x2, diag_only = diag_only, ...)
@@ -757,10 +757,10 @@ rbf_featmap.cf_sexp <- function(object, num_feat, num_inputs, x = NULL, seed = N
 
   # center locations
   x <- as.matrix(x)
-  x <- x[, object$vars, drop = F]
+  x <- x[, object$vars, drop = FALSE]
   n <- NROW(x)
   ind <- sample(n, num_feat)
-  centers <- x[ind, , drop = F]
+  centers <- x[ind, , drop = FALSE]
 
   featuremap <- function(x) {
     x <- prepare_inputmat(object, x)
@@ -836,7 +836,7 @@ learn_scales.cf <- function(object, x, ...) {
   if (is.null(object$vars)) {
     x <- as.matrix(x)
   } else {
-    x <- as.matrix(x)[, object$vars, drop = F]
+    x <- as.matrix(x)[, object$vars, drop = FALSE]
   }
   object$means <- colMeans(x)
   object$scales <- apply(x, 2, stats::sd)

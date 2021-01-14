@@ -86,11 +86,11 @@ NULL
 
 #' @rdname pred
 #' @export
-gp_pred <- function(gp, xnew, var = F, quantiles = NULL, transform = F, cfind = NULL, 
+gp_pred <- function(gp, xnew, var = FALSE, quantiles = NULL, transform = FALSE, cfind = NULL, 
                     jitter = NULL, quad_order = 15, ...) {
   if (!is.null(quantiles) || transform) {
     # we need variances in order to compute the quantiles, or to transform the mean
-    var <- T
+    var <- TRUE
   }
 
   if (!is_fitted(gp, "analytic")) {
@@ -140,7 +140,7 @@ gp_pred_post.gp <- function(object, ...) {
 }
 
 
-gp_pred_prior.method_full <- function(object, gp, xt, var = F, cov = F, cfind = NULL, jitter = NULL) {
+gp_pred_prior.method_full <- function(object, gp, xt, var = FALSE, cov = FALSE, cfind = NULL, jitter = NULL) {
   nt <- NROW(xt)
   pred_mean <- rep(0, nt)
 
@@ -156,7 +156,7 @@ gp_pred_prior.method_full <- function(object, gp, xt, var = F, cov = F, cfind = 
   return(list(mean = pred_mean))
 }
 
-gp_pred_prior.method_fitc <- function(object, gp, xt, var = F, cov = F, cfind = NULL, jitter = NULL) {
+gp_pred_prior.method_fitc <- function(object, gp, xt, var = FALSE, cov = FALSE, cfind = NULL, jitter = NULL) {
   nt <- NROW(xt)
   pred_mean <- rep(0, nt)
 
@@ -171,7 +171,7 @@ gp_pred_prior.method_fitc <- function(object, gp, xt, var = F, cov = F, cfind = 
     Kxz <- eval_cf(gp$cfs, xt, z)
     Kz_chol <- t(chol(Kz))
     xt <- as.matrix(xt)
-    D <- eval_cf(gp$cfs, xt, xt, diag_only = T)
+    D <- eval_cf(gp$cfs, xt, xt, diag_only = TRUE)
     D <- D - colSums(forwardsolve(Kz_chol, t(Kxz))^2)
     aux <- forwardsolve(Kz_chol, t(Kxz))
     pred_cov <- t(aux) %*% aux + diag(D)
@@ -184,13 +184,13 @@ gp_pred_prior.method_fitc <- function(object, gp, xt, var = F, cov = F, cfind = 
   return(list(mean = pred_mean))
 }
 
-gp_pred_prior.method_rf <- function(object, gp, xt, var = F, cfind = NULL, jitter = NULL) {
+gp_pred_prior.method_rf <- function(object, gp, xt, var = FALSE, cfind = NULL, jitter = NULL) {
 
   # mean is zero
   nt <- NROW(xt)
   pred_mean <- rep(0, nt)
 
-  if (var == T) {
+  if (var == TRUE) {
     num_inputs <- NCOL(xt)
     featuremap <- get_featuremap(gp, num_inputs)
     zt <- featuremap(xt, cfind)
@@ -200,7 +200,7 @@ gp_pred_prior.method_rf <- function(object, gp, xt, var = F, cfind = NULL, jitte
   return(list(mean = pred_mean))
 }
 
-gp_pred_post.method_full <- function(object, gp, xt, var = F, cov = F, train = F,
+gp_pred_post.method_full <- function(object, gp, xt, var = FALSE, cov = FALSE, train = FALSE,
                                      cfind = NULL, jitter = NULL) {
 
   # compute the latent mean first
@@ -232,7 +232,7 @@ gp_pred_post.method_full <- function(object, gp, xt, var = F, cov = F, train = F
   return(list(mean = pred_mean))
 }
 
-gp_pred_post.method_fitc <- function(object, gp, xt, var = F, cov = F, train = F,
+gp_pred_post.method_fitc <- function(object, gp, xt, var = FALSE, cov = FALSE, train = FALSE,
                                      cfind = NULL, jitter = NULL) {
 
   # compute the latent mean first
@@ -243,7 +243,7 @@ gp_pred_post.method_fitc <- function(object, gp, xt, var = F, cov = F, train = F
   Kz_chol <- gp$fit$Kz_chol
   if (var || cov || train) {
     # FITC diagonal correction
-    Dt <- eval_cf(gp$cfs, xt, xt, cfind, diag_only = T)
+    Dt <- eval_cf(gp$cfs, xt, xt, cfind, diag_only = TRUE)
     Dt <- Dt - colSums(forwardsolve(Kz_chol, t(Ktz))^2)
   }
   # with these auxiliary matrices, we have: Kt == t(Kt_aux2) %*% Kt_aux1
@@ -280,10 +280,10 @@ gp_pred_post.method_fitc <- function(object, gp, xt, var = F, cov = F, train = F
       prior_var <- rowSums(Ktz * t(Kz_inv_Ktz)) + Dt
       if (train) {
         aux <- inv_lemma_solve(C_inv, t(Kt_aux1), Kt_aux1) %*% Kt_aux2 +
-          inv_lemma_solve(C_inv, Dt, Kt_aux1, rhs_diag = T)
+          inv_lemma_solve(C_inv, Dt, Kt_aux1, rhs_diag = TRUE)
         diag1 <- colSums(Kt_aux2 * aux)
-        diag2 <- rowSums(inv_lemma_solve(C_inv, t(Kt_aux1), Dt, lhs_diag = T) * t(Kt_aux2))
-        diag3 <- inv_lemma_solve(C_inv, Dt, Dt, rhs_diag = T, lhs_diag = T, diag_only = T)
+        diag2 <- rowSums(inv_lemma_solve(C_inv, t(Kt_aux1), Dt, lhs_diag = TRUE) * t(Kt_aux2))
+        diag3 <- inv_lemma_solve(C_inv, Dt, Dt, rhs_diag = TRUE, lhs_diag = TRUE, diag_only = TRUE)
         var_reduction <- diag1 + diag2 + diag3
       } else {
         aux <- inv_lemma_solve(C_inv, t(Kt_aux1), Kt_aux1) %*% Kt_aux2
@@ -296,7 +296,7 @@ gp_pred_post.method_fitc <- function(object, gp, xt, var = F, cov = F, train = F
   return(list(mean = pred_mean))
 }
 
-gp_pred_post.method_rf <- function(object, gp, xt, var = F, train = F, cfind = NULL, jitter = NULL) {
+gp_pred_post.method_rf <- function(object, gp, xt, var = FALSE, train = FALSE, cfind = NULL, jitter = NULL) {
 
   # compute the latent mean first
   featuremap <- get_featuremap(gp, num_inputs = NCOL(xt))
@@ -304,7 +304,7 @@ gp_pred_post.method_rf <- function(object, gp, xt, var = F, train = F, cfind = N
   wmean <- get_w_mean(gp, cfind)
   pred_mean <- as.vector(zt %*% wmean)
 
-  if (var == T) {
+  if (var == TRUE) {
     # covariance of the latent function
     nt <- length(pred_mean)
     wcov <- get_w_cov(gp, cfind)
@@ -314,6 +314,6 @@ gp_pred_post.method_rf <- function(object, gp, xt, var = F, train = F, cfind = N
   return(list(mean = pred_mean))
 }
 
-gp_pred_post.method_rbf <- function(object, gp, xt, var = F, train = F, cfind = NULL, jitter = NULL) {
+gp_pred_post.method_rbf <- function(object, gp, xt, var = FALSE, train = FALSE, cfind = NULL, jitter = NULL) {
   gp_pred_post.method_rf(object, gp, xt, var = var, train = train, cfind = cfind, jitter = jitter)
 }

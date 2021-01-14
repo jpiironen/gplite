@@ -93,7 +93,7 @@ lik_poisson <- function(link = "log") {
 
 
 #' @export
-print.lik <- function(x, quiet = F, ...) {
+print.lik <- function(x, quiet = FALSE, ...) {
   object <- x
   param_names <- get_param_names(object)
   param <- unlist(object[param_names])
@@ -188,7 +188,7 @@ lpdf_prior.lik <- function(object, ...) {
 
 get_pseudodata_la.lik_gaussian <- function(object, f, y, ...) {
   n <- length(y)
-  loglik <- sum(stats::dnorm(y, mean = f, sd = object$sigma, log = T))
+  loglik <- sum(stats::dnorm(y, mean = f, sd = object$sigma, log = TRUE))
   list(z = y, var = object$sigma^2 * rep(1, n), loglik = loglik)
 }
 
@@ -252,9 +252,9 @@ get_tilted_moments.lik <- function(object, post_mean, post_prec,
     # set NaNs to zero, but return a flag indicating that the result might be unreliable
     lik[is.na(lik)] <- 0
     loglik[is.na(loglik)] <- -Inf
-    quad_ok <- F
+    quad_ok <- FALSE
   } else {
-    quad_ok <- T
+    quad_ok <- TRUE
   }
 
   log_C <- apply(loglik, 1, logsumexp, weights = weights)
@@ -301,7 +301,7 @@ get_loglik.lik <- function(object, f, y, ...) {
 
 get_loglik.lik_gaussian <- function(object, f, y, sum = TRUE, ...) {
   f <- add_offset(f, ...)
-  loglik <- stats::dnorm(y, mean = f, sd = object$sigma, log = T)
+  loglik <- stats::dnorm(y, mean = f, sd = object$sigma, log = TRUE)
   if (sum) {
     return(sum(loglik))
   }
@@ -322,7 +322,7 @@ get_loglik.lik_binomial <- function(object, f, y, sum = TRUE, ...) {
   mu <- get_response(object, f)
   successes <- y
   trials <- args$trials
-  loglik <- stats::dbinom(y, trials, mu, log = T)
+  loglik <- stats::dbinom(y, trials, mu, log = TRUE)
 
   if (sum) {
     return(sum(loglik))
