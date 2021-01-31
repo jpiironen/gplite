@@ -73,7 +73,7 @@ arma::mat cf_matern32_c(
   for (i=0; i<n1; i++) {
     for (j=0; j<n2; j++) {
       r = sqrt(sum(square(x1.row(i)-x2.row(j))));
-      K(i,j) = magn2*(1 + sqrt(3)*r/lscale) * exp(-sqrt(3)*r/lscale);
+      K(i,j) = magn2*(1.0 + sqrt(3.0)*r/lscale) * exp(-sqrt(3.0)*r/lscale);
     }
   }
   return(K);
@@ -112,7 +112,7 @@ arma::mat cf_matern52_c(
   for (i=0; i<n1; i++) {
     for (j=0; j<n2; j++) {
       r = sqrt(sum(square(x1.row(i)-x2.row(j))));
-      K(i,j) = magn2*(1 + sqrt(5)*r/lscale + 5*r*r/(3*lscale2)) * exp(-sqrt(5)*r/lscale);
+      K(i,j) = magn2*(1.0 + sqrt(5.0)*r/lscale + 5.0*r*r/(3.0*lscale2)) * exp(-sqrt(5.0)*r/lscale);
     }
   }
   return(K);
