@@ -43,7 +43,7 @@
 #' 
 #'
 #' @export
-gp_optim <- function(gp, x, y, tol = 1e-4, maxiter = 500, verbose = TRUE, warnings = TRUE, ...) {
+gp_optim <- function(gp, x, y, tol = 1e-4, maxiter = 500, restarts = 1, verbose = TRUE, warnings = TRUE, ...) {
   iter <- 0
   energy <- function(param) {
     gp <- set_param(gp, param)
@@ -60,41 +60,59 @@ gp_optim <- function(gp, x, y, tol = 1e-4, maxiter = 500, verbose = TRUE, warnin
     reltol = tol, fnscale = n, maxit = maxiter,
     warn.1d.NelderMead = warnings
   )
-  res <- stats::optim(param0, energy, method = "Nelder-Mead", control = control)
-  if (res$convergence == 1 && warnings) {
+  
+  optim_results <- stats::optim(param0, energy, method = "Nelder-Mead", control = control)
+  if (optim_results$convergence == 1 && warnings) {
     warning("Maximum number of iterations reached, optimization may not have converged.")
   }
-  param_opt <- res$par
-  e_opt <- res$value
-
-  if (warnings) {
-    check_convergence(energy, e_opt, param_opt, verbose = verbose)
-  }
-
+  param_opt <- optim_results$par
+  e_opt <- optim_results$value
   gp <- set_param(gp, param_opt)
   gp <- gp_fit(gp, x, y, ...)
-  gp
+
+  if (warnings) {
+    check_results <- check_convergence(energy, e_opt, param_opt, verbose = verbose)
+    if (!check_results$converged) {
+      if (restarts > 0) {
+        if (verbose)
+          cat("Parameters not yet converged, restarting...\n\n")
+        return(
+          gp_optim(gp, x, y, tol = tol, maxiter = maxiter, restarts = restarts - 1,
+                   verbose = verbose, warnings = warnings, ...)
+        )
+      } else {
+        warning(check_results$msg)
+      }
+    }
+  }
+
+  return(gp)
 }
 
-check_convergence <- function(lossfun, loss_opt, param_opt, verbose = FALSE) {
+check_convergence <- function(lossfun, loss_opt, param_opt, 
+                              delta = 1e-1, tol = 1e-2, verbose = FALSE) {
 
-  # check convergence
-  delta <- 1e-1
-  tol <- 1e-2
   if (verbose) {
     cat("Assessing convergence...\n")
   }
+  
+  converged <- TRUE
+  msg <- "Parameters converged within tolerance."
+  
   for (k in seq_along(param_opt)) {
     dparam <- rep(0, length(param_opt))
     dparam[k] <- delta
     loss1 <- lossfun(param_opt + dparam)
     loss2 <- lossfun(param_opt - dparam)
     loss_diff <- loss_opt - min(loss1, loss2)
+    
     if (loss_diff > tol) {
-      warning(sprintf("Not all hyperparameters have reached convergence within tolerance %.2f. Try reoptimizing starting from the current hyperparameter values, or reduce tol.", delta))
+      converged <- FALSE
+      msg <- sprintf("Not all hyperparameters have reached convergence within tolerance %.2f. Try reoptimizing starting from the current hyperparameter values, or reduce tol.", delta)
       break
     }
   }
+  return(list(converged=converged, msg=msg))
 }
 
 optim_start_message <- function(gp, verbose = TRUE) {
