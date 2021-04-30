@@ -21,13 +21,17 @@
 #' @param jitter Magnitude of diagonal jitter for covariance matrices for numerical stability.
 #'  Default is 1e-6.
 #' @param seed Random seed.
+#' @param ref Index of the model against which to compare the other models (pairwise
+#' comparison for LOO difference). If not given, then the model with the best LOO is
+#' used as the reference for comparisons.
 #' @param ... For \code{gp_compare}, LOO statistics for the models to compare. For
 #' \code{gp_loo}, possible additional data that is required for LOO predictions (for example,
 #' argument \code{trials} in case of binomial likelihood).
 #'
 #'
 #' @return \code{gp_loo} returns a list with LOO statistics.
-#' \code{gp_compare} returns a matrix with comparison statistics.
+#' \code{gp_compare} returns a matrix with comparison statistics (LOO differences 
+#' and stardard errors in the estimates).
 #'
 #' @section References:
 #'
@@ -142,7 +146,7 @@ logsumexp <- function(x, weights = NULL) {
 
 #' @rdname gp_loo
 #' @export
-gp_compare <- function(...) {
+gp_compare <- function(..., ref=NULL) {
   args <- list(...)
   loo <- c()
   loos <- list()
@@ -155,12 +159,13 @@ gp_compare <- function(...) {
     loos[[i]] <- args[[i]]$loos
   }
 
-  imax <- which.max(loo)
+  if (is.null(ref))
+    ref <- which.max(loo)
 
   res <- matrix(nrow = length(loos), ncol = 2)
   n <- length(loos[[1]])
   for (i in seq_along(loos)) {
-    d <- loos[[i]] - loos[[imax]]
+    d <- loos[[i]] - loos[[ref]]
     res[i, 1] <- n * mean(d)
     res[i, 2] <- n * (stats::sd(d) / sqrt(n))
   }
