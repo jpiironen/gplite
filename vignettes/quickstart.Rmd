@@ -240,7 +240,8 @@ y <- c(rep(0,n_per_cluster), rep(1,n_per_cluster), rep(0,n_per_cluster))
 
 # plot 
 ggplot() +
-  geom_point(data=data.frame(x=x[,1],y=x[,2]), aes(x=x,y=y), color=y+2, size=1)
+  geom_point(data=data.frame(x=x[,1],y=x[,2]), aes(x=x,y=y), color=y+2, size=1) +
+  xlab('x1') + ylab('x2')
 ```
 
 
@@ -257,7 +258,7 @@ gp <- gp_init(
   cfs = cf_sexp(), 
   method = method_fitc(num_inducing=50)
 )
-gp <- gp_optim(gp,x,y)
+gp <- gp_optim(gp, x, y)
 ```
 
 Let's visualize the predictions.
@@ -294,7 +295,7 @@ gp <- gp_init(
   lik = lik_bernoulli(), 
   method = method_rf(num_basis=100)
 )
-gp <- gp_optim(gp,x,y,tol=1e-5)
+gp <- gp_optim(gp, x, y, tol=1e-5)
 ```
 
 Let's again visualize the predictions.
@@ -373,7 +374,7 @@ gp <- gp_init(cfs, lik=lik_gaussian(sigma=0.05))
 
 Optimize the hyperparameters
 ```{r, results='hide'}
-gp <- gp_optim(gp, x, yscaled, tol=1e-5)
+gp <- gp_optim(gp, x, yscaled)
 ```
 
 Visualize the predictions
