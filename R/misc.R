@@ -33,7 +33,7 @@ prepare_inputmat <- function(cf, x) {
 is_fixed <- function(object, param_names) {
   # identify fixed hyperparameter(s) of a given object (cf or lik)
   fixed <- sapply(param_names, function(name) {
-    class(object$priors[[name]]) == "prior_fixed"
+    "prior_fixed" %in% class(object$priors[[name]])
   })
   return(fixed)
 }

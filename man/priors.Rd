@@ -4,6 +4,7 @@
 \alias{priors}
 \alias{prior_fixed}
 \alias{prior_logunif}
+\alias{prior_lognormal}
 \alias{prior_half_t}
 \title{Initialize prior for hyperparameter}
 \usage{
@@ -11,12 +12,16 @@ prior_fixed()
 
 prior_logunif()
 
+prior_lognormal(loc = 0, scale = 1)
+
 prior_half_t(df = 1, scale = 1)
 }
 \arguments{
-\item{df}{Degrees of freedom}
+\item{loc}{Location parameter of the distribution}
 
-\item{scale}{Scale parameter for the distribution}
+\item{scale}{Scale parameter of the distribution}
+
+\item{df}{Degrees of freedom}
 }
 \value{
 The hyperprior object.
@@ -31,6 +36,7 @@ The supported priors are:
  \item{\code{prior_fixed}}{ The hyperparameter is fixed to its initial value,
  and is not optimized by \code{gp_optim}. }
  \item{\code{prior_logunif}}{ Improper uniform prior on the log of the parameter. }
+ \item{\code{prior_lognormal}}{ Log-normal prior (Gaussian prior on the logarithm of the parameter). }
  \item{\code{prior_half_t}}{ Half Student-t prior for a positive parameter. }
 }
 }
