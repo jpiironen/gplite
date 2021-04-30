@@ -62,6 +62,19 @@ ggplot() +
   xlab('x') + ylab('y')
 ```
 
+### Citing
+
+If you find the software useful, I would kindly ask to use following citation:
+
+```
+@misc{gplite,
+  author = {Piironen, Juho},
+  title = {gplite: Lightweight Implementation for the Most Common {G}aussian Process Models},
+  note = {R package},
+  year = {2020},
+  url = {https://github.com/jpiironen/gplite},
+}
+```
 
 ### References
 
