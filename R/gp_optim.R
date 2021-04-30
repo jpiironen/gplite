@@ -11,6 +11,11 @@
 #' @param tol Relative change in the objective function value after which the optimization is
 #'  terminated.
 #' @param maxiter Maximum number of iterations.
+#' @param restarts Number of possible restarts during optimization. The Nelder-Mead 
+#' iteration can sometimes terminate prematurely before a local optimum is found, and
+#' this argument can be used to specify how many times the optimization is allowed to
+#' restart from where it left when Nelder-Mead terminated. By setting restarts > 0, 
+#' one can often find local optimum without having to call gp_optim several times. 
 #' @param verbose If TRUE, then some information about the progress of the optimization is
 #'  printed to the console.
 #' @param warnings Whether to print out some potential warnings (such as maximum number of
@@ -57,7 +62,9 @@ gp_optim <- function(gp, x, y, tol = 1e-4, maxiter = 500, restarts = 1, verbose 
   param0 <- get_param(gp)
   n <- length(y)
   control <- list(
-    reltol = tol, fnscale = n, maxit = maxiter,
+    reltol = tol, 
+    fnscale = n, 
+    maxit = maxiter,
     warn.1d.NelderMead = warnings
   )
   

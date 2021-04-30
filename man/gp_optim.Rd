@@ -10,6 +10,7 @@ gp_optim(
   y,
   tol = 1e-04,
   maxiter = 500,
+  restarts = 1,
   verbose = TRUE,
   warnings = TRUE,
   ...
@@ -27,6 +28,12 @@ dimension). Can also be a vector of length n if the model has only a single inpu
 terminated.}
 
 \item{maxiter}{Maximum number of iterations.}
+
+\item{restarts}{Number of possible restarts during optimization. The Nelder-Mead 
+iteration can sometimes terminate prematurely before a local optimum is found, and
+this argument can be used to specify how many times the optimization is allowed to
+restart from where it left when Nelder-Mead terminated. By setting restarts > 0, 
+one can often find local optimum without having to call gp_optim several times.}
 
 \item{verbose}{If TRUE, then some information about the progress of the optimization is
 printed to the console.}
