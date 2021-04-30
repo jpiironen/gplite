@@ -23,6 +23,7 @@
 #'
 #' @name approx
 #'
+#' @param tol Convergence tolerance.
 #' @param maxiter Maximum number of iterations in the Laplace/EP iteration.
 #' @param damping Damping factor for EP. Should be between 0 and 1. Smaller values
 #' typically lead to more stable iterations, but also increase the number of iterations,
@@ -56,8 +57,8 @@ NULL
 
 #' @rdname approx
 #' @export
-approx_laplace <- function(maxiter = 30) {
-  approx <- list(name = "laplace", maxiter = maxiter)
+approx_laplace <- function(maxiter = 30, tol = 1e-4) {
+  approx <- list(name = "laplace", maxiter = maxiter, tol = tol)
   class(approx) <- c("approx_laplace", "approx")
   approx
 }

@@ -297,8 +297,7 @@ laplace.method_full <- function(object, gp, K, y, maxiter = 100, tol = 1e-4, ...
 }
 
 laplace.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y, 
-                                maxiter = 100, tol = 1e-4, step_size=1,
-                                step_size_min=0.001, ...) {
+                                maxiter = 100, tol = 1e-4, ...) {
   n <- length(y)
   fhat <- rep(0, n)
   if ("lik_gaussian" %in% class(gp$lik)) {
@@ -306,23 +305,13 @@ laplace.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
   }
   
   log_post_old <- -Inf
-  fit_best <- NULL
 
   for (iter in 1:maxiter) {
     
     fit <- laplace_iter(object, gp, Kz, Kz_chol, Kxz, D, y, fhat, ...)
+    fhat <- fit$fmean
     diff_log_post <- fit$log_post_unnorm - log_post_old
-    
-    if (diff_log_post < 0) {
-      step_size <- 0.5*step_size
-    } else {
-      step_size <- 1
-      fit_best <- fit
-      log_post_old <- fit_best$log_post_unnorm
-    }
-    
-    step_size <- max(step_size, step_size_min)
-    fhat <- fit_best$fmean + step_size*(fit$fmean - fit_best$fmean)
+    log_post_old <- fit$log_post_unnorm
     
     if (abs(diff_log_post) < tol) {
       break
@@ -332,7 +321,7 @@ laplace.method_fitc <- function(object, gp, Kz, Kz_chol, Kxz, D, y,
   if (maxiter > 1 && iter == maxiter) {
     warning("Maximum number of iterations in Laplace reached, delta log post = ", diff_log_post)
   }
-  return(fit_best)
+  return(fit)
 }
 
 laplace.method_rf <- function(object, gp, Z, y, maxiter = 100, tol = 1e-4, ...) {

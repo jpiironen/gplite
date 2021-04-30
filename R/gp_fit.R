@@ -94,7 +94,7 @@ fit_laplace.method_full <- function(object, gp, x, y, jitter = NULL, ...) {
   jitter <- get_jitter(gp, jitter)
   K <- eval_cf(gp$cfs, x, x) + jitter * diag(n)
   gp$x <- x
-  gp$fit <- laplace(object, gp, K, y, maxiter = gp$approx$maxiter, ...)
+  gp$fit <- laplace(object, gp, K, y, maxiter = gp$approx$maxiter, tol = gp$approx$tol, ...)
   return(gp)
 }
 
@@ -112,7 +112,7 @@ fit_laplace.method_fitc <- function(object, gp, x, y, jitter = NULL, ...) {
   gp$method$inducing <- z
   gp$fit <- tryCatch(
     {
-      laplace(object, gp, Kz, Kz_chol, Kxz, D, y, maxiter = gp$approx$maxiter, ...)
+      laplace(object, gp, Kz, Kz_chol, Kxz, D, y, maxiter = gp$approx$maxiter, tol = gp$approx$tol, ...)
     },
     error = function(err) {
       print(err)
@@ -127,7 +127,7 @@ fit_laplace.method_rf <- function(object, gp, x, y, jitter = NULL, ...) {
   featuremap <- get_featuremap(gp, num_inputs)
   gp$method$num_basis <- check_num_basis(gp$cfs, gp$method$num_basis, NCOL(x))
   z <- featuremap(x)
-  gp$fit <- laplace(object, gp, z, y, maxiter = gp$approx$maxiter, ...)
+  gp$fit <- laplace(object, gp, z, y, maxiter = gp$approx$maxiter, tol = gp$approx$tol, ...)
   return(gp)
 }
 
@@ -137,7 +137,7 @@ fit_laplace.method_rbf <- function(object, gp, x, y, jitter = NULL, ...) {
   featuremap <- get_featuremap(gp, num_inputs)
   gp$method$num_basis <- check_num_basis(gp$cfs, gp$method$num_basis, NCOL(x))
   z <- featuremap(x)
-  gp$fit <- laplace(object, gp, z, y, maxiter = gp$approx$maxiter, ...)
+  gp$fit <- laplace(object, gp, z, y, maxiter = gp$approx$maxiter, tol = gp$approx$tol, ...)
   return(gp)
 }
 

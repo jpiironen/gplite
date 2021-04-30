@@ -6,12 +6,14 @@
 \alias{approx_ep}
 \title{Approximations to the posterior of the latent values}
 \usage{
-approx_laplace(maxiter = 30)
+approx_laplace(maxiter = 30, tol = 1e-04)
 
 approx_ep(damping = 0.9, quad_order = 11, maxiter = 100)
 }
 \arguments{
 \item{maxiter}{Maximum number of iterations in the Laplace/EP iteration.}
+
+\item{tol}{Convergence tolerance.}
 
 \item{damping}{Damping factor for EP. Should be between 0 and 1. Smaller values
 typically lead to more stable iterations, but also increase the number of iterations,
