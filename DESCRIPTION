@@ -1,26 +1,26 @@
 Package: gplite
-Title: Lightweight Implementation for the Most Common Gaussian Process Models
+Title: Implementation for the Most Common Gaussian Process Models
 Version: 0.12.0
 Authors@R: c(person("Juho", "Piironen", role = c("cre", "aut"), email = "juho.t.piironen@gmail.com"))
-Description: 
-  Implements the most common Gaussian process (GP) models using Laplace and 
-  expectation propagation (EP) approximations, maximum marginal likelihood 
-  (or posterior) inference for the hyperparameters, and sparse approximations 
-  for larger datasets. 
-Depends: 
+Description:
+  Implements the most common Gaussian process (GP) models using Laplace and
+  expectation propagation (EP) approximations, maximum marginal likelihood
+  (or posterior) inference for the hyperparameters, and sparse approximations
+  for larger datasets.
+Depends:
   R (>= 3.4.0),
-Imports: 
+Imports:
   Matrix,
   methods,
   Rcpp
-LinkingTo: 
+LinkingTo:
   Rcpp,
   RcppArmadillo
 License: GPL-3
 Encoding: UTF-8
 Biarch: TRUE
 RoxygenNote: 7.1.1
-Suggests: 
+Suggests:
     testthat,
     knitr,
     rmarkdown,
