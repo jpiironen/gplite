@@ -115,7 +115,7 @@ check_convergence <- function(lossfun, loss_opt, param_opt,
     
     if (loss_diff > tol) {
       converged <- FALSE
-      msg <- sprintf("Not all hyperparameters have reached convergence within tolerance %.2f. Try reoptimizing starting from the current hyperparameter values, or reduce tol.", delta)
+      msg <- sprintf("Not all hyperparameters have reached convergence within tolerance %.2f. Try reoptimizing starting from the current hyperparameter values, increase number of restarts, or reduce tol.", delta)
       break
     }
   }
