@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // cf_sexp_c
 arma::mat cf_sexp_c(arma::mat x1, arma::mat x2, double lscale, double magn, bool diag_only);
 RcppExport SEXP _gplite_cf_sexp_c(SEXP x1SEXP, SEXP x2SEXP, SEXP lscaleSEXP, SEXP magnSEXP, SEXP diag_onlySEXP) {

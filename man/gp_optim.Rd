@@ -9,6 +9,7 @@ gp_optim(
   x,
   y,
   tol = 1e-04,
+  tol_param = 0.1,
   maxiter = 500,
   restarts = 1,
   verbose = TRUE,
@@ -24,8 +25,17 @@ dimension). Can also be a vector of length n if the model has only a single inpu
 
 \item{y}{Vector of n output (target) values.}
 
-\item{tol}{Relative change in the objective function value after which the optimization is
-terminated.}
+\item{tol}{Relative change in the objective function value (marginal log posterior) after 
+which the optimization is terminated. This will be passed to the function stats::optim 
+as a convergence criterion.}
+
+\item{tol_param}{After the optimizer (Nelder-Mead) has terminated, the found hyperparameter
+values will be checked for convergence within tolerance tol_param. More precisely, if we perturb
+any of the hyperparameters by the amount tol_param or -tol_param, then the resulting
+log posterior must be smaller than the value with the found hyperparameter values. If not,
+then the optimizer will automatically attempt a restart (see argument restarts). Note:
+tol_param will be applied for the logarithms of the parameters (e.g. log length-scale), not
+for the native parameter values.}
 
 \item{maxiter}{Maximum number of iterations.}
 
@@ -33,7 +43,11 @@ terminated.}
 iteration can sometimes terminate prematurely before a local optimum is found, and
 this argument can be used to specify how many times the optimization is allowed to
 restart from where it left when Nelder-Mead terminated. By setting restarts > 0, 
-one can often find local optimum without having to call gp_optim several times.}
+one can often find local optimum without having to call gp_optim several times.
+Note: usually there is no need to allow more than a few (say 1-3) restarts; 
+if the optimization does not converge with a few restarts, then one usually 
+must try to reduce argument tol in order to achieve convergence. If this does not help
+either, then the optimization problem is usually ill-conditioned somehow.}
 
 \item{verbose}{If TRUE, then some information about the progress of the optimization is
 printed to the console.}

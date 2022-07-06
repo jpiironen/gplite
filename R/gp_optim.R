@@ -8,14 +8,26 @@
 #' @param x n-by-d matrix of input values (n is the number of observations and d the input
 #'  dimension). Can also be a vector of length n if the model has only a single input.
 #' @param y Vector of n output (target) values.
-#' @param tol Relative change in the objective function value after which the optimization is
-#'  terminated.
+#' @param tol Relative change in the objective function value (marginal log posterior) after 
+#' which the optimization is terminated. This will be passed to the function stats::optim 
+#' as a convergence criterion.
+#' @param tol_param After the optimizer (Nelder-Mead) has terminated, the found hyperparameter
+#' values will be checked for convergence within tolerance tol_param. More precisely, if we perturb
+#' any of the hyperparameters by the amount tol_param or -tol_param, then the resulting
+#' log posterior must be smaller than the value with the found hyperparameter values. If not,
+#' then the optimizer will automatically attempt a restart (see argument restarts). Note:
+#' tol_param will be applied for the logarithms of the parameters (e.g. log length-scale), not
+#' for the native parameter values.
 #' @param maxiter Maximum number of iterations.
 #' @param restarts Number of possible restarts during optimization. The Nelder-Mead 
 #' iteration can sometimes terminate prematurely before a local optimum is found, and
 #' this argument can be used to specify how many times the optimization is allowed to
 #' restart from where it left when Nelder-Mead terminated. By setting restarts > 0, 
-#' one can often find local optimum without having to call gp_optim several times. 
+#' one can often find local optimum without having to call gp_optim several times.
+#' Note: usually there is no need to allow more than a few (say 1-3) restarts; 
+#' if the optimization does not converge with a few restarts, then one usually 
+#' must try to reduce argument tol in order to achieve convergence. If this does not help
+#' either, then the optimization problem is usually ill-conditioned somehow.
 #' @param verbose If TRUE, then some information about the progress of the optimization is
 #'  printed to the console.
 #' @param warnings Whether to print out some potential warnings (such as maximum number of
@@ -48,7 +60,18 @@
 #' 
 #'
 #' @export
-gp_optim <- function(gp, x, y, tol = 1e-4, maxiter = 500, restarts = 1, verbose = TRUE, warnings = TRUE, ...) {
+gp_optim <- function(
+    gp,
+    x,
+    y,
+    tol = 1e-4,
+    tol_param = 1e-1,
+    maxiter = 500,
+    restarts = 1,
+    verbose = TRUE,
+    warnings = TRUE,
+    ...
+) {
   iter <- 0
   energy <- function(param) {
     gp <- set_param(gp, param)
@@ -78,13 +101,14 @@ gp_optim <- function(gp, x, y, tol = 1e-4, maxiter = 500, restarts = 1, verbose 
   gp <- gp_fit(gp, x, y, ...)
 
   if (warnings) {
-    check_results <- check_convergence(energy, e_opt, param_opt, verbose = verbose)
+    check_results <- check_convergence(energy, e_opt, param_opt, delta = tol_param, verbose = verbose)
     if (!check_results$converged) {
       if (restarts > 0) {
         if (verbose)
           cat("Parameters not yet converged, restarting...\n\n")
         return(
-          gp_optim(gp, x, y, tol = tol, maxiter = maxiter, restarts = restarts - 1,
+          gp_optim(gp, x, y, tol = tol, tol_param = tol_param, 
+                   maxiter = maxiter, restarts = restarts - 1,
                    verbose = verbose, warnings = warnings, ...)
         )
       } else {
@@ -96,8 +120,14 @@ gp_optim <- function(gp, x, y, tol = 1e-4, maxiter = 500, restarts = 1, verbose 
   return(gp)
 }
 
-check_convergence <- function(lossfun, loss_opt, param_opt, 
-                              delta = 1e-1, tol = 1e-2, verbose = FALSE) {
+check_convergence <- function(
+    lossfun, 
+    loss_opt, 
+    param_opt,
+    delta = 1e-1, 
+    tol = 1e-2, 
+    verbose = FALSE
+) {
 
   if (verbose) {
     cat("Assessing convergence...\n")
@@ -115,7 +145,10 @@ check_convergence <- function(lossfun, loss_opt, param_opt,
     
     if (loss_diff > tol) {
       converged <- FALSE
-      msg <- sprintf("Not all hyperparameters have reached convergence within tolerance %.2f. Try reoptimizing starting from the current hyperparameter values, increase number of restarts, or reduce tol.", delta)
+      msg <- sprintf(paste(
+        "Not all hyperparameters have reached convergence within tolerance tol_param = %f.",
+        "Try increasing the number of restarts, or reducing argument tol."
+      ), delta)
       break
     }
   }
