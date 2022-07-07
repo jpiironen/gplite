@@ -54,3 +54,28 @@ rm_obj_name <- function(object, param_names) {
     unlist(strsplit(name, ".", fixed = TRUE))[2]
   })
 }
+
+check_if_overparametrized_magnitude <- function(cf) {
+  if (!("cf_prod" %in% class(cf))) {
+    stop(paste(
+      "Internal error encountered: checking for overparametrized magnitude for a non-product kernel.",
+      "This is a bug, please report to the developers!"
+    ))
+  }
+  # check that there are no multiple free magnitude parameters
+  param <- get_param(cf)
+  param_names <- names(param)
+  num_free_magn_params <- 0
+  for (i in seq_along(param_names)) {
+    if (grepl("magn", param_names[i], fixed = TRUE)) {
+      num_free_magn_params <- num_free_magn_params + 1
+    }
+  }
+  if (num_free_magn_params > 1)
+    warning(paste(
+      "Detected a product of covariance functions with more than one non-fixed magnitude parameters.",
+      "This means the magnitude of the product kernel is unnecessarily overparametrized, which",
+      "is likely to lead to to problems in hyperparameter optimization. Consider setting",
+      "prior_magn = prior_fixed() for all except one of the kernels in the product."
+    ))
+}

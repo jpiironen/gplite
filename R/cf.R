@@ -190,6 +190,7 @@ cf_prod <- function(...) {
   cf <- list()
   cf$cfs <- list(...)
   class(cf) <- c("cf_prod", "cf")
+  check_if_overparametrized_magnitude(cf)
   cf
 }
 
@@ -202,6 +203,7 @@ cf_prod <- function(...) {
     } else {
       cf1$cfs <- c(cf1$cfs, list(cf2))
     }
+    check_if_overparametrized_magnitude(cf1)
     return(cf1)
   }
   if ("cf_prod" %in% class(cf2)) {
