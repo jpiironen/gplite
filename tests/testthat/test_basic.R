@@ -46,7 +46,7 @@ for (i in 1:NCOL(cf_comb)) {
 # add products of kernels
 cf_comb <- combn(cfs,3)
 for (i in 1:NCOL(cf_comb)) {
-  cf <- cf_comb[[1,i]] * cf_comb[[2,i]] * cf_comb[[3,i]]
+  SWO(cf <- cf_comb[[1,i]] * cf_comb[[2,i]] * cf_comb[[3,i]])
   gp <- gp_init(cfs=cf, lik=lik)
   gps[[k]] <- gp_fit(gp,x,y)
   k <- k+1

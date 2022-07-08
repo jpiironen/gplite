@@ -60,8 +60,8 @@ for (i in 1:NCOL(cf_comb)) {
 cf_comb <- combn(cfs,3)
 cf_norm_comb <- combn(cfs_norm,3)
 for (i in 1:NCOL(cf_comb)) {
-  cf <- cf_comb[[1,i]] * cf_comb[[2,i]] * cf_comb[[3,i]]
-  cf_norm <- cf_norm_comb[[1,i]] * cf_norm_comb[[2,i]] * cf_norm_comb[[3,i]]
+  SWO(cf <- cf_comb[[1,i]] * cf_comb[[2,i]] * cf_comb[[3,i]])
+  SWO(cf_norm <- cf_norm_comb[[1,i]] * cf_norm_comb[[2,i]] * cf_norm_comb[[3,i]])
   gp <- gp_init(cfs=cf, lik=lik)
   gp_norm <- gp_init(cfs=cf_norm, lik=lik)
   gps[[k]] <- gp_fit(gp,x_norm,y)
