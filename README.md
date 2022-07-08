@@ -64,7 +64,7 @@ ggplot() +
 
 ### Citing
 
-If you find the software useful, I would kindly ask to use following citation:
+If you find the software useful, please use the following citation:
 
 Piironen, Juho (2021). _gplite_: Implementation for the Most Common Gaussian Process Models. R package.
 
