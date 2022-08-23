@@ -114,6 +114,10 @@ gp_optim <- function(
       } else {
         warning(check_results$msg)
       }
+    } else {
+      if (verbose) {
+        cat(check_results$msg)
+      }
     }
   }
 
@@ -134,7 +138,7 @@ check_convergence <- function(
   }
   
   converged <- TRUE
-  msg <- "Parameters converged within tolerance."
+  msg <- "Optimization converged."
   
   for (k in seq_along(param_opt)) {
     dparam <- rep(0, length(param_opt))
@@ -147,7 +151,7 @@ check_convergence <- function(
       converged <- FALSE
       msg <- sprintf(paste(
         "Not all hyperparameters have reached convergence within tolerance tol_param = %f.",
-        "Try increasing the number of restarts, or reducing argument tol."
+        "Try increasing the number of restarts, or reducing tol."
       ), delta)
       break
     }
