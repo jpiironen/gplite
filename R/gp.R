@@ -51,6 +51,9 @@
 #' @export
 gp_init <- function(cfs = cf_sexp(), lik = lik_gaussian(), method = method_full(),
                     approx = approx_laplace()) {
+  if (("lik_gaussian" %in% class(lik)) & ("approx_ep" %in% class(approx))) {
+    stop("approx_ep disabled for lik_gaussian: use approx_laplace instead, because it gives exact results")
+  }
   gp <- list()
   if (!("list" %in% class(cfs))) {
     cfs <- list(cfs)

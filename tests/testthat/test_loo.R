@@ -68,6 +68,10 @@ for (m in seq_along(methods)) {
     # loop through the likelihoods
     for (j in seq_along(liks)) {
       
+      if ("approx_ep" %in% class(approx[[a]]) & "lik_gaussian" %in% class(liks[[j]]))
+        # ep not allowed for gaussian likelihood
+        next
+      
       # all covariance functions alone
       for (i in seq_along(cfs)) {
         gps[[k]] <- gp_init(cfs=cfs[[i]], lik=liks[[j]], method=methods[[m]], approx=approx[[a]])
