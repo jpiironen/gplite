@@ -82,7 +82,7 @@ Bibtex:
 
 ### References
 
-Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. *MIT Press*. [Online](http://www.gaussianprocess.org/gpml/)
+Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for machine learning. *MIT Press*. [Online](https://gaussianprocess.org/gpml/)
 
 
 
