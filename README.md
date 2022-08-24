@@ -66,14 +66,14 @@ ggplot() +
 
 If you find the software useful, please use the following citation:
 
-Piironen, Juho (2021). _gplite_: General Purpose Gaussian Process Modeling. R package.
+Piironen, Juho (2021). _gplite_: General Purpose Gaussian Process Modelling. R package.
 
 
 Bibtex:
 ```
 @misc{gplite,
   author = {Piironen, Juho},
-  title = {gplite: General Purpose {G}aussian Process Modeling},
+  title = {gplite: General Purpose {G}aussian Process Modelling},
   note = {R package},
   year = {2021},
   url = {https://github.com/jpiironen/gplite},

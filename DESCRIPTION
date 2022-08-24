@@ -1,5 +1,5 @@
 Package: gplite
-Title: General Purpose Gaussian Process Modeling
+Title: General Purpose Gaussian Process Modelling
 Version: 0.13.0
 Authors@R: c(person("Juho", "Piironen", role = c("cre", "aut"), email = "juho.t.piironen@gmail.com"))
 Description:
