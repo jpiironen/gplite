@@ -1,5 +1,5 @@
 Package: gplite
-Title: Implementation for the Most Common Gaussian Process Models
+Title: Implementation of the Most Common Gaussian Process Models
 Version: 0.13.0
 Authors@R: c(person("Juho", "Piironen", role = c("cre", "aut"), email = "juho.t.piironen@gmail.com"))
 Description:

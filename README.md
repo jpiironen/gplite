@@ -66,14 +66,14 @@ ggplot() +
 
 If you find the software useful, please use the following citation:
 
-Piironen, Juho (2021). _gplite_: Implementation for the Most Common Gaussian Process Models. R package.
+Piironen, Juho (2021). _gplite_: Implementation of the Most Common Gaussian Process Models. R package.
 
 
 Bibtex:
 ```
 @misc{gplite,
   author = {Piironen, Juho},
-  title = {gplite: Implementation for the Most Common {G}aussian Process Models},
+  title = {gplite: Implementation of the Most Common {G}aussian Process Models},
   note = {R package},
   year = {2021},
   url = {https://github.com/jpiironen/gplite},
