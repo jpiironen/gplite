@@ -64,6 +64,10 @@ gp_optim <- function(
     gp,
     x,
     y,
+    method='nelder-mead',
+    step_size=0.1,
+    beta1=0.9,
+    beta2=0.999,
     tol = 1e-4,
     tol_param = 1e-1,
     maxiter = 500,
@@ -91,7 +95,21 @@ gp_optim <- function(
     warn.1d.NelderMead = warnings
   )
   
-  optim_results <- stats::optim(param0, energy, method = "Nelder-Mead", control = control)
+  if (method == 'nelder-mead') {
+    optim_results <- stats::optim(param0, energy, method = "Nelder-Mead", control = control)
+  } else if (method == 'sgfd') {
+    optim_results <- grad_free_descent(
+      param0, 
+      energy,
+      step_size=step_size,
+      beta1=beta1,
+      beta2=beta2,
+      patience=5,
+      tol=tol,
+      num_iter=round(maxiter/2)
+    )
+  }
+  
   if (optim_results$convergence == 1 && warnings) {
     warning("Maximum number of iterations reached, optimization may not have converged.")
   }
@@ -107,7 +125,10 @@ gp_optim <- function(
         if (verbose)
           cat("Parameters not yet converged, restarting...\n\n")
         return(
-          gp_optim(gp, x, y, tol = tol, tol_param = tol_param, 
+          gp_optim(gp, x, y, method=method,
+                   step_size=step_size,
+                   beta1=beta1,
+                   beta2=beta2, tol = tol, tol_param = tol_param, 
                    maxiter = maxiter, restarts = restarts - 1,
                    verbose = verbose, warnings = warnings, ...)
         )
@@ -180,4 +201,114 @@ optim_iter_message <- function(gp, iter, verbose = TRUE) {
   }
   row_items <- c(sprintf("%8.2f", get_param(gp)), sprintf("%10.2f", gp_energy(gp)), sprintf("%9d", iter))
   cat(paste0(row_items, collapse = " "), "\n")
+}
+
+
+grad_free_descent <- function(
+    x0,
+    func, 
+    step_size=0.1,
+    step_size_decay=NULL,
+    beta1=0.9, 
+    beta2=0.999, 
+    num_iter=100, 
+    delta=0.001, 
+    eps=1e-8,
+    tol=1e-3,
+    patience=10,
+    type='adabelief',
+    bias_corr=TRUE,
+    seed=NULL,
+    method=1
+) {
+  set.seed(seed)
+  step_size_init <- step_size
+  d <- length(x0)
+  x <- x0
+  x_all <- matrix(nrow=num_iter+1, ncol=d)
+  colnames(x_all) <- names(x)
+  x_all[1,] <- x
+  fvals <- rep(Inf, num_iter)
+  m <- 0
+  m2 <- 0
+  for (iter in 1:num_iter) {
+    # decrease step size
+    if (!is.null(step_size_decay)) {
+      step_size <- step_size_decay(iter)*step_size_init
+    } else {
+      step_size <- step_size_init
+    }
+    
+    # current function value
+    fval <- func(x)
+    fvals[iter] <- fval
+    
+    # check for convergence
+    if (iter >= patience) {
+      fvals_recent <- fvals[(iter-patience+1):iter]
+      if (max(fvals_recent) - min(fvals_recent) < tol) {
+      #if (fvals_recent[1] - fvals_recent[patience] < tol) {
+      #if (fvals_recent[1] - min(fvals_recent) < tol) {
+        # convergence achieved
+        break
+      }
+    }
+    
+    ##### method 1 ########
+    if (method == 1) {
+      # random perturbation, unit length
+      dx <- rnorm(d)
+      dx <- dx / sqrt(sum(dx^2))
+      # evaluate delta change in that direction 
+      df <- (func(x+delta*dx) - fval) / delta
+      # compute directional derivative in that direction
+      g <- df * dx
+    } else {
+      # random perturbation
+      dx <- rnorm(d)
+      # evaluate delta change in that direction 
+      df <- (func(x+step_size*dx) - fval) / step_size
+      # compute directional derivative in that direction
+      g <- df * dx
+    }
+    
+    
+    # update first moment of gradient
+    m <- beta1*m + (1-beta1)*g
+    
+    # update (possibly) second moment of gradient and take the step
+    if (type == 'default') {
+      if (bias_corr)
+        alpha <- step_size / (1-beta1^iter)
+      else
+        alpha <- step_size
+      x <- x - alpha * m
+      
+    } else if (type == 'adam') {
+      m2 <- beta2*m2 + (1-beta2)*g^2
+      if (bias_corr)
+        alpha <- step_size * sqrt(1-beta2^iter) / (1-beta1^iter)
+      else
+        alpha <- step_size
+      x <- x - alpha * m / (sqrt(m2)+eps)
+      
+    } else if (type == 'adabelief') {
+      m2 <- beta2*m2 + (1-beta2)*(g-m)^2 + eps
+      if (bias_corr)
+        alpha <- step_size * sqrt(1-beta2^iter) / (1-beta1^iter)
+      else
+        alpha <- step_size
+      x <- x - alpha * m / (sqrt(m2)+eps)
+    }
+    x_all[iter+1,] <- x
+    
+  }
+  
+  iopt <- which.min(fvals)
+  results <- list(
+    par = x_all[iopt, ],
+    par_all = x_all[1:iter, ],
+    value = fvals[iopt],
+    convergence = 1*(iter==num_iter) # 0 = convergence, 1 = no convergence
+  )
 }
